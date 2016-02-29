@@ -1,0 +1,15 @@
+#忽略文件
+
+*.class
+
+# Package Files #
+*.jar
+*.war
+
+.idea
+logs
+sql
+target
+build
+
+ANZ_V2.0_SERVER.iml
