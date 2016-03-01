@@ -3,3 +3,10 @@ getFieldActivityAll:
   from activity_info a
   left outer join activity_type b on a.activitytypeid = b.id
   where a.fieldid = ?
+
+getSellerIdByVerifyCode:
+  select   a.user_id
+     from  invite_verify_code a
+     where
+               a.code = ?
+          and  a.type = ?
