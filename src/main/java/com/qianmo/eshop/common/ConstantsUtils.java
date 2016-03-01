@@ -25,6 +25,11 @@ public class ConstantsUtils {
 	public final static Integer ORDER_PAYMENT_STATUS_RECEIVED = 2;
 	/**********************************************************/
 
+	/**************************订单状态**************************/
+	/**订单状态-待收货**/
+	public final static Integer ORDER_INFO_STATUS_WAIT_RECEIVE = 2;
+	/**********************************************************/
+
 	/**************************验证码/邀请码类型**************************/
 	/**注册**/
 	public final static Integer INVITE_VERIFY_CODE_TYPE_REGISTER = 1;
@@ -39,6 +44,11 @@ public class ConstantsUtils {
 	public final static Integer BUYER_SELLER_STATUS_BIDING = 0;
 	/**取消绑定**/
 	public final static Integer BUYER_SELLER_STATUS_BIDING_CANCEL = 1;
+	/**********************************************************/
+
+	/**************************地区id**************************/
+	/**地区id**/
+	public final static Integer ALL_AREA_ID = 1;
 	/**********************************************************/
 
 }
