@@ -7,7 +7,7 @@ import com.qianmo.eshop.common.yamlRead;
 /**
  * Created by ccq on 16-1-1.
  */
-@Table(name = "buyer_receive_address")
+@Table(name = "invite_verify_code")
 public class invite_verify_code extends Model<invite_verify_code> {
     public final static invite_verify_code dao = new invite_verify_code();
 

@@ -6,7 +6,7 @@ import cn.dreampie.orm.annotation.Table;
 /**
  * Created by ccq on 16-1-1.
  */
-@Table(name = "buyer_receive_address")
+@Table(name = "order_user")
 public class order_user extends Model<order_user> {
     public final static order_user dao = new order_user();
 }
