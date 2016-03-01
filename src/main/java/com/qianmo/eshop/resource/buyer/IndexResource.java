@@ -6,7 +6,6 @@ import cn.dreampie.route.annotation.*;
 import com.qianmo.eshop.model.buyer.buyer_seller;
 import com.qianmo.eshop.model.cart.cart;
 import com.qianmo.eshop.model.order.order_info;
-import com.qianmo.eshop.model.order.order_user;
 import com.qianmo.eshop.model.user.invite_verify_code;
 import com.qianmo.eshop.model.user.user_info;
 import com.qianmo.eshop.resource.z_common.ApiResource;
@@ -102,7 +101,7 @@ public class IndexResource extends ApiResource {
    *
    * @param buyer_id   买家用户id
    */
-  @GET("/seller")
+  @GET("/total")
   public HashMap getIndexSummary(int buyer_id) {
     HashMap resultMap = new HashMap();
     HashMap total = new HashMap();
