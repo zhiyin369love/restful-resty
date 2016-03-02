@@ -1,5 +1,6 @@
-getFieldActivityAll:
-  select a.id,a.fieldid,a.activitytypeid,a.input,a.inputQuantity,a.intro,a.created_at,b.name activitytype
-  from activity_info a
-  left outer join activity_type b on a.activitytypeid = b.id
-  where a.fieldid = ?
+findType:
+  SELECT id type_id,name type_name,pid FROM goods_type where id = ?
+
+findSkuUint:
+  SELECT name unit_name,type FROM goods_sku_unit
+

@@ -9,7 +9,7 @@ import java.util.Map;
 /**
  * Created by ccq on 2/2/16.
  */
-public class yamlRead {
+public class YamlRead {
 
     //从yaml文件中根据key获取对应的sql语句
     public static String getSQL(String key,String filename){
@@ -32,7 +32,7 @@ public class yamlRead {
     public static URL getURL(String key){
         URL url = null;
         try {
-            url = yamlRead.class.getClassLoader().getResource("sqlyaml/" + key + ".yaml");
+            url = YamlRead.class.getClassLoader().getResource("sqlyaml/" + key + ".yaml");
         } catch (Exception e) {
             e.printStackTrace();
         }
