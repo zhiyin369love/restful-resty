@@ -1,6 +1,3 @@
-findType:
-  SELECT id type_id,name type_name,pid FROM goods_type where id = ?
-
 findSkuUint:
   SELECT name unit_name,type FROM goods_sku_unit
 

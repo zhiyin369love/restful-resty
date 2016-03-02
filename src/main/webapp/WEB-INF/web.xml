@@ -50,7 +50,8 @@
     <init-param>
       <param-name>exclusions</param-name>
       <param-value>
-        /druid/**,/**/*.json,*.json
+        /druid/**,/**/*.json,*.json,/upload/**
+        <!--/**/*.gif-->
       </param-value>
     </init-param>
     <init-param>
