@@ -26,8 +26,14 @@ public class ConstantsUtils {
 	/**********************************************************/
 
 	/**************************订单状态**************************/
+	/**订单状态-已取消**/
+	public final static Integer ORDER_INFO_STATUS_CACEL = 0;
+	/**订单状态-已创建**/
+	public final static Integer ORDER_INFO_STATUS_CREATED = 1;
 	/**订单状态-待收货**/
 	public final static Integer ORDER_INFO_STATUS_WAIT_RECEIVE = 2;
+	/**订单状态-已完成**/
+	public final static Integer ORDER_INFO_STATUS_FINISHED = 3;
 	/**********************************************************/
 
 	/**************************验证码/邀请码类型**************************/
@@ -51,4 +57,17 @@ public class ConstantsUtils {
 	public final static Integer ALL_AREA_ID = 1;
 	/**********************************************************/
 
+	/***************************销账未销账************************/
+	/**未销账**/
+	public final static Integer CREDIT_CANCEL_STATUS = 0;
+	/**销账**/
+	public final static Integer CREDIT_ALREADY_STATUS = 1;
+	/**********************************************************/
+
+	/***************************商品************************/
+	/**商品未上架**/
+	public final static Integer GOODS_WAIT_SELL = 0;
+	/**商品已上架**/
+	public final static Integer GOODS_SELLING = 1;
+	/**********************************************************/
 }

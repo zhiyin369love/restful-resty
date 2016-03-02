@@ -3,3 +3,9 @@ getFieldActivityAll:
   from activity_info a
   left outer join activity_type b on a.activitytypeid = b.id
   where a.fieldid = ?
+
+getTotalPriceBySellerIdStatus:
+  select  IF (SUM(a.total_price) IS NULL,0,SUM(a.total_price)) total from  order_info a left join  credit b on a.num = b.order_num
+                            where  b.order_num is not null
+                              and b.seller_id = ?
+                              and b.status = ?

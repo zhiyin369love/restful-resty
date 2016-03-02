@@ -2,7 +2,7 @@ package com.qianmo.eshop.model.user;
 
 import cn.dreampie.orm.Model;
 import cn.dreampie.orm.annotation.Table;
-import com.qianmo.eshop.common.yamlRead;
+import com.qianmo.eshop.common.YamlRead;
 
 /**
  * Created by ccq on 16-1-1.
@@ -16,7 +16,7 @@ public class invite_verify_code extends Model<invite_verify_code> {
      */
     public invite_verify_code getInviteByCode(int verifyCode, int type) {
         String sql  = "";
-        sql = yamlRead.getSQL("getSellerIdByVerifyCode","buyer/buyer");
+        sql = YamlRead.getSQL("getSellerIdByVerifyCode","buyer/buyer");
         return invite_verify_code.dao.findFirst(sql, verifyCode, type);
     }
 }
