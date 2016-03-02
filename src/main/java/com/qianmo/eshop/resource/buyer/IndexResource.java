@@ -108,8 +108,8 @@ public class IndexResource extends ApiResource {
     try {
       //我要采购
       int cartNum = cart.dao.findFirst("select count(*) cn from cart where buyer_id = ?", buyer_id).<Integer>get("cn");
-      //客服号码
-      String phone = user_info.dao.findById(buyer_id).<String>get("phone");
+      //客服号码 TODO  如果买家关联多个卖家，那么客服电话怎么展示
+      //String phone = user_info.dao.findById(buyer_id).<String>get("phone");
       //上级经销商
       List<buyer_seller>  sellerlist =  buyer_seller.dao.findBy("buyer_id = ? status = 0 ", buyer_id);
       List<buyer_seller> resultSellerList = new ArrayList<buyer_seller>();
@@ -123,7 +123,7 @@ public class IndexResource extends ApiResource {
         resultSellerList.add(tempSeller);
       }
       total.put("cart_count",cartNum);
-      total.put("phone",phone);
+      //total.put("phone",phone);
       total.put("seller_list",resultSellerList);
       //待付款订单
       int payWait = order_info.dao.findFirst("SELECT COUNT(*) cn FROM order_info a  LEFT JOIN order_user b" +
