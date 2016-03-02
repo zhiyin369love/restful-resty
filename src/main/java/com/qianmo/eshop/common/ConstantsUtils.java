@@ -47,9 +47,9 @@ public class ConstantsUtils {
 
 	/**************************买家卖家绑定**************************/
 	/**绑定中**/
-	public final static Integer BUYER_SELLER_STATUS_BIDING = 0;
+	public final static Integer BUYER_SELLER_STATUS_BIDING = 1;
 	/**取消绑定**/
-	public final static Integer BUYER_SELLER_STATUS_BIDING_CANCEL = 1;
+	public final static Integer BUYER_SELLER_STATUS_BIDING_CANCEL = 0;
 	/**********************************************************/
 
 	/**************************地区id**************************/
@@ -69,5 +69,12 @@ public class ConstantsUtils {
 	public final static Integer GOODS_WAIT_SELL = 0;
 	/**商品已上架**/
 	public final static Integer GOODS_SELLING = 1;
+	/**********************************************************/
+
+	/***************************邀请码************************/
+	/**邀请码状态 有效**/
+	public final static Integer INVITE_CODE_STATUS_SUCCESSED = 0;
+	/**邀请码状态 失效**/
+	public final static Integer INVITE_CODE_STATUS_EXPIRED = 1;
 	/**********************************************************/
 }

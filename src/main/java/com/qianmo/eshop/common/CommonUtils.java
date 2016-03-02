@@ -2,13 +2,7 @@ package com.qianmo.eshop.common;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -136,7 +130,22 @@ public final class CommonUtils {
           protected void finalize() throws Throwable {  
               map = null;  
           }  
-      });  
+      });
   }
+
+    public static String getRandNum(int charCount) {
+        String charValue = "";
+        for (int i = 0; i < charCount; i++) {
+            char c = (char) (randomInt(0, 10) + '0');
+            charValue += String.valueOf(c);
+        }
+        return charValue;
+
+    }
+
+    public static int randomInt(int from, int to) {
+        Random r = new Random();
+        return from + r.nextInt(to - from);
+    }
 
 }

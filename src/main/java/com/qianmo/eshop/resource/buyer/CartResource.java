@@ -132,7 +132,7 @@ public class CartResource extends ApiResource {
           List<goods_info>  goods_infoList =  (List<goods_info>)cartResult.get("goods_list");
           boolean goodsNumIsExist = false;
           for(goods_info goodsInfoTemp : goods_infoList) {
-              long goodsNum = goodsInfoTemp.<goods_info>get("goods_info").get("goods_id");
+              long goodsNum = goodsInfoTemp.<goods_info>get("goods_info").<Long>get("goods_id");
               if(tempCartGoodsNum == goodsNum)  {
                 goodsNumIsExist = true;
                 //如果卖家id和商品id已经存在了，那么表示需要往型号list里加型号
