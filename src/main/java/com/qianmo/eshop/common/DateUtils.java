@@ -11,6 +11,8 @@ import java.util.Date;
 public class DateUtils {
     private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     private static SimpleDateFormat dateFormat1 = new SimpleDateFormat("yyyy-MM-dd");
+    public static String format_yyyyMMddHHmmss = "yyyy-MM-dd HH:mm:ss";
+    public static String format_yyyyMMdd = "yyyy-MM-dd";
     
     /**
      * 字符串转化成日期
