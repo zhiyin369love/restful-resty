@@ -74,7 +74,7 @@ public class CartResource extends ApiResource {
           //商品型号id
           tempCart.set("goods_sku_id",good.get("goods_sku_id"));
           //订购数量
-          tempCart.set("goods_sku_count",good.get("goods_count"));
+          tempCart.set("goods_sku_count",good.get("goods_sku_count"));
           //根据商品id查找商品
           //goods_info goodInfo = goods_info.dao.findFirstBy(" goods_num = ? ",good.get("goods_id"));
           //卖家id
