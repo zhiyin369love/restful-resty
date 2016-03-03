@@ -3,6 +3,7 @@ package com.qianmo.eshop.resource.buyer;
 import cn.dreampie.common.http.result.HttpStatus;
 import cn.dreampie.common.http.result.WebResult;
 import cn.dreampie.route.annotation.*;
+import com.alibaba.fastjson.JSONObject;
 import com.qianmo.eshop.model.buyer.buyer_seller;
 import com.qianmo.eshop.model.cart.cart;
 import com.qianmo.eshop.model.order.order_info;
@@ -47,7 +48,7 @@ public class IndexResource extends ApiResource {
         if (buyerSeller == null) {
           //如果没有绑定，则将买家卖家绑定起来
           buyer_seller.dao.set("area_id",  ConstantsUtils.ALL_AREA_ID).set("buyer_id", buyer_id).set("seller_id", seller_Id).set("status", ConstantsUtils.BUYER_SELLER_STATUS_BIDING_CANCEL).save();
-          code.set("status",ConstantsUtils.INVITE_CODE_STATUS_SUCCESSED).update();
+          code.set("status",ConstantsUtils.INVITE_CODE_STATUS_SUCCESSED).save();
           return new WebResult(HttpStatus.OK, "绑定成功");
         } else {
           //如果已经绑定过，提示已经绑定过
@@ -79,10 +80,11 @@ public class IndexResource extends ApiResource {
       invite_verify_code code = getInviteByVerifyCode(bind_code);
       if (code != null) {
         Long seller_Id = code.<Long>get("user_id");
-        user_info sellInfo = user_info.dao.findById(seller_Id);
-        sellInfo.set("address_full",sellInfo.get("province_name") + sellInfo.get("city_name").toString() + sellInfo.get("county_name").toString() + sellInfo.get("town_name").toString() + sellInfo.get("address").toString());
-        sellInfo.set("seller_id",sellInfo.get("id"));
-        resultMap.put("seller_info",sellInfo);
+        user_info sellInfo = user_info.dao.findById(seller_Id)==null?new user_info():user_info.dao.findById(seller_Id);
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("address_full",sellInfo.get("province_name")==null?"":sellInfo.get("province_name").toString() + sellInfo.get("city_name")==null?"":sellInfo.get("city_name").toString() + sellInfo.get("county_name")==null?"":sellInfo.get("county_name").toString() + sellInfo.get("town_name")==null?"":sellInfo.get("town_name").toString() +sellInfo.get("address")==null?"":sellInfo.get("address").toString());
+        jsonObject.put("seller_id",sellInfo.get("id"));
+        resultMap.put("seller_info",jsonObject);
       } else {
         //如果找不到，返回空
         resultMap.put("seller_info",null);
@@ -108,33 +110,35 @@ public class IndexResource extends ApiResource {
     HashMap total = new HashMap();
     try {
       //我要采购
-      int cartNum = cart.dao.findFirst("select count(*) cn from cart where buyer_id = ?", buyer_id).<Integer>get("cn");
+      long cartNum = cart.dao.findFirst("select count(*) cn from cart where buyer_id = ?", buyer_id).<Long>get("cn");
       //客服号码   如果买家关联多个卖家，那么客服电话怎么展示
       //String phone = user_info.dao.findById(buyer_id).<String>get("phone");
       //上级经销商
-      List<buyer_seller>  sellerlist =  buyer_seller.dao.findBy("buyer_id = ? status = 0 ", buyer_id);
-      List<buyer_seller> resultSellerList = new ArrayList<buyer_seller>();
+      List<buyer_seller>  sellerlist =  buyer_seller.dao.findBy("buyer_id = ? and status = 0 ", buyer_id);
+      List<JSONObject> resultSellerList = new ArrayList<JSONObject>();
       //循环截取所需的字段
       if(sellerlist != null && sellerlist.size() > 0) {
         for(buyer_seller sell : sellerlist) {
           buyer_seller tempSeller = new buyer_seller();
-          tempSeller.set("seller_id",sell.get("id"));
-          tempSeller.set("seller_name",sell.get("nickname"));
-          tempSeller.set("phone",sell.get("phone"));
-          resultSellerList.add(tempSeller);
+          user_info userInfo = user_info.dao.findById(sell.get("seller_id"))==null?new user_info():user_info.dao.findById(sell.get("seller_id"));
+          JSONObject jsonObject = new JSONObject();
+          jsonObject.put("seller_id",sell.get("seller_id"));
+          jsonObject.put("seller_name",userInfo.get("nickname"));
+          jsonObject.put("phone",userInfo.get("phone"));
+          resultSellerList.add(jsonObject);
         }
         total.put("cart_count",cartNum);
         //total.put("phone",phone);
         total.put("seller_list",resultSellerList);
         //待付款订单
-        int payWait = order_info.dao.findFirst("SELECT COUNT(*) cn FROM order_info a  LEFT JOIN order_user b" +
+        long payWait = order_info.dao.findFirst("SELECT COUNT(*) cn FROM order_info a  LEFT JOIN order_user b" +
                 "                ON a.num = b.order_num" +
-                "                WHERE  a.pay_status = ? and b.order_num IS NOT NULL AND b.buyer_id = ? AND b.area_id = ?", ConstantsUtils.ORDER_PAYMENT_STATUS_WAITE, buyer_id, ConstantsUtils.ALL_AREA_ID) .<Integer>get("cn");
+                "                WHERE  a.pay_status = ? and b.order_num IS NOT NULL AND b.buyer_id = ? AND b.area_id = ?", ConstantsUtils.ORDER_PAYMENT_STATUS_WAITE, buyer_id, ConstantsUtils.ALL_AREA_ID) .<Long>get("cn");
 
         //待收货订单
-        int  receiveWait = order_info.dao.findFirst("SELECT COUNT(*) cn FROM order_info a  LEFT JOIN order_user b" +
+        long  receiveWait = order_info.dao.findFirst("SELECT COUNT(*) cn FROM order_info a  LEFT JOIN order_user b" +
                 "                ON a.num = b.order_num" +
-                "                WHERE  a.order_status = ? and b.order_num IS NOT NULL AND b.buyer_id = ? AND b.area_id = ?", ConstantsUtils.ORDER_INFO_STATUS_WAIT_RECEIVE, buyer_id, ConstantsUtils.ALL_AREA_ID) .<Integer>get("cn");
+                "                WHERE  a.status = ? and b.order_num IS NOT NULL AND b.buyer_id = ? AND b.area_id = ?", ConstantsUtils.ORDER_INFO_STATUS_WAIT_RECEIVE, buyer_id, ConstantsUtils.ALL_AREA_ID) .<Long>get("cn");
         total.put("todo_pay_count",receiveWait);
         total.put("todo_receive_count",receiveWait);
         resultMap.put("total",total);
