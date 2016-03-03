@@ -100,7 +100,4 @@ public class IndexResource extends ApiResource {
     return goods_info.dao.findFirst("select count(*) cn from goods_info where seller_id = ? and status = ?", seller_id, status).<Integer>get("cn");
   }
 
-  public invite_verify_code getInviteByVerifyCode(int bindCode) {
-     return new invite_verify_code().getInviteByCode(bindCode, ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE);
-  }
 }

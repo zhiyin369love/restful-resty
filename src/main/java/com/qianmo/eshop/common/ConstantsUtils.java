@@ -73,8 +73,16 @@ public class ConstantsUtils {
 
 	/***************************邀请码************************/
 	/**邀请码状态 有效**/
-	public final static Integer INVITE_CODE_STATUS_SUCCESSED = 0;
+	public final static Integer INVITE_CODE_STATUS_SUCCESSED = 1;
 	/**邀请码状态 失效**/
-	public final static Integer INVITE_CODE_STATUS_EXPIRED = 1;
+	public final static Integer INVITE_CODE_STATUS_EXPIRED = 0;
+	/**********************************************************/
+
+
+	/***************************商品是否购买************************/
+	/**购买**/
+	public final static Integer GOODS_SKU_PRICE_BUY_ENBLE = 1;
+	/**不可购买**/
+	public final static Integer GOODS_SKU_PRICE_BUY_DISABLE = 0;
 	/**********************************************************/
 }

@@ -19,4 +19,11 @@ public class invite_verify_code extends Model<invite_verify_code> {
         sql = YamlRead.getSQL("getSellerIdByVerifyCode","buyer/buyer");
         return invite_verify_code.dao.findFirst(sql, verifyCode, type);
     }
+
+    /**
+     * 根据验证码和类别获取验证信息
+     */
+    public invite_verify_code getInviteByBuyerAndSeller(long buyer_id, long seller_id) {
+        return invite_verify_code.dao.findFirstBy("buyer_id = ? and seller_id = ?",buyer_id,seller_id);
+    }
 }

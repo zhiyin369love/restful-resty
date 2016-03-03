@@ -64,22 +64,35 @@ public class CartResource extends ApiResource {
   public WebResult addCartGoods(int buyer_id, List<goods_sku> goods) {
     try {
       List<cart> carts = new ArrayList<cart>();
-      for(goods_sku good : goods) {
-        cart tempCart = new cart();
-        //买家id
-        tempCart.set("buyer_id",buyer_id);
-        //商品id
-        tempCart.set("goods_num",good.get("goods_id"));
-        //商品型号id
-        tempCart.set("goods_sku_id",good.get("goods_sku_id"));
-        //订购数量
-        tempCart.set("goods_sku_count",good.get("goods_count"));
-        //区域id
-        tempCart.set("area_id",ConstantsUtils.ALL_AREA_ID);
-        carts.add(tempCart);
+      if(goods != null && goods.size() > 0) {
+        for(goods_sku good : goods) {
+          cart tempCart = new cart();
+          //买家id
+          tempCart.set("buyer_id",buyer_id);
+          //商品id
+          tempCart.set("goods_num",good.get("goods_id"));
+          //商品型号id
+          tempCart.set("goods_sku_id",good.get("goods_sku_id"));
+          //订购数量
+          tempCart.set("goods_sku_count",good.get("goods_count"));
+          //根据商品id查找商品
+          //goods_info goodInfo = goods_info.dao.findFirstBy(" goods_num = ? ",good.get("goods_id"));
+          //卖家id
+          tempCart.set("seller_id",good.get("seller_id"));
+          //卖家name
+          tempCart.set("seller_name",good.get("seller_name"));
+          goods_sku   goodsSku = goods_sku.dao.findById(good.get("goods_sku_id"));
+          //商品规格状态
+          tempCart.set("status",goodsSku.get("status"));
+          //区域id
+          tempCart.set("area_id",ConstantsUtils.ALL_AREA_ID);
+          carts.add(tempCart);
+        }
+        cart.dao.save(carts);
+        return new WebResult(HttpStatus.OK, "添加商品到购物车成功");
+      } else {
+        return new WebResult(HttpStatus.OK, "输入参数有误");
       }
-      cart.dao.save(carts);
-      return new WebResult(HttpStatus.OK, "添加商品到购物车成功");
     } catch (Exception e) {
       //异常情况，按理说需要记录日志，也可考虑做统一的日志拦截 TODO
       return new WebResult(HttpStatus.EXPECTATION_FAILED, "添加商品到购物车失败");
@@ -125,13 +138,14 @@ public class CartResource extends ApiResource {
       List<cart> cartlist = cart.dao.findBy("buyer_id = ?  group by seller_id,goods_num",buyer_id);
       Map cartResult = new HashMap();
       goods_info goods = null;
-      for(cart tempCart : cartlist) {
-        //如果卖家id之前已经存在了，那么表示在同一个cart里
-        if (cartResult.get("seller_id") != null  &&   cartResult.get("seller_id")  == tempCart.get("seller_id") ) {
-          Long tempCartGoodsNum = tempCart.get("goods_num");
-          List<goods_info>  goods_infoList =  (List<goods_info>)cartResult.get("goods_list");
-          boolean goodsNumIsExist = false;
-          for(goods_info goodsInfoTemp : goods_infoList) {
+      if(cartlist != null && cartlist.size() > 0) {
+        for(cart tempCart : cartlist) {
+          //如果卖家id之前已经存在了，那么表示在同一个cart里
+          if (cartResult.get("seller_id") != null  &&   cartResult.get("seller_id")  == tempCart.get("seller_id") ) {
+            Long tempCartGoodsNum = tempCart.get("goods_num");
+            List<goods_info>  goods_infoList =  (List<goods_info>)cartResult.get("goods_list");
+            boolean goodsNumIsExist = false;
+            for(goods_info goodsInfoTemp : goods_infoList) {
               long goodsNum = goodsInfoTemp.<goods_info>get("goods_info").<Long>get("goods_id");
               if(tempCartGoodsNum == goodsNum)  {
                 goodsNumIsExist = true;
@@ -139,32 +153,35 @@ public class CartResource extends ApiResource {
                 List<goods_sku> goosSkuTempList = goodsInfoTemp.get("goods_sku_list");
                 goods_sku goodssku = getGoods_sku(buyer_id, tempCart);
                 goosSkuTempList.add(goodssku);
-                break;
-             }
-          }
-          //如果只是卖家id一致，表示已经是不同的商品了，那么需要往商品list里加
-          if(!goodsNumIsExist) {
+              }
+            }
+            //如果只是卖家id一致，表示已经是不同的商品了，那么需要往商品list里加
+            if(!goodsNumIsExist) {
+              getGoodsInfo(buyer_id, goods, tempCart);
+              goods_infoList.add(goods);
+            }
+          } else {
+            //如果卖家id之前都不存在，意味着是全新的一个cart
+            List<goods_info> goodsInfolist = new ArrayList<goods_info>();
+            cartResult = new HashMap();
+            //如果卖家和商品编号都一样的话，那么去将商品规格信息收集起来
             getGoodsInfo(buyer_id, goods, tempCart);
-            goods_infoList.add(goods);
+            goodsInfolist.add(goods);
+            //卖家id
+            cartResult.put("seller_id", tempCart.get("seller_id"));
+            //卖家名称
+            cartResult.put("seller_name", tempCart.get("seller_name"));
+            //商品列表
+            cartResult.put("goods_list", goodsInfolist);
+            resultCartList.add(cartResult);
           }
-        } else {
-          //如果卖家id之前都不存在，意味着是全新的一个cart
-          List<goods_info> goodsInfolist = new ArrayList<goods_info>();
-          cartResult = new HashMap();
-          //如果卖家和商品编号都一样的话，那么去将商品规格信息收集起来
-          getGoodsInfo(buyer_id, goods, tempCart);
-          goodsInfolist.add(goods);
-          //卖家id
-          cartResult.put("seller_id", tempCart.get("seller_id"));
-          //卖家名称
-          cartResult.put("seller_name", tempCart.get("seller_name"));
-          //商品列表
-          cartResult.put("goods_list", goodsInfolist);
-          resultCartList.add(cartResult);
         }
+        resultMap.put("cart_list",resultCartList);
+        return resultMap;
+      } else {
+          return resultMap;
       }
-     resultMap.put("cart_list",resultCartList);
-      return resultMap;
+
     } catch (Exception e) {
       //异常情况，按理说需要记录日志 TODO
       resultMap.put("cart_list",null);

@@ -47,6 +47,7 @@ public class IndexResource extends ApiResource {
         if (buyerSeller == null) {
           //如果没有绑定，则将买家卖家绑定起来
           buyer_seller.dao.set("area_id",  ConstantsUtils.ALL_AREA_ID).set("buyer_id", buyer_id).set("seller_id", seller_Id).set("status", ConstantsUtils.BUYER_SELLER_STATUS_BIDING_CANCEL).save();
+          code.set("status",ConstantsUtils.INVITE_CODE_STATUS_SUCCESSED).update();
           return new WebResult(HttpStatus.OK, "绑定成功");
         } else {
           //如果已经绑定过，提示已经绑定过
@@ -79,7 +80,7 @@ public class IndexResource extends ApiResource {
       if (code != null) {
         Long seller_Id = code.<Long>get("user_id");
         user_info sellInfo = user_info.dao.findById(seller_Id);
-        sellInfo.set("address_full",sellInfo.get("city_name").toString() + sellInfo.get("county_name").toString() + sellInfo.get("town_name").toString() + sellInfo.get("address").toString());
+        sellInfo.set("address_full",sellInfo.get("province_name") + sellInfo.get("city_name").toString() + sellInfo.get("county_name").toString() + sellInfo.get("town_name").toString() + sellInfo.get("address").toString());
         sellInfo.set("seller_id",sellInfo.get("id"));
         resultMap.put("seller_info",sellInfo);
       } else {
@@ -114,30 +115,34 @@ public class IndexResource extends ApiResource {
       List<buyer_seller>  sellerlist =  buyer_seller.dao.findBy("buyer_id = ? status = 0 ", buyer_id);
       List<buyer_seller> resultSellerList = new ArrayList<buyer_seller>();
       //循环截取所需的字段
-      for(buyer_seller sell : sellerlist) {
-        buyer_seller tempSeller = new buyer_seller();
-        tempSeller.set("seller_id",sell.get("id"));
-        // TODO 是nickname还是name？
-        tempSeller.set("seller_name",sell.get("nickname"));
-        tempSeller.set("phone",sell.get("phone"));
-        resultSellerList.add(tempSeller);
-      }
-      total.put("cart_count",cartNum);
-      //total.put("phone",phone);
-      total.put("seller_list",resultSellerList);
-      //待付款订单
-      int payWait = order_info.dao.findFirst("SELECT COUNT(*) cn FROM order_info a  LEFT JOIN order_user b" +
-              "                ON a.num = b.order_num" +
-              "                WHERE  a.pay_status = ? and b.order_num IS NOT NULL AND b.buyer_id = ? AND b.area_id = ?", ConstantsUtils.ORDER_PAYMENT_STATUS_WAITE, buyer_id, ConstantsUtils.ALL_AREA_ID) .<Integer>get("cn");
+      if(sellerlist != null && sellerlist.size() > 0) {
+        for(buyer_seller sell : sellerlist) {
+          buyer_seller tempSeller = new buyer_seller();
+          tempSeller.set("seller_id",sell.get("id"));
+          tempSeller.set("seller_name",sell.get("nickname"));
+          tempSeller.set("phone",sell.get("phone"));
+          resultSellerList.add(tempSeller);
+        }
+        total.put("cart_count",cartNum);
+        //total.put("phone",phone);
+        total.put("seller_list",resultSellerList);
+        //待付款订单
+        int payWait = order_info.dao.findFirst("SELECT COUNT(*) cn FROM order_info a  LEFT JOIN order_user b" +
+                "                ON a.num = b.order_num" +
+                "                WHERE  a.pay_status = ? and b.order_num IS NOT NULL AND b.buyer_id = ? AND b.area_id = ?", ConstantsUtils.ORDER_PAYMENT_STATUS_WAITE, buyer_id, ConstantsUtils.ALL_AREA_ID) .<Integer>get("cn");
 
-      //待收货订单
-      int  receiveWait = order_info.dao.findFirst("SELECT COUNT(*) cn FROM order_info a  LEFT JOIN order_user b" +
-              "                ON a.num = b.order_num" +
-              "                WHERE  a.order_status = ? and b.order_num IS NOT NULL AND b.buyer_id = ? AND b.area_id = ?", ConstantsUtils.ORDER_INFO_STATUS_WAIT_RECEIVE, buyer_id, ConstantsUtils.ALL_AREA_ID) .<Integer>get("cn");
-      total.put("todo_pay_count",receiveWait);
-      total.put("todo_receive_count",receiveWait);
-      resultMap.put("total",total);
-      return resultMap;
+        //待收货订单
+        int  receiveWait = order_info.dao.findFirst("SELECT COUNT(*) cn FROM order_info a  LEFT JOIN order_user b" +
+                "                ON a.num = b.order_num" +
+                "                WHERE  a.order_status = ? and b.order_num IS NOT NULL AND b.buyer_id = ? AND b.area_id = ?", ConstantsUtils.ORDER_INFO_STATUS_WAIT_RECEIVE, buyer_id, ConstantsUtils.ALL_AREA_ID) .<Integer>get("cn");
+        total.put("todo_pay_count",receiveWait);
+        total.put("todo_receive_count",receiveWait);
+        resultMap.put("total",total);
+        return resultMap;
+      }  else {
+        return resultMap;
+      }
+
     } catch (Exception e) {
       //异常情况，按理说需要记录日志 TODO
       resultMap.put("total",null);

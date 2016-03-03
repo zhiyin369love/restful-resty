@@ -80,4 +80,8 @@ public class user_info extends Model<user_info> {
     }
     return permissionIds;
   }
+
+  public user_info getUserInfoById(long id) {
+    return user_info.dao.findById(id);
+  }
 }
