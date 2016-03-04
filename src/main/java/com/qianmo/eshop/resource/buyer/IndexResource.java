@@ -37,14 +37,14 @@ public class IndexResource extends ApiResource {
    * @param buyer_id   买家用户id
    */
   @POST("/bind")
-  public WebResult addBuyerSeller(int bind_code, int buyer_id) {
+  public WebResult addBuyerSeller(int bind_code, long buyer_id) {
     try {
       //通过验证码找卖家id
       invite_verify_code code = getInviteByVerifyCode(bind_code);
       if (code != null) {
         Long seller_Id = code.<Long>get("user_id");
         //查看是否已经绑定过
-        buyer_seller buyerSeller = buyer_seller.dao.findFirstBy("buyer_id = ? and seller_id = ? and  status = 0 ", buyer_id, seller_Id);
+        buyer_seller buyerSeller = buyer_seller.dao.findFirstBy("buyer_id = ? and seller_id = ? ", buyer_id, seller_Id);
         if (buyerSeller == null) {
           //如果没有绑定，则将买家卖家绑定起来
           buyer_seller.dao.set("area_id",  ConstantsUtils.ALL_AREA_ID).set("buyer_id", buyer_id).set("seller_id", seller_Id).set("status", ConstantsUtils.BUYER_SELLER_STATUS_BIDING_CANCEL).save();
@@ -73,7 +73,7 @@ public class IndexResource extends ApiResource {
    * @param buyer_id   买家用户id
    */
   @GET("/seller")
-  public HashMap getSellerInfoByVerifyCode(int bind_code, int buyer_id) {
+  public HashMap getSellerInfoByVerifyCode(int bind_code, long buyer_id) {
     HashMap resultMap = new HashMap();
     try {
       //通过验证码找卖家id
@@ -105,7 +105,7 @@ public class IndexResource extends ApiResource {
    * @param buyer_id   买家用户id
    */
   @GET("/total")
-  public HashMap getIndexSummary(int buyer_id) {
+  public HashMap getIndexSummary(long buyer_id) {
     HashMap resultMap = new HashMap();
     HashMap total = new HashMap();
     try {

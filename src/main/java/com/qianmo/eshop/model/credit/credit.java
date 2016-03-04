@@ -15,7 +15,7 @@ public class credit extends Model<credit> {
     /**
      * 根据验证码和类别获取验证信息
      */
-    public credit getTotalPriceBySellerIdStatus(int sellerId, int status) {
+    public credit getTotalPriceBySellerIdStatus(Long sellerId, int status) {
         String sql  = "";
         sql = YamlRead.getSQL("getTotalPriceBySellerIdStatus","seller/seller");
         return credit.dao.findFirst(sql, sellerId, status);

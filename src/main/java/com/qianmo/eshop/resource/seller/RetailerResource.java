@@ -33,7 +33,7 @@ public class RetailerResource extends ApiResource {
    * @param seller_id 卖家id
    */
   @PUT("/sendcode")
-  public WebResult addSendCode(List<user_info> accounts,long seller_id) {
+  public WebResult addSendCode(List<JSONObject> accounts,Long seller_id) {
     try {
         //从property文件中获取属性
         String content = PropertyUtil.getProperty("sms.content");
@@ -42,25 +42,28 @@ public class RetailerResource extends ApiResource {
         String code = "";
         String resultContent = "";
         JSONObject returnResult = new JSONObject();
-        Date afterOneHour = new Date(System.currentTimeMillis() + 24*60*60*1000);;
+        Date afterOneDay = new Date(System.currentTimeMillis() + 24*60*60*1000);
+        if (seller_id == null || seller_id ==0l) {
+            return new WebResult(HttpStatus.EXPECTATION_FAILED, "输入参数有误");
+        }
         if(accounts != null && accounts.size() >0) {
-            for(user_info userInfo : accounts) {
-                phone = userInfo.get("phone");
-                remark = userInfo.get("remark");
+            for(JSONObject userInfo : accounts) {
+                phone = (String)userInfo.get("phone");
+                remark = (String)userInfo.get("remark");
                 code = CommonUtils.getRandNum(6);
                 invite_verify_code verifyCode = invite_verify_code.dao.findFirstBy(" user_id = ? and phone = ? and type = ?  ", seller_id, phone,ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE);
                 //如果没有发送过邀请码，那么第一次需要保存
                 if(verifyCode == null) {
                     returnResult = (JSONObject) JSON.parse(SmsApi.sendSms(SmsApi.APIKEY,content + code ,phone));
                     invite_verify_code.dao.set("area_id",ConstantsUtils.ALL_AREA_ID).set("code",code).set("user_id",seller_id).set("type",ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE).set("status",ConstantsUtils.INVITE_CODE_STATUS_EXPIRED)
-                            .set("expire_time", DateUtils.getDateString(afterOneHour,DateUtils.format_yyyyMMddHHmmss)).set("remark",remark).save();
+                            .set("expire_time", DateUtils.getDateString(afterOneDay,DateUtils.format_yyyyMMddHHmmss)).set("remark",remark).set("phone",phone).save();
                 } else {
                     //如果邀请码在一天有效期内，暂时就不给发
                     if(DateUtils.formatDate(verifyCode.<String>get("expire_time"),DateUtils.format_yyyyMMddHHmmss).getTime() < System.currentTimeMillis()) {
                         return new WebResult(HttpStatus.OK, "邀请码在一天有效期内暂时不发送");
                     } else {
                         //如果在一天有效期外，那么就需要发送，并且update  invite_verify_code这张表
-                        verifyCode.set("code",code).set("expire_time", DateUtils.getDateString(afterOneHour,DateUtils.format_yyyyMMddHHmmss)).update();
+                        verifyCode.set("code",code).set("expire_time", DateUtils.getDateString(afterOneDay,DateUtils.format_yyyyMMddHHmmss)).update();
                         returnResult = (JSONObject) JSON.parse(SmsApi.sendSms(SmsApi.APIKEY,content + code ,phone));
                     }
                 }
@@ -89,11 +92,14 @@ public class RetailerResource extends ApiResource {
      *@param seller_id 卖家id
      */
     @PUT("/cooperation")
-    public WebResult cooperation(int id, int op, int seller_id) {
+    public WebResult cooperation(Long id, Long op, Long seller_id) {
         try {
+            if ((id == null || id ==0l)|| (op == null || op ==0l) || (seller_id == null || seller_id ==0l)) {
+                return new WebResult(HttpStatus.EXPECTATION_FAILED, "输入参数有误");
+            }
             buyer_seller buyerSeller =  buyer_seller.dao.findFirstBy("buyer_id = ? and seller_id = ?", id, seller_id);
             if (buyerSeller == null) {
-                buyerSeller.set("buyer_id",id).set("seller_id",seller_id).set("status",op).save();
+                new buyer_seller().set("buyer_id",id).set("seller_id",seller_id).set("status",op).set("area_id",ConstantsUtils.ALL_AREA_ID).save();
             } else {
                 buyerSeller.set("status",op).update();
             }
@@ -116,59 +122,96 @@ public class RetailerResource extends ApiResource {
      * @param  seller_id  卖家id 必填
      */
     @GET("/retailerList")
-    public HashMap getRetailerList(String buyer_name, String name, int page_start, int page_step,String  phone,long seller_id) {
+    public HashMap getRetailerList(String buyer_name, String name, Integer page_start, Integer page_step,String  phone,Long seller_id) {
         HashMap resultMap = new HashMap();
         List<invite_verify_code> inviteVerifyCodes = new ArrayList<invite_verify_code>();
-        List<user_info> buyerSellerResultList = new ArrayList<user_info>();
+        List<JSONObject> buyerSellerResultList = new ArrayList<JSONObject>();
         Map pageInfo = new HashMap();
         try {
-            if(seller_id != 0l) {
+            if(seller_id != null && seller_id != 0l) {
                 //需要判断是否已注册,如果已经注册过，需要根据phone去找买家id，如果没有注册过，那么返回结果中is_invited是0
-                if(page_start !=0 && page_step!= 0) {
-                    FullPage<invite_verify_code> inviteCodeList  =  invite_verify_code.dao.fullPaginateBy(page_start/page_step + 1,page_step,"user_id = ? and type = ?",seller_id,ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE);
+                if(page_start  != null && page_start !=0 && page_step != null && page_step!= 0) {
+                    FullPage<invite_verify_code> inviteCodeList  = null;
+                    String sql = "SELECT * FROM user_info a LEFT JOIN invite_verify_code b\n" +
+                            "ON a.phone = b.phone " +
+                            "WHERE b.phone IS NOT NULL AND b.user_id = ? AND b.type  =? ";
+                    if(!StringUtils.isEmpty(buyer_name) && !StringUtils.isEmpty(name) && !StringUtils.isEmpty(phone)) {
+                        sql += " and a.nickname = ? and a.name = ? and a.phone = ?";
+                        inviteCodeList = invite_verify_code.dao.fullPaginate(page_start/page_step + 1,page_step,sql,seller_id,ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE,buyer_name,name,phone);
+                    } else if (!StringUtils.isEmpty(buyer_name) && !StringUtils.isEmpty(name) ){
+                        sql += " and a.nickname = ? and a.name = ? ";
+                        inviteCodeList = invite_verify_code.dao.fullPaginate(page_start/page_step + 1,page_step,sql,seller_id,ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE,buyer_name,name);
+                    } else if (!StringUtils.isEmpty(buyer_name) && !StringUtils.isEmpty(phone)) {
+                        sql += " and a.nickname = ? and a.phone = ? ";
+                        inviteCodeList = invite_verify_code.dao.fullPaginate(page_start/page_step + 1,page_step,sql,seller_id,ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE,buyer_name,phone);
+                    } else if (!StringUtils.isEmpty(name) && !StringUtils.isEmpty(phone)) {
+                        sql += " and a.name = ? and a.phone = ? ";
+                        inviteCodeList = invite_verify_code.dao.fullPaginate(page_start/page_step + 1,page_step,sql,seller_id,ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE,name,phone);
+                    } else if(!StringUtils.isEmpty(buyer_name)) {
+                        sql += " and a.nickname = ?  ";
+                        inviteCodeList = invite_verify_code.dao.fullPaginate(page_start/page_step + 1,page_step,sql,seller_id,ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE,buyer_name);
+                    } else if (!StringUtils.isEmpty(name) ) {
+                        sql += " and a.name = ?  ";
+                        inviteCodeList = invite_verify_code.dao.fullPaginate(page_start/page_step + 1,page_step,sql,seller_id,ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE,name);
+                    } else if (!StringUtils.isEmpty(phone)) {
+                        sql += " and a.phone = ?  ";
+                        inviteCodeList = invite_verify_code.dao.fullPaginate(page_start/page_step + 1,page_step,sql,seller_id,ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE,phone);
+                    }
                     inviteVerifyCodes = inviteCodeList.getList();
                     pageInfo.put("page_size",page_step);
                     pageInfo.put("total_count",inviteCodeList.getTotalRow());
                     pageInfo.put("total_page",inviteCodeList.getTotalPage());
                 } else {
-                    inviteVerifyCodes = invite_verify_code.dao.findBy("user_id = ? and type = ?",seller_id,ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE);
+                    String sql = "SELECT * FROM user_info a LEFT JOIN invite_verify_code b\n" +
+                            "ON a.phone = b.phone " +
+                            "WHERE b.phone IS NOT NULL AND b.user_id = ? AND b.type  =? ";
+                    if(!StringUtils.isEmpty(buyer_name) && !StringUtils.isEmpty(name) && !StringUtils.isEmpty(phone)) {
+                        sql += " and a.nickname = ? and a.name = ? and a.phone = ?";
+                        inviteVerifyCodes = invite_verify_code.dao.find(sql,seller_id,ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE,buyer_name,name,phone);
+                    } else if (!StringUtils.isEmpty(buyer_name) && !StringUtils.isEmpty(name) ){
+                        sql += " and a.nickname = ? and a.name = ? ";
+                        inviteVerifyCodes = invite_verify_code.dao.find(sql,seller_id,ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE,buyer_name,name);
+                    } else if (!StringUtils.isEmpty(buyer_name) && !StringUtils.isEmpty(phone)) {
+                        sql += " and a.nickname = ? and a.phone = ? ";
+                        inviteVerifyCodes = invite_verify_code.dao.find(sql,seller_id,ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE,buyer_name,phone);
+                    } else if (!StringUtils.isEmpty(name) && !StringUtils.isEmpty(phone)) {
+                        sql += " and a.name = ? and a.phone = ? ";
+                        inviteVerifyCodes = invite_verify_code.dao.find(sql,seller_id,ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE,name,phone);
+                    } else if(!StringUtils.isEmpty(buyer_name)) {
+                        sql += " and a.nickname = ?  ";
+                        inviteVerifyCodes = invite_verify_code.dao.find(sql,seller_id,ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE,buyer_name);
+                    } else if (!StringUtils.isEmpty(name) ) {
+                        sql += " and a.name = ?  ";
+                        inviteVerifyCodes = invite_verify_code.dao.find(sql,seller_id,ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE,name);
+                    } else if (!StringUtils.isEmpty(phone)) {
+                        sql += " and a.phone = ?  ";
+                        inviteVerifyCodes = invite_verify_code.dao.find(sql,seller_id,ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE,phone);
+                    }
                     pageInfo.put("page_size",null);
                     pageInfo.put("total_count",inviteVerifyCodes==null?0:inviteVerifyCodes.size());
                     pageInfo.put("total_page",null);
                 }
                 if (inviteVerifyCodes != null && inviteVerifyCodes.size() > 0) {
                     for(invite_verify_code inviteVerifyCodeTemp : inviteVerifyCodes) {
-                        user_info userTemp = new user_info();
-                        //如果状态为false，表明是未注册过的
-                        if(inviteVerifyCodeTemp.<Boolean>get("status")) {
-                            //是否已邀请
-                            userTemp.set("is_invited",ConstantsUtils.INVITE_CODE_STATUS_EXPIRED);
-                        } else {
-                            //如果状态为true，表明是注册过的，那么需要通过phone去user_info表中查找信息
-                            if(!StringUtils.isEmpty(buyer_name) && !StringUtils.isEmpty(name)) {
-                                userTemp = user_info.dao.findFirstBy("phone = ? and nickname =? and name =? ", inviteVerifyCodeTemp.get("phone"),buyer_name,name);
-                            } else if (!StringUtils.isEmpty(buyer_name)) {
-                                userTemp = user_info.dao.findFirstBy("phone = ? and nickname =? ", inviteVerifyCodeTemp.get("phone"),buyer_name);
-                            } else if (!StringUtils.isEmpty(name)) {
-                                userTemp = user_info.dao.findFirstBy("phone = ? and name =? ", inviteVerifyCodeTemp.get("phone"),name);
-                            } else {
-                                userTemp = user_info.dao.findFirstBy("phone = ?", inviteVerifyCodeTemp.get("phone"));
-                            }
-                            //地址
-                            userTemp.set("address",userTemp.get("province_name") + userTemp.get("city_name").toString() + userTemp.get("county_name").toString() + userTemp.get("town_name").toString() + userTemp.get("address").toString());
-                            // invite_verify_code verifyCode =  new invite_verify_code().getInviteByBuyerAndSeller(buyerId,seller_id);
-                            //是否已邀请
-                            userTemp.set("is_invited",ConstantsUtils.INVITE_CODE_STATUS_SUCCESSED);
-                            //用户id
-                            userTemp.set("user_id",userTemp.get("id"));
-                        }
+                        JSONObject userTemp = new JSONObject();
+                        user_info userInfoTemp = new user_info();
+                        userTemp.put("is_invited",userInfoTemp.get("is_invited"));
+                        //地址
+                        userTemp.put("address",userInfoTemp.get("province_name") + userInfoTemp.get("city_name").toString() + userInfoTemp.get("county_name").toString() + userInfoTemp.get("town_name").toString() + userInfoTemp.get("address").toString());
+                        // invite_verify_code verifyCode =  new invite_verify_code().getInviteByBuyerAndSeller(buyerId,seller_id);
+                        //是否已邀请
+                        userTemp.put("is_invited",ConstantsUtils.INVITE_CODE_STATUS_SUCCESSED);
+                        //用户id
+                        userTemp.put("user_id",userInfoTemp.get("id"));
+                        userTemp.put("account",userInfoTemp.get("account"));
                         //phone
-                        userTemp.set("phone",inviteVerifyCodeTemp.get("phone"));
+                        userTemp.put("phone",inviteVerifyCodeTemp.get("phone"));
                         //邀请码
-                        userTemp.set("invited_code",inviteVerifyCodeTemp.get("code"));
+                        userTemp.put("invited_code",inviteVerifyCodeTemp.get("code"));
                         //备注
-                        userTemp.set("remark",inviteVerifyCodeTemp.get("remark"));
+                        userTemp.put("remark",inviteVerifyCodeTemp.get("remark"));
                         buyerSellerResultList.add(userTemp);
+                        }
                     }
                     resultMap.put("buyer_list",buyerSellerResultList);
                     resultMap.put("page_info",pageInfo);
@@ -176,7 +219,6 @@ public class RetailerResource extends ApiResource {
                     resultMap.put("buyer_list",null);
                 }
                // return resultMap;
-                }
                 return resultMap;
 
         } catch (Exception e) {
@@ -195,13 +237,13 @@ public class RetailerResource extends ApiResource {
      * @param  store_price_list 商品型号价格列表
      */
     @PUT("/price/batch")
-    public HashMap updateRetailerPrice(List<goods_sku_price> store_price_list) {
+    public HashMap updateRetailerPrice(List<JSONObject> store_price_list) {
         HashMap resultMap = new HashMap();
         String content = "";
         int i = 0;
         try {
             if (store_price_list != null && store_price_list.size() >0) {
-                for (goods_sku_price skuPrice : store_price_list) {
+                for (JSONObject skuPrice : store_price_list) {
                     i += 1;
                     if (skuPrice.get("goods_id") != null && skuPrice.get("goods_sku_id") != null && skuPrice.get("buyer_id") != null && skuPrice.get("seller_id") != null) {
                         goods_sku_price.dao.findFirstBy("goods_num = ? and sku_id = ? and buyer_id = ? and seller_id = ?", skuPrice.get("goods_id"), skuPrice.get("goods_sku_id"), skuPrice.get("buyer_id"),
@@ -238,35 +280,35 @@ public class RetailerResource extends ApiResource {
      * @param  type 是否购买
      */
     @GET("/price/:id")
-    public HashMap getRetailerPriceList(long goods_id, long goos_sku_id,long id,  int page_start, int page_step,int type) {
+    public HashMap getRetailerPriceList(Long goods_id, Long goos_sku_id,Long id,  Integer page_start, Integer page_step,Integer type) {
         HashMap resultMap = new HashMap();
         List<goods_sku_price> goodsSkuPrices = new ArrayList<goods_sku_price>();
-        List<goods_sku_price> goodsSkuPriceResultList = new ArrayList<goods_sku_price>();
+        List<JSONObject> goodsSkuPriceResultList = new ArrayList<JSONObject>();
         Map pageInfo = new HashMap();
         try {
-            if(id != 0l) {
+            if(id != null && id != 0l) {
                 //需要判断是否已注册,如果已经注册过，需要根据phone去找买家id，如果没有注册过，那么返回结果中is_invited是0
-                if(page_start !=0 && page_step!= 0) {
+                if(page_start  != null && page_start !=0 && page_step != null && page_step!= 0)  {
                     FullPage<goods_sku_price> goodSkuPriceList = null;
-                    if(goods_id != 0 && goos_sku_id != 0 && type != 0) {
+                    if(goods_id != null && goods_id != 0 && goos_sku_id != null && goos_sku_id != 0 && type !=  null && type != 0) {
                         goodSkuPriceList =  goods_sku_price.dao.fullPaginateBy(page_start/page_step + 1,page_step,"seller_id = ? and goods_num = ? and sku_id = ? and type = ?",
                                 id,goods_id,goos_sku_id, ConstantsUtils.GOODS_SKU_PRICE_BUY_ENBLE);
-                    } else if (goods_id != 0 && goos_sku_id != 0) {
+                    } else if (goods_id != null && goods_id != 0 && goos_sku_id != null &&  goos_sku_id != 0) {
                         goodSkuPriceList =  goods_sku_price.dao.fullPaginateBy(page_start/page_step + 1,page_step,"seller_id = ? and goods_num = ? and sku_id = ? ",
                                 id,goods_id,goos_sku_id);
-                    } else if (goos_sku_id != 0 && type != 0) {
+                    } else if (goos_sku_id != null &&  goos_sku_id != 0 && type !=  null && type != 0) {
                         goodSkuPriceList =  goods_sku_price.dao.fullPaginateBy(page_start/page_step + 1,page_step,"seller_id = ? and sku_id = ? and type = ? ",
                                 id,goos_sku_id, ConstantsUtils.GOODS_SKU_PRICE_BUY_ENBLE);
-                    } else if (goods_id != 0  && type != 0) {
+                    } else if (goods_id != null && goods_id != 0  && type !=  null && type != 0) {
                         goodSkuPriceList =  goods_sku_price.dao.fullPaginateBy(page_start/page_step + 1,page_step,"seller_id = ? and goods_num = ?  and type = ?",
                                 id,goods_id,ConstantsUtils.GOODS_SKU_PRICE_BUY_ENBLE);
-                    } else if (goods_id != 0) {
+                    } else if (goods_id != null && goods_id != 0 ) {
                         goodSkuPriceList =  goods_sku_price.dao.fullPaginateBy(page_start/page_step + 1,page_step,"seller_id = ? and goods_num = ? ",
                                 id,goods_id);
-                    } else if (goos_sku_id != 0) {
+                    } else if (goos_sku_id != null &&  goos_sku_id != 0) {
                         goodSkuPriceList =  goods_sku_price.dao.fullPaginateBy(page_start/page_step + 1,page_step,"seller_id = ? and sku_id = ? ",
                                 id,goos_sku_id);
-                    }  else if (type != 0) {
+                    }  else if (type !=  null && type != 0) {
                         goodSkuPriceList =  goods_sku_price.dao.fullPaginateBy(page_start/page_step + 1,page_step,"seller_id = ?  and type = ?",
                                 id, ConstantsUtils.GOODS_SKU_PRICE_BUY_ENBLE);
                     }
@@ -275,25 +317,25 @@ public class RetailerResource extends ApiResource {
                     pageInfo.put("total_count",goodSkuPriceList.getTotalRow());
                     pageInfo.put("total_page",goodSkuPriceList.getTotalPage());
                 } else {
-                    if(goods_id != 0 && goos_sku_id != 0 && type != 0) {
+                    if(goods_id != null && goods_id != 0 && goos_sku_id != null && goos_sku_id != 0 && type !=  null && type != 0) {
                         goodsSkuPrices =  goods_sku_price.dao.findBy("seller_id = ? and goods_num = ? and sku_id = ? and type = ?",
                                 id,goods_id,goos_sku_id, ConstantsUtils.GOODS_SKU_PRICE_BUY_ENBLE);
-                    } else if (goods_id != 0 && goos_sku_id != 0) {
+                    } else if (goods_id != null && goods_id != 0 && goos_sku_id != null &&  goos_sku_id != 0) {
                         goodsSkuPrices =  goods_sku_price.dao.findBy("seller_id = ? and goods_num = ? and sku_id = ? ",
                                 id,goods_id,goos_sku_id);
-                    } else if (goos_sku_id != 0 && type != 0) {
+                    } else if (goos_sku_id != null &&  goos_sku_id != 0 && type !=  null && type != 0) {
                         goodsSkuPrices =  goods_sku_price.dao.findBy("seller_id = ? and sku_id = ? and type = ? ",
                                 id,goos_sku_id, ConstantsUtils.GOODS_SKU_PRICE_BUY_ENBLE);
-                    } else if (goods_id != 0  && type != 0) {
+                    } else if (goods_id != null && goods_id != 0  && type !=  null && type != 0) {
                         goodsSkuPrices =  goods_sku_price.dao.findBy("seller_id = ? and goods_num = ?  and type = ?",
                                 id,goods_id,ConstantsUtils.GOODS_SKU_PRICE_BUY_ENBLE);
-                    } else if (goods_id != 0) {
+                    } else if (goods_id != null && goods_id != 0 ) {
                         goodsSkuPrices =  goods_sku_price.dao.findBy("seller_id = ? and goods_num = ? ",
                                 id,goods_id);
-                    } else if (goos_sku_id != 0) {
+                    } else if (goos_sku_id != null &&  goos_sku_id != 0) {
                         goodsSkuPrices =  goods_sku_price.dao.findBy("seller_id = ? and sku_id = ? ",
                                 id,goos_sku_id);
-                    }  else if (type != 0) {
+                    }  else if (type !=  null && type != 0) {
                         goodsSkuPrices =  goods_sku_price.dao.findBy("seller_id = ?  and type = ?",
                                 id, ConstantsUtils.GOODS_SKU_PRICE_BUY_ENBLE);
                     }
@@ -303,15 +345,19 @@ public class RetailerResource extends ApiResource {
                 }
                 if(goodsSkuPrices != null && goodsSkuPrices.size() >0) {
                     for(goods_sku_price goodsSkuPriceTemp : goodsSkuPrices) {
+                        JSONObject temp = new JSONObject();
                         //商品id
                         long goodsNum = goodsSkuPriceTemp.<Long>get("goods_num");
-                        goodsSkuPriceTemp.set("goods_id",goodsNum);
+                        temp.put("goods_id",goodsNum);
                         //商品名称
-                        goodsSkuPriceTemp.set("goods_name", goods_info.dao.findFirstBy("num = ?" , goodsNum).get("name"));
+                        temp.put("goods_name", goods_info.dao.findFirstBy("num = ?" , goodsNum).get("name"));
                         //型号名称
                         long skuId = goodsSkuPriceTemp.<Long>get("sku_id");
-                        goodsSkuPriceTemp.set(" sku_name", goods_sku.dao.findById(skuId).get("name"));
-                        goodsSkuPriceResultList.add(goodsSkuPriceTemp);
+                        temp.put("sku_name", goods_sku.dao.findById(skuId).get("name"));
+                        temp.put("price",goodsSkuPriceTemp.get("price"));
+                        temp.put("sku_id",goodsSkuPriceTemp.get("sku_id"));
+                        temp.put("type",goodsSkuPriceTemp.get("type"));
+                        goodsSkuPriceResultList.add(temp);
                     }
                 }
                 resultMap.put("buyer_price_list",goodsSkuPriceResultList);
