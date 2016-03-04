@@ -1,3 +1,12 @@
+#查询商品规格单位信息
 findSkuUint:
-  SELECT name unit_name,type FROM goods_sku_unit
+  SELECT name unit_name,type FROM goods_sku_unit AND deleted_at is null
+
+#删除商品规格信息
+deleteGoodsSku:
+  UPDATE goods_sku SET deleted_at = ? WHERE goods_num = ?
+
+#获取商品数量
+findGoodsCount:
+  SELECT count(id) FROM goods_info WHERE type_id=?
 

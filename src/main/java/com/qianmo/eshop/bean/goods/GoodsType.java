@@ -7,9 +7,10 @@ import java.util.Collection;
  */
 public class GoodsType {
 
-    private Collection goods_type_list;
-    private int type_id;
-    private String type_name;
+    private Collection goods_type_list;//商品分类子分类
+    private int type_id;//商品分类id
+    private String type_name;//商品分类名称
+    private long goods_count;//该商品分类包含的商品总数
 
     public int getType_id() {
         return type_id;
@@ -29,4 +30,11 @@ public class GoodsType {
     public void setGoods_type_list(Collection goods_type_list) {
         this.goods_type_list = goods_type_list;
     }
+    public long getGoods_count(){
+        return goods_count;
+    }
+    public void setGoods_count(long goods_count){
+        this.goods_count = goods_count;
+    }
+
 }

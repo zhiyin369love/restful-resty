@@ -2,6 +2,7 @@ package com.qianmo.eshop.model.goods;
 
 import cn.dreampie.orm.Model;
 import cn.dreampie.orm.annotation.Table;
+import com.qianmo.eshop.common.ConstantsUtils;
 import com.qianmo.eshop.common.YamlRead;
 
 import java.util.ArrayList;
@@ -18,28 +19,28 @@ public class goods_sku_unit extends Model<goods_sku_unit> {
 
     public List getList(){
         List list = new ArrayList();
-        String sql = YamlRead.getSQL("findSkuUint","/seller/goods");
+        String sql = YamlRead.getSQL("findSkuUint","seller/goods");
         List<goods_sku_unit> result = dao.find(sql);
-        List list1 = new ArrayList();
-        List list2 = new ArrayList();
+        List physicalList = new ArrayList();
+        List packageList = new ArrayList();
         if(result!=null && result.size()>0){
             for(goods_sku_unit unit:result){
-                if(Integer.parseInt(unit.get("type").toString())==0){
-                    list1.add(unit);
+                if(Integer.parseInt(unit.get("type").toString())== ConstantsUtils.PHYSICAL_UNIT){
+                    physicalList.add(unit);
                 }else{
-                    list2.add(unit);
+                    packageList.add(unit);
                 }
             }
         }
-        Map map1 = new HashMap();
-        map1.put("type",0);
-        map1.put("goods_sku_unit_list",list1);
-        list.add(map1);
+        Map physicalMap = new HashMap();
+        physicalMap.put("type",ConstantsUtils.PHYSICAL_UNIT);
+        physicalMap.put("goods_sku_unit_list",physicalList);
+        list.add(physicalMap);
 
-        Map map2 = new HashMap();
-        map2.put("type",1);
-        map2.put("goods_sku_unit_list",list2);
-        list.add(map2);
+        Map packageMap = new HashMap();
+        packageMap.put("type",ConstantsUtils.PACKAGE_UNIT);
+        packageMap.put("goods_sku_unit_list",packageList);
+        list.add(packageMap);
         return list;
     }
 }

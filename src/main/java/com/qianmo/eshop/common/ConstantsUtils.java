@@ -8,7 +8,13 @@ package com.qianmo.eshop.common;
  *
  */
 public class ConstantsUtils {
-	
+	/**************************商品规格单位**************************/
+	/**物理单位**/
+	public final static Integer PHYSICAL_UNIT = 0;
+	/**包装单位**/
+	public final static Integer PACKAGE_UNIT = 0;
+	/**********************************************************/
+
 	/**************************支付方式**************************/
 	/**支付方式-余额**/
 	public final static Integer ORDER_PAYMENTTYPE_CASH = 0;

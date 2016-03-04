@@ -22,13 +22,13 @@ public class goods_type extends Model<goods_type> {
      */
     public List getList(){
         List list = new ArrayList();
-        List<goods_type> parentList = dao.findBy("pid=0");
+        List<goods_type> parentList = dao.findBy("pid=0 and deleted_at is null");
         if(parentList!=null && parentList.size()>0){
             for (goods_type type:parentList){
                 GoodsType goodsType = new GoodsType();
                 goodsType.setType_id(Integer.parseInt(type.get("id").toString()));
                 goodsType.setType_name(type.get("name").toString());
-                List<goods_type> childList = dao.findBy("pid=?",type.get("id"));
+                List<goods_type> childList = dao.findBy("pid=? and deleted_at is null",type.get("id"));
                 List<GoodsType> typeList = new ArrayList<GoodsType>();
                 if(childList!=null && childList.size()>0){
                     for(goods_type childType:childList){
