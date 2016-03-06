@@ -1,6 +1,6 @@
 #查询商品规格单位信息
 findSkuUint:
-  SELECT name unit_name,type FROM goods_sku_unit AND deleted_at is null
+  SELECT name unit_name,type FROM goods_sku_unit WHERE deleted_at is null
 
 #删除商品规格信息
 deleteGoodsSku:
@@ -8,5 +8,30 @@ deleteGoodsSku:
 
 #获取商品数量
 findGoodsCount:
-  SELECT count(id) FROM goods_info WHERE type_id=?
+  SELECT count(id) FROM goods_info WHERE type_id=? AND seller_id=? AND deleted_at is null
+
+#获取商品剂型
+findGoodsForm:
+  SELECT id form_id,name form_name FROM goods_form WHERE type_id=? AND deleted_at is null
+
+#获取商品信息
+findGoods:
+  SELECT a.id goods_id,a.name goods_name,a.num goods_num,a.type_id,a.details,a.form_id,a.generic_name,a.ingredient,
+    a.license_num,a.main_pic_url,a.pic_url_list,a.producer,a.standard,b.parent_type_name,b.child_type_name
+    FROM goods_info a,(SELECT c.name child_type_name,d.name parent_type_name,c.id FROM goods_type c
+    INNER JOIN goods_type d ON c.pid = d.id) b WHERE a.type_id=b.id AND a.id=?
+
+#获取商品规格信息
+findGoodsSku:
+  SELECT id sku_id,name sku_name FROM goods_sku WHERE goods_num = ? AND deleted_at is null
+
+#获取经销商下的零售商的基本信息和价格信息
+findUserANdPrice:
+  SELECT a.id buyer_id,a.account,a.nickname,CONCAT(a.province_name,a.city_name,a.county_name,a.town_name,a.address) buyer_address,
+    b.id sku_id,b.name sku_name,d.price,d.status sku_price_status FROM user_info a
+    INNER JOIN buyer_seller c on a.id = c.buyer_id
+    INNER JOIN goods_sku b on b.seller_id = c.seller_id
+    INNER JOIN goods_sku_price d on d.sku_id = b.id
+    WHERE b.goods_num = ? AND b.id = ? AND d.status = ?
+
 
