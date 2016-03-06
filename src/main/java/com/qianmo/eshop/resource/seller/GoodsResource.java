@@ -6,7 +6,9 @@ import cn.dreampie.common.http.result.WebResult;
 import cn.dreampie.orm.transaction.Transaction;
 import cn.dreampie.route.annotation.*;
 import cn.dreampie.route.core.multipart.FILE;
+import cn.dreampie.security.Subject;
 import com.qianmo.eshop.common.CodeUtils;
+import com.qianmo.eshop.common.ConstantsUtils;
 import com.qianmo.eshop.common.YamlRead;
 import com.qianmo.eshop.model.goods.goods_info;
 import com.qianmo.eshop.model.goods.goods_sku;
@@ -28,6 +30,36 @@ public class GoodsResource extends ApiResource {
 
         return resultMap;
     }
+
+    /**
+     * 获取商品详情
+     * @param id
+     * @return
+     */
+    @GET("/:id")
+    public HashMap get(long id){
+        user_info userInfo = (user_info) Subject.getPrincipal().getModel();
+        HashMap resultMap = new HashMap();
+        goods_info goodsInfo = goods_info.dao.findFirst(YamlRead.getSQL("findGoods","seller/goods"),id);
+        long seller_id = 0;
+        //判断当前登录用户是否为子账号，如果是则获取其父级id
+        if(userInfo!=null){
+            if(Long.parseLong(userInfo.get("pid").toString())==0){
+                seller_id = Long.parseLong(userInfo.get("id").toString());
+            }else{
+                seller_id = Long.parseLong(userInfo.get("pid").toString());
+            }
+        }
+        /*
+        判断当前登录用户是否有查看该商品的权限
+         */
+        if (seller_id==Long.parseLong(goodsInfo.get("seller_id").toString())){
+            resultMap.put("goods_info",goodsInfo);
+            List<goods_sku> list = goods_sku.dao.find(YamlRead.getSQL("findGoodsSku","seller/goods"),goodsInfo.get("goods_num"));
+            resultMap.put("goods_sku_list",list);
+        }
+        return resultMap;
+    }
     /**
      * 添加商品信息
      * @param goods
@@ -37,25 +69,29 @@ public class GoodsResource extends ApiResource {
     @Transaction
     public WebResult add(goods_info goods){
         try {
+
             user_info user = user_info.dao.findById(goods.get("seller_id"));
-            int seller_id = 0;
+            long seller_id = 0;
             //判断添加商品的用户是否为子账号，如果是则获取其父级id
-            if(Integer.parseInt(user.get("pid").toString())==0){
-                seller_id = user.get("id");
-            }else{
-                seller_id = user.get("pid");
+            if(user!=null){
+                if(Long.parseLong(user.get("pid").toString())==0){
+                    seller_id = Long.parseLong(user.get("id").toString());
+                }else{
+                    seller_id = Long.parseLong(user.get("pid").toString());
+                }
             }
             /*
             添加商品基本信息
             */
             goods_info goodsInfo = goods.get("goods_info");
-            String goodsNum = CodeUtils.code(goodsInfo.get("goods_type_id").toString(),1);
-            goodsInfo.set("areaId",1);
+            //生成商品编号
+            String goodsNum = CodeUtils.code(goodsInfo.get("goods_type_id").toString(),ConstantsUtils.GOODS_NUM_TYPE);
+            goodsInfo.set("areaId",ConstantsUtils.ALL_AREA_ID);
             goodsInfo.set("num",goodsNum);
             goodsInfo.set("type_id",goodsInfo.get("goods_type_id"));
             goodsInfo.set("name",goodsInfo.get("goods_name"));
             goodsInfo.set("seller_id",seller_id);
-            goodsInfo.set("status",0);
+            goodsInfo.set("status",ConstantsUtils.RELEASE_STATUS_OFF);//商品状态(0 未上架 1 已上架)
             goodsInfo.save();
             /*
             添加商品规格信息
@@ -65,8 +101,8 @@ public class GoodsResource extends ApiResource {
             if(list!=null && list.size()>0){
                 for (goods_sku sku:list){
                     goods_sku goodsSku = new goods_sku();
-                    goodsSku.set("status",0);
-                    goodsSku.set("area_id",1);
+                    goodsSku.set("status",ConstantsUtils.RELEASE_STATUS_OFF);//商品规格状态(0 未上架 1 已上架)
+                    goodsSku.set("area_id",ConstantsUtils.ALL_AREA_ID);
                     goodsSku.set("goods_num",goodsNum);
                     goodsSku.set("amount",sku.get("sku_amount"));
                     goodsSku.set("name",sku.get("sku_name"));
@@ -90,7 +126,7 @@ public class GoodsResource extends ApiResource {
      */
     @PUT("/:id")
     @Transaction
-    public WebResult update(goods_info goods,long id){
+    public WebResult update(goods_info goods,long id,String[] delete_pic_url){
         try {
             /*
             修改商品基本信息
@@ -98,6 +134,16 @@ public class GoodsResource extends ApiResource {
             goods_info goodsInfo = goods_info.dao.findById(id);
             goodsInfo.set("name",goodsInfo.get("goods_name"));
             goodsInfo.update();
+            /*
+            删除商品图片
+             */
+            if(delete_pic_url!=null && delete_pic_url.length>0){
+                for(String delete_pic:delete_pic_url){
+                    if(delete_pic.indexOf(ConstantsUtils.PIC_DIR)!=-1){
+                        deleteMainPic(delete_pic.substring(delete_pic.indexOf(ConstantsUtils.PIC_DIR)));
+                    }
+                }
+            }
             /*
             对商品规格信息的操作
              */
@@ -107,8 +153,8 @@ public class GoodsResource extends ApiResource {
                     //status为1表示新增商品规格
                     if(Integer.parseInt(sku.get("status").toString())==1){
                         goods_sku goodsSku = new goods_sku();
-                        goodsSku.set("status",0);
-                        goodsSku.set("area_id",1);
+                        goodsSku.set("status",ConstantsUtils.RELEASE_STATUS_OFF);//商品规格状态(0 未上架 1 已上架)
+                        goodsSku.set("area_id", ConstantsUtils.ALL_AREA_ID);
                         goodsSku.set("goods_num",goodsInfo.get("num"));
                         goodsSku.set("amount",sku.get("sku_amount"));
                         goodsSku.set("name",sku.get("sku_name"));
@@ -142,8 +188,8 @@ public class GoodsResource extends ApiResource {
     }
     /**
      * 删除商品或商品规格
-     * @param id
-     * @param goods_sku_id
+     * @param id 商品id
+     * @param goods_sku_id 商品规格id
      * @return
      */
     @DELETE("/:id")
@@ -173,10 +219,25 @@ public class GoodsResource extends ApiResource {
                 goods.set("deleted_at",new Date());
                 goods.update();
                 //删除商品规格
-                String delSql = YamlRead.getSQL("deleteGoodsSku","/seller/goods");
+                String delSql = YamlRead.getSQL("deleteGoodsSku","seller/goods");
                 goods_sku.dao.update(delSql,new Date(),goods.get("num"));
                 //删除商品规格价格
                 goods_sku_price.dao.deleteBy("goods_num=?",goods.get("num"));
+
+                //删除商品主图
+                String mainPicUrl = goods.get("main_pic_url");
+                if(mainPicUrl!=null && !"".equals(mainPicUrl) && mainPicUrl.indexOf(ConstantsUtils.PIC_DIR)!=-1){
+                    deleteMainPic(mainPicUrl.substring(mainPicUrl.indexOf(ConstantsUtils.PIC_DIR)));
+                }
+                //删除商品详细图片
+                String[] picUrl = goods.get("pic_url_list").toString().split(",");
+                if(picUrl!=null && picUrl.length>0){
+                    for(String pic:picUrl){
+                        if(pic.indexOf(ConstantsUtils.PIC_DIR)!=-1){
+                            deleteMainPic(pic.substring(pic.indexOf(ConstantsUtils.PIC_DIR)));
+                        }
+                    }
+                }
             }
             return new WebResult(HttpStatus.OK, "删除商品成功");
         } catch (Exception e) {
@@ -185,25 +246,30 @@ public class GoodsResource extends ApiResource {
         }
     }
     /**
+     * 删除图片
+     * @param path 图片路径
+     */
+    public void deleteMainPic(String path){
+        try{
+            String picUrl = this.getRequest().getRealPath(path);
+            File file = new File(picUrl);
+            if (file.exists()){
+                file.delete();
+            }
+        }catch (Exception e){
+            e.getMessage();
+        }
+
+    }
+    /**
      * 上传商品主图
      * @param main_pic 商品主图
      * @return 图片名称
      */
     @POST("/upload/main")
-    @FILE(dir = "/upload/goods", overwrite = true, allows = {"image/png","image/jpg","image/gif","image/bmp"})
+    @FILE(dir = ConstantsUtils.GOODS_MAIN_PIC, overwrite = true, allows = {"image/png","image/jpg","image/gif","image/bmp"})
     public String mainPic(UploadedFile main_pic){
-        return main_pic.getFileName();
-    }
-    /**
-     * 删除图片
-     * @param path
-     */
-    public void deleteMainPic(String path){
-        String picUrl = GoodsResource.class.getResource(path).getFile();
-        File file = new File(picUrl);
-        if (file.exists()){
-            file.delete();
-        }
+        return this.getRequest().getBaseUri()+ConstantsUtils.GOODS_MAIN_PIC+main_pic.getFileName();
     }
     /**
      * 上传商品详情图片
@@ -211,19 +277,53 @@ public class GoodsResource extends ApiResource {
      * @return 图片名称
      */
     @POST("/upload/detail")
-    @FILE(dir = "/upload/detail", overwrite = true, allows = {"image/png","image/jpg","image/gif","image/bmp"})
-    public String[] detailPic(Map<String,UploadedFile> picMap){
-        String[] fileName = null;
+    @FILE(dir = ConstantsUtils.GOODS_DETAIL_PIC, overwrite = true, allows = {"image/png","image/jpg","image/gif","image/bmp"})
+    public String detailPic(Map<String,UploadedFile> picMap){
+        String baseUri = this.getRequest().getBaseUri()+ConstantsUtils.GOODS_DETAIL_PIC;
+        String fileName = "";
         if(picMap!=null && picMap.size()>0){
-            fileName = new String[picMap.size()];
-            int i = 0;
             for(String key:picMap.keySet()){
                 UploadedFile file = picMap.get(key);
-                fileName[i] = file.getFileName();
-                i++;
+                if("".equals(fileName)){
+                    fileName = baseUri + file.getFileName();
+                }else{
+                    fileName = fileName + "," + file.getFileName();
+                }
             }
         }
         return fileName;
     }
-
+    /**
+     * 商品上下架
+     * @param status 上下架状态 1：上架 0：下架
+     * @param updown_list
+     * @return
+     */
+    @PUT("/updown")
+    public WebResult updown(int status,List<goods_sku> updown_list){
+        try{
+            for(goods_sku sku:updown_list){
+                /*
+                当商品规格id不为空时，表示只修改单个商品规格的上下架信息
+                否则表示修改一个或多个商品的商品规格上下架信息
+                 */
+                if(sku.get("sku_id")!=null){
+                    goods_sku.dao.updateColsBy("status","id=?",status,sku.get("sku_id"));
+                }else{
+                    goods_sku.dao.updateColsBy("status","goods_num=?",status,sku.get("goods_num"));
+                }
+            }
+            if(status==ConstantsUtils.RELEASE_STATUS_ON){
+                return new WebResult(HttpStatus.OK, "商品上架成功");
+            }else{
+                return new WebResult(HttpStatus.EXPECTATION_FAILED, "商品下架成功");
+            }
+        }catch (Exception e){
+            if(status==ConstantsUtils.RELEASE_STATUS_ON){
+                return new WebResult(HttpStatus.OK, "商品上架失败");
+            }else{
+                return new WebResult(HttpStatus.EXPECTATION_FAILED, "商品下架失败");
+            }
+        }
+    }
 }

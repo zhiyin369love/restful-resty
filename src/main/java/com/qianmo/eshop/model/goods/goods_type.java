@@ -26,14 +26,14 @@ public class goods_type extends Model<goods_type> {
         if(parentList!=null && parentList.size()>0){
             for (goods_type type:parentList){
                 GoodsType goodsType = new GoodsType();
-                goodsType.setType_id(Integer.parseInt(type.get("id").toString()));
+                goodsType.setType_id(Long.parseLong(type.get("id").toString()));
                 goodsType.setType_name(type.get("name").toString());
                 List<goods_type> childList = dao.findBy("pid=? and deleted_at is null",type.get("id"));
                 List<GoodsType> typeList = new ArrayList<GoodsType>();
                 if(childList!=null && childList.size()>0){
                     for(goods_type childType:childList){
                         GoodsType childGoodsType = new GoodsType();
-                        childGoodsType.setType_id(Integer.parseInt(childType.get("id").toString()));
+                        childGoodsType.setType_id(Long.parseLong(childType.get("id").toString()));
                         childGoodsType.setType_name(childType.get("name").toString());
                         typeList.add(childGoodsType);
                     }
