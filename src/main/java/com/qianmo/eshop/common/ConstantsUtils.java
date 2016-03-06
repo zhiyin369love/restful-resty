@@ -15,6 +15,16 @@ public class ConstantsUtils {
 	public final static Integer PACKAGE_UNIT = 0;
 	/**********************************************************/
 
+	/**************************数字1是0否**************************/
+	public final static Integer NO = 0;
+	public final static Integer YES = 1;
+
+	public final static Integer ZERO = 0;
+	public final static Integer ONE = 1;
+
+    public final static Integer SIX = 6;
+	/**********************************************************/
+
 	/**************************支付方式**************************/
 	/**支付方式-余额**/
 	public final static Integer ORDER_PAYMENTTYPE_CASH = 0;
