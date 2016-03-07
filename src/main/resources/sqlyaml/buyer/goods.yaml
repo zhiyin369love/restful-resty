@@ -3,3 +3,15 @@ getFieldActivityAll:
   from activity_info a
   left outer join activity_type b on a.activitytypeid = b.id
   where a.fieldid = ?
+
+#获取商品信息
+findGoods:
+  SELECT a.id goods_id,a.name goods_name,a.num goods_num,a.type_id,a.details,a.form_id,a.generic_name,a.ingredient,
+    a.seller_id,a.license_num,a.main_pic_url,a.pic_url_list,a.producer,a.standard FROM goods_info a WHERE a.id=?
+
+#获取商品规格及价格信息
+findGoodsSku:
+  SELECT a.id sku_id,a.name sku_name,a.list_price,b.price
+  FROM goods_sku a
+  INNER JOIN goods_sku_price b ON a.id = b.sku_id
+  WHERE a.goods_num=? AND a.status=1 AND a.deleted_at is null AND b.buyer_id=? AND b.status=1

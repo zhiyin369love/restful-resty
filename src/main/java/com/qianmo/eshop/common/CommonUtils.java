@@ -6,6 +6,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import cn.dreampie.common.http.result.HttpStatus;
 import org.apache.commons.codec.binary.Base64;
 
 
@@ -146,6 +147,45 @@ public final class CommonUtils {
     public static int randomInt(int from, int to) {
         Random r = new Random();
         return from + r.nextInt(to - from);
+    }
+
+    public static HashMap EditreturnCodeMessage(boolean istrue){
+        HashMap result = new HashMap();
+        int code = HttpStatus.NOT_MODIFIED.getCode();
+        String message = "编辑失败";
+        if(istrue){
+            code = HttpStatus.CREATED.getCode();
+            message = "编辑成功";
+        }
+        result.put("code",code);
+        result.put("message",message);
+        return result;
+    }
+
+    public static HashMap AddreturnCodeMessage(boolean istrue){
+        HashMap result = new HashMap();
+        int code = HttpStatus.BAD_REQUEST.getCode();
+        String message = "添加失败";
+        if(istrue){
+            code = HttpStatus.CREATED.getCode();
+            message = "添加成功";
+        }
+        result.put("code",code);
+        result.put("message",message);
+        return result;
+    }
+
+    public static HashMap DelreturnCodeMessage(boolean istrue){
+        HashMap result = new HashMap();
+        int code = HttpStatus.BAD_REQUEST.getCode();
+        String message = "删除失败";
+        if(istrue){
+            code = HttpStatus.CREATED.getCode();
+            message = "删除成功";
+        }
+        result.put("code",code);
+        result.put("message",message);
+        return result;
     }
 
 }

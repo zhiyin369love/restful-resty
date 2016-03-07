@@ -15,6 +15,16 @@ public class ConstantsUtils {
 	public final static Integer PACKAGE_UNIT = 0;
 	/**********************************************************/
 
+	/**************************数字1是0否**************************/
+	public final static Integer NO = 0;
+	public final static Integer YES = 1;
+
+	public final static Integer ZERO = 0;
+	public final static Integer ONE = 1;
+
+    public final static Integer SIX = 6;
+	/**********************************************************/
+
 	/**************************支付方式**************************/
 	/**支付方式-余额**/
 	public final static Integer ORDER_PAYMENTTYPE_CASH = 0;
@@ -91,4 +101,35 @@ public class ConstantsUtils {
 	/**不可购买**/
 	public final static Integer GOODS_SKU_PRICE_BUY_DISABLE = 0;
 	/**********************************************************/
+
+	/***************************自动生成编号类型************************/
+	/**商品编号**/
+	public final static Integer GOODS_NUM_TYPE = 1;
+	/**订单编号**/
+	public final static Integer ORDER_NUM_TYPE = 2;
+	/******************************************************************/
+
+
+	/***********************商品及规格上下架状态**************************/
+	/**上架状态**/
+	public final static Integer RELEASE_STATUS_ON = 1;
+	/**下架状态**/
+	public final static Integer RELEASE_STATUS_OFF = 0;
+	/******************************************************************/
+
+	/**************************图片存储目录*****************************/
+	/**图片存储总目录**/
+	public final static String PIC_DIR = "/upload";
+	/**商品主图存储目录**/
+	public final static String GOODS_MAIN_PIC = "/upload/goods";
+	/**商品详情图片存储目录**/
+	public final static String GOODS_DETAIL_PIC = "/upload/detail";
+	/******************************************************************/
+
+	/****************************分页*****************************/
+	/**默认从第1条开始**/
+	public final static Integer DEFAULT_PAGE_START = 1;
+	/**默认返回10条**/
+	public final static Integer DEFAULT_PAGE_STEP = 10;
+	/*************************************************************/
 }
