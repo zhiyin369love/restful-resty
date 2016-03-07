@@ -7,6 +7,7 @@ import cn.dreampie.orm.transaction.Transaction;
 import cn.dreampie.route.annotation.*;
 import cn.dreampie.route.core.multipart.FILE;
 import cn.dreampie.security.Subject;
+import com.alibaba.fastjson.JSONObject;
 import com.qianmo.eshop.common.CodeUtils;
 import com.qianmo.eshop.common.ConstantsUtils;
 import com.qianmo.eshop.common.YamlRead;
@@ -25,7 +26,13 @@ import java.util.*;
 @API("/goods")
 public class GoodsResource extends ApiResource {
     @GET
-    public HashMap list(String goods_name,int goods_status,int goods_type_id,int page_start,int page_step){
+    public HashMap list(String goods_name,Integer goods_status,Integer category_id,Integer sub_category_id,Integer page_start,Integer page_step){
+        if (page_start==null){
+            page_start = ConstantsUtils.DEFAULT_PAGE_START;
+        }
+        if (page_step==null){
+            page_step = ConstantsUtils.DEFAULT_PAGE_STEP;
+        }
         HashMap resultMap = new HashMap();
 
         return resultMap;
@@ -69,24 +76,24 @@ public class GoodsResource extends ApiResource {
     @Transaction
     public WebResult add(goods_info goods){
         try {
-
-            user_info user = user_info.dao.findById(goods.get("seller_id"));
+            user_info userInfo = user_info.dao.findById(goods.get("seller_id"));
+//            user_info userInfo = (user_info) Subject.getPrincipal().getModel();
             long seller_id = 0;
             //判断添加商品的用户是否为子账号，如果是则获取其父级id
-            if(user!=null){
-                if(Long.parseLong(user.get("pid").toString())==0){
-                    seller_id = Long.parseLong(user.get("id").toString());
+            if(userInfo!=null){
+                if(Long.parseLong(userInfo.get("pid").toString())==0){
+                    seller_id = Long.parseLong(userInfo.get("id").toString());
                 }else{
-                    seller_id = Long.parseLong(user.get("pid").toString());
+                    seller_id = Long.parseLong(userInfo.get("pid").toString());
                 }
             }
             /*
             添加商品基本信息
             */
-            goods_info goodsInfo = goods.get("goods_info");
+            goods_info goodsInfo = goods.get("goods_info",goods_info.class);
             //生成商品编号
             String goodsNum = CodeUtils.code(goodsInfo.get("goods_type_id").toString(),ConstantsUtils.GOODS_NUM_TYPE);
-            goodsInfo.set("areaId",ConstantsUtils.ALL_AREA_ID);
+            goodsInfo.set("area_id",ConstantsUtils.ALL_AREA_ID);
             goodsInfo.set("num",goodsNum);
             goodsInfo.set("type_id",goodsInfo.get("goods_type_id"));
             goodsInfo.set("name",goodsInfo.get("goods_name"));
@@ -96,18 +103,18 @@ public class GoodsResource extends ApiResource {
             /*
             添加商品规格信息
              */
-            List<goods_sku> list = goods.get("goods_sku_list");
+            List<JSONObject> list = goods.get("goods_sku_list");
             List<goods_sku> skuList = new ArrayList<goods_sku>();
             if(list!=null && list.size()>0){
-                for (goods_sku sku:list){
+                for(JSONObject obj : list){
                     goods_sku goodsSku = new goods_sku();
                     goodsSku.set("status",ConstantsUtils.RELEASE_STATUS_OFF);//商品规格状态(0 未上架 1 已上架)
                     goodsSku.set("area_id",ConstantsUtils.ALL_AREA_ID);
                     goodsSku.set("goods_num",goodsNum);
-                    goodsSku.set("amount",sku.get("sku_amount"));
-                    goodsSku.set("name",sku.get("sku_name"));
-                    goodsSku.set("unit_id",sku.get("sku_unit_id"));
-                    goodsSku.set("unit_name",sku.get("sku_unit_name"));
+                    goodsSku.set("amount",obj.get("sku_amount"));
+                    goodsSku.set("name",obj.get("sku_name"));
+                    goodsSku.set("unit_id",obj.get("sku_unit_id"));
+                    goodsSku.set("seller_id",seller_id);
                     skuList.add(goodsSku);
                 }
             }
@@ -126,7 +133,7 @@ public class GoodsResource extends ApiResource {
      */
     @PUT("/:id")
     @Transaction
-    public WebResult update(goods_info goods,long id,String[] delete_pic_url){
+    public WebResult edit(goods_info goods,long id,String delete_pic_url){
         try {
             /*
             修改商品基本信息
@@ -137,8 +144,9 @@ public class GoodsResource extends ApiResource {
             /*
             删除商品图片
              */
-            if(delete_pic_url!=null && delete_pic_url.length>0){
-                for(String delete_pic:delete_pic_url){
+            if(delete_pic_url!=null){
+                String[] deletePic = delete_pic_url.split(",");
+                for(String delete_pic:deletePic){
                     if(delete_pic.indexOf(ConstantsUtils.PIC_DIR)!=-1){
                         deleteMainPic(delete_pic.substring(delete_pic.indexOf(ConstantsUtils.PIC_DIR)));
                     }
@@ -287,7 +295,7 @@ public class GoodsResource extends ApiResource {
                 if("".equals(fileName)){
                     fileName = baseUri + file.getFileName();
                 }else{
-                    fileName = fileName + "," + file.getFileName();
+                    fileName = fileName + "," + baseUri + file.getFileName();
                 }
             }
         }

@@ -1,14 +1,19 @@
 package com.qianmo.eshop.resource.seller;
 
+import cn.dreampie.common.http.result.HttpStatus;
 import cn.dreampie.common.http.result.WebResult;
 import cn.dreampie.orm.page.FullPage;
+import cn.dreampie.orm.transaction.Transaction;
 import cn.dreampie.route.annotation.API;
 import cn.dreampie.route.annotation.GET;
+import cn.dreampie.route.annotation.PUT;
 import com.qianmo.eshop.common.ConstantsUtils;
 import com.qianmo.eshop.common.YamlRead;
+import com.qianmo.eshop.model.goods.goods_sku_price;
 import com.qianmo.eshop.model.user.user_info;
 
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * Created by fxg06 on 2016/3/6.
@@ -46,8 +51,23 @@ public class GoodsSkuPriceResource extends GoodsResource{
         resultMap.put("total_count",userList.getTotalRow());
         return resultMap;
     }
-
-    public WebResult update(){
-        return null;
+    /**
+     * 批量修改商品价格
+     * @param goods_price_list
+     * @return
+     */
+    @PUT("/batch")
+    @Transaction
+    public WebResult edit(List<goods_sku_price> goods_price_list){
+        try{
+            if(goods_price_list!=null && goods_price_list.size()>0){
+                for(goods_sku_price sku_price:goods_price_list){
+                    goods_sku_price.dao.updateColsBy("price,status","id=?",sku_price.get("price"),sku_price.get("price_status"),sku_price.get("sku_price_id"));
+                }
+            }
+            return new WebResult(HttpStatus.OK, "修改商品价格成功");
+        }catch (Exception e){
+            return new WebResult(HttpStatus.EXPECTATION_FAILED, "修改商品价格失败");
+        }
     }
 }
