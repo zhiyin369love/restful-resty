@@ -9,3 +9,25 @@ getTotalPriceBySellerIdStatus:
                             where  b.order_num is not null
                               and b.seller_id = ?
                               and b.status = ?
+
+getAccountPermissionById:
+  SELECT
+  	method,id permission_id,name permission_name,pid,url
+  FROM
+  	sec_permission
+  WHERE
+  	id IN (
+  		SELECT
+  			permission_id
+  		FROM
+  			sec_role_permission
+  		WHERE
+  			role_id = (
+  				SELECT
+  					role_id
+  				FROM
+  					sec_user_role
+  				WHERE
+  					user_id = ?
+  			)
+  	)

@@ -34,7 +34,7 @@ public class UserResource extends ApiResource {
   @POST
   public boolean save(user_info user) {
     String password = user.get("password");
-    user.set("password", DefaultPasswordService.instance().crypto(password));
+    user.set("password", DefaultPasswordService.instance().crypto(password,"123456890"));
     return user.save();
   }
 
