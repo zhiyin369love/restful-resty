@@ -1,5 +1,38 @@
-getFieldActivityAll:
-  select a.id,a.fieldid,a.activitytypeid,a.input,a.inputQuantity,a.intro,a.created_at,b.name activitytype
-  from activity_info a
-  left outer join activity_type b on a.activitytypeid = b.id
-  where a.fieldid = ?
+getFieldOrderIdAll:
+   select id from order_info where num = ?
+getFieldOrderInfoAll:
+  select oi.created_at,oi.id,oi.num,oi.status,oi.pay_status,oi.pay_type_id,oi.total_price,ou.seller_id,ui.name
+    from order_info oi left join order_user ou on oi.num = ou.order_num left join user_info ui on ui.id = ou.seller_id
+    where  oi.id = ?
+
+getFieldBuyerInfoAll:
+   select ou.buyer_id,ui.name
+    from user_info ui left join order_user ou on ui.id = ou.buyer_id
+     left join order_info oi on  ou.order_num = oi.num
+      where oi.num is not null and  oi.id = ?
+
+getFieldBuyerReceiveAll:
+  select bra.name,bra.phone,bra.address
+  from buyer_receive_address bra LEFT JOIN order_user ou on bra.buyer_id = ou.buyer_id LEFT JOIN order_info oi on oi.num = ou.order_num
+  where oi.id = ?
+
+getFirldGoodsInfoAll:
+   select gi.details,gi.form_id,gi.generic_name,gi.id,gi.name,gi.ingredient,gi.license_num,gi.main_pic_url,gi.num,gi.pic_url_list,gi.producer,gi.standard
+     from goods_info gi LEFT JOIN order_goods og on gi.num = og.goods_num LEFT JOIN order_info oi on og.order_num = oi.num where oi.id = ?
+
+getFieldGoodsSkuListAll:
+     select gs.amount,gsp.price,gsp.sku_id,gs.name
+         from goods_sku_price gsp LEFT JOIN  goods_sku gs on gsp.goods_num = gs.goods_num LEFT JOIN goods_info gi on gs.goods_num = gi.id LEFT JOIN order_goods og on gi.num = og.goods_num LEFT JOIN order_info oi on og.order_num = oi.num where oi.id = ?
+getFieldGoodsTypeALL:
+    select gi.name,gi.type_id
+        from goods_info gi LEFT JOIN order_goods og on gi.num = og.goods_num LEFT JOIN order_info oi on og.order_num = oi.num where oi.id = ?
+
+getFirldOrderRemarkAll:
+   select order_remark.created_at, order_remark.details,order_remark.op,order_remark.order_num,order_remark.reason,order_remark.user_id
+   from order_remark
+   LEFT JOIN order_info on order_remark.order_num = order_info.num where order_info.id = ?
+
+getFieldSellerBankAll:
+   select sb.account_address,sb.account_name,sb.account_num,sb.name from seller_bank sb where sb.seller_id = ?
+
+
