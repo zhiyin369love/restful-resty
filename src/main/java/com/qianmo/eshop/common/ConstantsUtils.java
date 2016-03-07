@@ -8,12 +8,7 @@ package com.qianmo.eshop.common;
  *
  */
 public class ConstantsUtils {
-<<<<<<< .mine
 
-
-||||||| .r10
-	
-=======
 	/**************************商品规格单位**************************/
 	/**物理单位**/
 	public final static Integer PHYSICAL_UNIT = 0;
@@ -31,7 +26,6 @@ public class ConstantsUtils {
     public final static Integer SIX = 6;
 	/**********************************************************/
 
->>>>>>> .r26
 	/**************************支付方式**************************/
 	/**支付方式-余额**/
 	public final static Integer ORDER_PAYMENTTYPE_CASH = 0;
@@ -99,7 +93,6 @@ public class ConstantsUtils {
 	/**商品已上架**/
 	public final static Integer GOODS_SELLING = 1;
 	/**********************************************************/
-<<<<<<< .mine
 
 	/**************************买家操作订单标识**************************/
 	/**选择支付方式**/
@@ -131,8 +124,6 @@ public class ConstantsUtils {
 	public final static Integer SELLER_ORDER_OP_BUYER_AGAIN = 5;
 	/**********************************************************/
 
-||||||| .r10
-=======
 
 	/***************************邀请码************************/
 	/**邀请码状态 有效**/
@@ -179,5 +170,4 @@ public class ConstantsUtils {
 	/**默认返回10条**/
 	public final static Integer DEFAULT_PAGE_STEP = 10;
 	/*************************************************************/
->>>>>>> .r26
 }
