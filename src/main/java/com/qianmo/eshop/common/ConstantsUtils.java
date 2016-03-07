@@ -8,11 +8,22 @@ package com.qianmo.eshop.common;
  *
  */
 public class ConstantsUtils {
+
 	/**************************商品规格单位**************************/
 	/**物理单位**/
 	public final static Integer PHYSICAL_UNIT = 0;
 	/**包装单位**/
 	public final static Integer PACKAGE_UNIT = 0;
+	/**********************************************************/
+
+	/**************************数字1是0否**************************/
+	public final static Integer NO = 0;
+	public final static Integer YES = 1;
+
+	public final static Integer ZERO = 0;
+	public final static Integer ONE = 1;
+
+    public final static Integer SIX = 6;
 	/**********************************************************/
 
 	/**************************支付方式**************************/
@@ -27,8 +38,10 @@ public class ConstantsUtils {
 	public final static Integer ORDER_PAYMENT_STATUS_CANCALED = 0;
 	/**支付状态-等待支付**/
 	public final static Integer ORDER_PAYMENT_STATUS_WAITE = 1;
+	/**支付状态-待确认**/
+	public final static Integer ORDER_PAYMENT_STATUS_WAITE_TRUE = 2;
 	/**支付状态-已支付**/
-	public final static Integer ORDER_PAYMENT_STATUS_RECEIVED = 2;
+	public final static Integer ORDER_PAYMENT_STATUS_RECEIVED = 3;      //此项值改为3，原为2
 	/**********************************************************/
 
 	/**************************订单状态**************************/
@@ -41,6 +54,10 @@ public class ConstantsUtils {
 	/**订单状态-已完成**/
 	public final static Integer ORDER_INFO_STATUS_FINISHED = 3;
 	/**********************************************************/
+
+
+
+
 
 	/**************************验证码/邀请码类型**************************/
 	/**注册**/
@@ -76,6 +93,37 @@ public class ConstantsUtils {
 	/**商品已上架**/
 	public final static Integer GOODS_SELLING = 1;
 	/**********************************************************/
+
+	/**************************买家操作订单标识**************************/
+	/**选择支付方式**/
+	public final static Integer ORDER_OP_PAY_TYPE = 0;
+	/**选择银行**/
+	public final static Integer ORDER_OP_BANK = 1;
+	/**我已付款**/
+	public final static Integer ORDER_OP_PAY_STATUS = 2;
+	/**确认收货**/
+	public final static Integer ORDER_OP_PAY_GOODS = 3;
+	/**取消订单**/
+	public final static Integer ORDER_OP_PAY_CELL = 4;
+	/**再买一次**/
+	public final static Integer ORDER_OP_BUYER_AGAIN = 5;
+	/**********************************************************/
+
+	/**************************卖家操作订单标识**************************/
+	/**0收到货款**/
+	public final static Integer SELLER_ORDER_OP_PAY_TYPE = 0;
+	/**1发货**/
+	public final static Integer SELLER_ORDER_OP_FAHUO = 1;
+	/**2取消**/
+	public final static Integer SELLER_ORDER_OP_PAY_STATUS = 2;
+	/**3卖家备注订单**/
+	public final static Integer SELLER_ORDER_OP_PAY_GOODS = 3;
+	/**4同意买家赊账**/
+	public final static Integer SELLER_ORDER_OP_PAY_CELL = 4;
+	/**5不同意买家赊账**/
+	public final static Integer SELLER_ORDER_OP_BUYER_AGAIN = 5;
+	/**********************************************************/
+
 
 	/***************************邀请码************************/
 	/**邀请码状态 有效**/

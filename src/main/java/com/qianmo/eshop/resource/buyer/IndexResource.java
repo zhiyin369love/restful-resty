@@ -115,13 +115,14 @@ public class IndexResource extends ApiResource {
       //String phone = user_info.dao.findById(buyer_id).<String>get("phone");
       //上级经销商
       List<buyer_seller>  sellerlist =  buyer_seller.dao.findBy("buyer_id = ? and status = 0 ", buyer_id);
-      List<JSONObject> resultSellerList = new ArrayList<JSONObject>();
+      List<HashMap> resultSellerList = new ArrayList<HashMap>();
       //循环截取所需的字段
       if(sellerlist != null && sellerlist.size() > 0) {
+        HashMap jsonObject = new HashMap();
         for(buyer_seller sell : sellerlist) {
           buyer_seller tempSeller = new buyer_seller();
           user_info userInfo = user_info.dao.findById(sell.get("seller_id"))==null?new user_info():user_info.dao.findById(sell.get("seller_id"));
-          JSONObject jsonObject = new JSONObject();
+          jsonObject.clear();
           jsonObject.put("seller_id",sell.get("seller_id"));
           jsonObject.put("seller_name",userInfo.get("nickname"));
           jsonObject.put("phone",userInfo.get("phone"));
