@@ -7,11 +7,11 @@ import java.net.URL;
 import java.util.Map;
 
 /**
- * Created by fxg06 on 2016/3/2.
+ * Created by ccq on 2/2/16.
  */
 public class YamlRead {
-    //从yaml文件中
-    // 根据key获取对应的sql语句
+
+    //从yaml文件中根据key获取对应的sql语句
     public static String getSQL(String key,String filename){
         String sql = null;
         try {
@@ -38,5 +38,4 @@ public class YamlRead {
         }
         return url;
     }
-
 }
