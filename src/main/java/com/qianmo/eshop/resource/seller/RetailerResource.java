@@ -125,7 +125,7 @@ public class RetailerResource extends ApiResource {
     public HashMap getRetailerList(String buyer_name, String name, Integer page_start, Integer page_step,String  phone,Long seller_id) {
         HashMap resultMap = new HashMap();
         List<invite_verify_code> inviteVerifyCodes = new ArrayList<invite_verify_code>();
-        List<JSONObject> buyerSellerResultList = new ArrayList<JSONObject>();
+        List<HashMap> buyerSellerResultList = new ArrayList<HashMap>();
         Map pageInfo = new HashMap();
         try {
             if(seller_id != null && seller_id != 0l) {
@@ -192,8 +192,9 @@ public class RetailerResource extends ApiResource {
                     pageInfo.put("total_page",null);
                 }
                 if (inviteVerifyCodes != null && inviteVerifyCodes.size() > 0) {
+                    HashMap userTemp = new HashMap();
                     for(invite_verify_code inviteVerifyCodeTemp : inviteVerifyCodes) {
-                        JSONObject userTemp = new JSONObject();
+                        userTemp.clear();
                         user_info userInfoTemp = new user_info();
                         userTemp.put("is_invited",userInfoTemp.get("is_invited"));
                         //地址
@@ -283,7 +284,7 @@ public class RetailerResource extends ApiResource {
     public HashMap getRetailerPriceList(Long goods_id, Long goos_sku_id,Long id,  Integer page_start, Integer page_step,Integer type) {
         HashMap resultMap = new HashMap();
         List<goods_sku_price> goodsSkuPrices = new ArrayList<goods_sku_price>();
-        List<JSONObject> goodsSkuPriceResultList = new ArrayList<JSONObject>();
+        List<HashMap> goodsSkuPriceResultList = new ArrayList<HashMap>();
         Map pageInfo = new HashMap();
         try {
             if(id != null && id != 0l) {
@@ -344,8 +345,9 @@ public class RetailerResource extends ApiResource {
                     pageInfo.put("total_page",null);
                 }
                 if(goodsSkuPrices != null && goodsSkuPrices.size() >0) {
+                    HashMap temp = new HashMap();
                     for(goods_sku_price goodsSkuPriceTemp : goodsSkuPrices) {
-                        JSONObject temp = new JSONObject();
+                        temp.clear();
                         //商品id
                         long goodsNum = goodsSkuPriceTemp.<Long>get("goods_num");
                         temp.put("goods_id",goodsNum);
