@@ -1,24 +1,18 @@
 package com.qianmo.eshop.resource.seller;
 
-import cn.dreampie.common.http.result.HttpStatus;
-import cn.dreampie.common.http.result.WebResult;
+
 import cn.dreampie.route.annotation.API;
 import cn.dreampie.route.annotation.GET;
-import cn.dreampie.route.annotation.POST;
 import com.qianmo.eshop.common.ConstantsUtils;
-import com.qianmo.eshop.model.buyer.buyer_seller;
 import com.qianmo.eshop.model.cart.cart;
 import com.qianmo.eshop.model.credit.credit;
 import com.qianmo.eshop.model.goods.goods_info;
 import com.qianmo.eshop.model.order.order_info;
-import com.qianmo.eshop.model.user.invite_verify_code;
 import com.qianmo.eshop.model.user.user_info;
 import com.qianmo.eshop.resource.z_common.ApiResource;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 
 /**
@@ -63,7 +57,7 @@ public class IndexResource extends ApiResource {
       double totalPrice = order_info.dao.findFirst("select sum(total_price) cn from order_info where seller_id = ?  and status != ? and date(created_at) = date(sysdate())", seller_id, ConstantsUtils.ORDER_INFO_STATUS_CACEL).<Long>get("cn");
       //待发货订单数
       long waitSendOrders = getOrderInfoBySellingStatus(seller_id, ConstantsUtils.ORDER_INFO_STATUS_WAIT_RECEIVE);
-      //待付款订单数
+      //待收款订单数
       long waitPayOrders = getOrderInfoBySellingStatus(seller_id, ConstantsUtils.ORDER_INFO_STATUS_CREATED);
       //待出售商品
       long waitSellGoods = getGoodsBySellIdStatus(seller_id,ConstantsUtils.GOODS_WAIT_SELL);
