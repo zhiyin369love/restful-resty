@@ -33,7 +33,6 @@ public class GoodsSkuPriceResource extends GoodsResource{
     @GET
     public HashMap price(long goods_num,long sku_id,int sku_price_status,String name,Integer page_start,Integer page_step){
         HashMap resultMap = new HashMap();
-
         if(page_start==null)
             page_start = ConstantsUtils.DEFAULT_PAGE_START;//默认从第1条开始
         if(page_step==null)

@@ -8,18 +8,20 @@ deleteGoodsSku:
 
 #获取商品数量
 findGoodsCount:
-  SELECT count(id) FROM goods_info WHERE type_id=? AND seller_id=? AND deleted_at is null
+  SELECT count(id) FROM goods_info WHERE category_id=? AND seller_id=? AND deleted_at is null
 
 #获取商品剂型
 findGoodsForm:
-  SELECT id form_id,name form_name FROM goods_form WHERE type_id=? AND deleted_at is null
+  SELECT id form_id,name form_name FROM goods_form WHERE category_id=? AND deleted_at is null
 
 #获取商品信息
 findGoods:
-  SELECT a.id goods_id,a.name goods_name,a.num goods_num,a.type_id,a.details,a.form_id,a.generic_name,a.ingredient,
-    a.license_num,a.main_pic_url,a.pic_url_list,a.producer,a.standard,b.parent_type_name,b.child_type_name
-    FROM goods_info a,(SELECT c.name child_type_name,d.name parent_type_name,c.id FROM goods_type c
-    INNER JOIN goods_type d ON c.pid = d.id) b WHERE a.type_id=b.id AND a.id=?
+  SELECT a.id goods_id,a.name goods_name,a.num goods_num,a.category_id,a.details,a.form_id,a.generic_name,a.ingredient,
+    a.license_num,a.main_pic_url,a.pic_url_list,a.producer,a.standard,b.category_name,b.parent_category_name
+    FROM goods_info a,
+    (SELECT c.name category_name,d.name parent_category_name,c.id FROM goods_category c
+    INNER JOIN goods_category d ON c.pid = d.id) b
+    WHERE a.category_id=b.id AND a.id=?
 
 #获取商品规格信息
 findGoodsSku:
@@ -31,7 +33,16 @@ findUserANdPrice:
     b.id sku_id,b.name sku_name,d.price,d.status sku_price_status FROM user_info a
     INNER JOIN buyer_seller c on a.id = c.buyer_id
     INNER JOIN goods_sku b on b.seller_id = c.seller_id
-    INNER JOIN goods_sku_price d on d.sku_id = b.id
+    LEFT JOIN goods_sku_price d on d.sku_id = b.id
     WHERE b.goods_num = ? AND b.id = ? AND d.status = ?
+
+#获取经销商的商品信息
+findGoodsInfo:
+  SELECT a.id goods_id,a.num goods_num,a.main_pic_url,a.name goods_name,a.producer,
+    b.id sku_id,b.name sku_name,b.release_date,b.status,c.goods_sku_count seller_count
+    FROM goods_info a
+    INNER JOIN goods_sku b on a.num = b.goods_num
+    LEFT JOIN order_goods c on b.id = c.sku_id
+    WHERE a.seller_id = ? AND a.deleted_at is null AND b.deleted_at is null
 
 
