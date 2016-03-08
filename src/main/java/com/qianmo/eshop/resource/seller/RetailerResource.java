@@ -142,26 +142,26 @@ public class RetailerResource extends ApiResource {
                         "ON a.phone = b.phone " +
                         "WHERE b.phone IS NOT NULL AND b.user_id = ? AND b.type  =? ";
                 if (!StringUtils.isEmpty(buyer_name) && !StringUtils.isEmpty(name) && !StringUtils.isEmpty(phone)) {
-                    sql += " and a.nickname = ? and a.name = ? and a.phone = ?";
-                    inviteCodeList = invite_verify_code.dao.fullPaginate(pageNumber, page_step, sql, seller_id, ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE, buyer_name, name, phone);
+                    sql += " and a.nickname like ? and a.name like ? and a.phone like ?";
+                    inviteCodeList = invite_verify_code.dao.fullPaginate(pageNumber, page_step, sql, seller_id, ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE, "%"+ buyer_name +"%","%"+ name +"%", "%"+phone +"%");
                 } else if (!StringUtils.isEmpty(buyer_name) && !StringUtils.isEmpty(name)) {
-                    sql += " and a.nickname = ? and a.name = ? ";
-                    inviteCodeList = invite_verify_code.dao.fullPaginate(pageNumber, page_step, sql, seller_id, ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE, buyer_name, name);
+                    sql += " and a.nickname like ? and a.name like ? ";
+                    inviteCodeList = invite_verify_code.dao.fullPaginate(pageNumber, page_step, sql, seller_id, ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE, "%"+ buyer_name +"%", "%"+ name +"%");
                 } else if (!StringUtils.isEmpty(buyer_name) && !StringUtils.isEmpty(phone)) {
-                    sql += " and a.nickname = ? and a.phone = ? ";
-                    inviteCodeList = invite_verify_code.dao.fullPaginate(pageNumber, page_step, sql, seller_id, ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE, buyer_name, phone);
+                    sql += " and a.nickname like ? and a.phone like ? ";
+                    inviteCodeList = invite_verify_code.dao.fullPaginate(pageNumber, page_step, sql, seller_id, ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE, "%"+ buyer_name +"%", "%"+phone +"%");
                 } else if (!StringUtils.isEmpty(name) && !StringUtils.isEmpty(phone)) {
-                    sql += " and a.name = ? and a.phone = ? ";
-                    inviteCodeList = invite_verify_code.dao.fullPaginate(pageNumber, page_step, sql, seller_id, ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE, name, phone);
+                    sql += " and a.name like ? and a.phone like ? ";
+                    inviteCodeList = invite_verify_code.dao.fullPaginate(pageNumber, page_step, sql, seller_id, ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE, "%"+phone +"%", "%"+phone +"%");
                 } else if (!StringUtils.isEmpty(buyer_name)) {
-                    sql += " and a.nickname = ?  ";
-                    inviteCodeList = invite_verify_code.dao.fullPaginate(pageNumber, page_step, sql, seller_id, ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE, buyer_name);
+                    sql += " and a.nickname like ?  ";
+                    inviteCodeList = invite_verify_code.dao.fullPaginate(pageNumber, page_step, sql, seller_id, ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE, "%"+ buyer_name +"%");
                 } else if (!StringUtils.isEmpty(name)) {
-                    sql += " and a.name = ?  ";
-                    inviteCodeList = invite_verify_code.dao.fullPaginate(pageNumber, page_step, sql, seller_id, ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE, name);
+                    sql += " and a.name like ?  ";
+                    inviteCodeList = invite_verify_code.dao.fullPaginate(pageNumber, page_step, sql, seller_id, ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE,"%"+ name +"%");
                 } else if (!StringUtils.isEmpty(phone)) {
-                    sql += " and a.phone = ?  ";
-                    inviteCodeList = invite_verify_code.dao.fullPaginate(pageNumber, page_step, sql, seller_id, ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE, phone);
+                    sql += " and a.phone like ?  ";
+                    inviteCodeList = invite_verify_code.dao.fullPaginate(pageNumber, page_step, sql, seller_id, ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE,"%"+ phone +"%");
                 } else {
                     inviteCodeList = invite_verify_code.dao.fullPaginate(pageNumber, page_step, sql, seller_id, ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE);
                 }
@@ -422,17 +422,17 @@ public class RetailerResource extends ApiResource {
             String sql = "SELECT COUNT(*) cn, 0 FROM goods_sku_price a LEFT JOIN goods_info b" +
                     "ON a.goods_num = b.num  where a.buyer_id = ? and b.seller_id = ? and a.status = ? ";
             if (goods_num != null && goods_num != 0 && !StringUtils.isEmpty(goods_name)) {
-                sql += " and a.goods_num = ? and b.name = ? ";
-                couldBuy = getCountByGoods(sql, buyer_id, seller_id, ConstantsUtils.GOODS_SKU_PRICE_BUY_ENBLE, goods_num, goods_name);
-                couldNotBuy = getCountByGoods(sql, buyer_id, seller_id, ConstantsUtils.GOODS_SKU_PRICE_BUY_DISABLE, goods_num, goods_name);
+                sql += " and a.goods_num like ? and b.name like ? ";
+                couldBuy = getCountByGoods(sql, buyer_id, seller_id, ConstantsUtils.GOODS_SKU_PRICE_BUY_ENBLE, "%"+ goods_num +"%", "%"+goods_name+"%");
+                couldNotBuy = getCountByGoods(sql, buyer_id, seller_id, ConstantsUtils.GOODS_SKU_PRICE_BUY_DISABLE, "%"+ goods_num +"%", "%"+goods_name+"%");
             } else if (goods_num != null && goods_num != 0) {
-                sql += " and a.goods_num = ?  ";
-                couldBuy = getCountByGoods(sql, buyer_id, seller_id, ConstantsUtils.GOODS_SKU_PRICE_BUY_ENBLE, goods_num);
-                couldNotBuy = getCountByGoods(sql, buyer_id, seller_id, ConstantsUtils.GOODS_SKU_PRICE_BUY_DISABLE, goods_num);
+                sql += " and a.goods_num like ?  ";
+                couldBuy = getCountByGoods(sql, buyer_id, seller_id, ConstantsUtils.GOODS_SKU_PRICE_BUY_ENBLE, "%"+ goods_num +"%");
+                couldNotBuy = getCountByGoods(sql, buyer_id, seller_id, ConstantsUtils.GOODS_SKU_PRICE_BUY_DISABLE, "%"+ goods_num +"%");
             } else if (!StringUtils.isEmpty(goods_name)) {
-                sql += " and b.name = ?  ";
-                couldBuy = getCountByGoods(sql, buyer_id, seller_id, ConstantsUtils.GOODS_SKU_PRICE_BUY_ENBLE, goods_name);
-                couldNotBuy = getCountByGoods(sql, buyer_id, seller_id, ConstantsUtils.GOODS_SKU_PRICE_BUY_DISABLE, goods_name);
+                sql += " and b.name like ?  ";
+                couldBuy = getCountByGoods(sql, buyer_id, seller_id, ConstantsUtils.GOODS_SKU_PRICE_BUY_ENBLE, "%"+goods_name+"%");
+                couldNotBuy = getCountByGoods(sql, buyer_id, seller_id, ConstantsUtils.GOODS_SKU_PRICE_BUY_DISABLE, "%"+goods_name+"%");
             } else {
                 couldBuy = getCountByGoods(sql, buyer_id, seller_id, ConstantsUtils.GOODS_SKU_PRICE_BUY_ENBLE);
                 couldNotBuy = getCountByGoods(sql, buyer_id, seller_id, ConstantsUtils.GOODS_SKU_PRICE_BUY_DISABLE);
