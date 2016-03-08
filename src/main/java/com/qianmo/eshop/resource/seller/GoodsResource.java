@@ -28,6 +28,16 @@ import java.util.*;
  */
 @API("/goods")
 public class GoodsResource extends SellerResource {
+    /**
+     * 获取商品列表
+     * @param goods_name 商品名称
+     * @param goods_status 商品上下架状态
+     * @param category_id
+     * @param sub_category_id
+     * @param page_start
+     * @param page_step
+     * @return
+     */
     @GET
     public HashMap list(String goods_name,Integer goods_status,Integer category_id,Integer sub_category_id,Integer page_start,Integer page_step){
         user_info userInfo = (user_info) Subject.getPrincipal().getModel();
@@ -93,8 +103,8 @@ public class GoodsResource extends SellerResource {
                     goodsSku.setSku_id(Long.parseLong(goodsInfo.get("sku_id").toString()));
                     goodsSku.setSku_name(goodsInfo.get("sku_name").toString());
                     goodsSku.setStatus(Integer.parseInt(goodsInfo.get("status").toString()));
-                    if(goodsInfo.get("price")!=null){
-                        goodsSku.setPrice(Double.parseDouble(goodsInfo.get("price").toString()));
+                    if(goodsInfo.get("list_price")!=null){
+                        goodsSku.setPrice(Double.parseDouble(goodsInfo.get("list_price").toString()));
                     }
                     if(goodsInfo.get("release_date")!=null){
                         goodsSku.setRelease_date(goodsInfo.get("release_date").toString());
@@ -422,4 +432,5 @@ public class GoodsResource extends SellerResource {
             }
         }
     }
+
 }

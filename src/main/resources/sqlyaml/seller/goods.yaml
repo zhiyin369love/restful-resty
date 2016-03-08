@@ -8,7 +8,7 @@ deleteGoodsSku:
 
 #获取商品数量
 findGoodsCount:
-  SELECT count(id) FROM goods_info WHERE category_id=? AND seller_id=? AND deleted_at is null
+  SELECT count(id) count FROM goods_info WHERE category_id=? AND seller_id=? AND deleted_at is null
 
 #获取商品剂型
 findGoodsForm:
@@ -28,9 +28,10 @@ findGoodsSku:
   SELECT id sku_id,name sku_name FROM goods_sku WHERE goods_num = ? AND deleted_at is null
 
 #获取经销商下的零售商的基本信息和价格信息
-findUserANdPrice:
+findUserAndPrice:
   SELECT a.id buyer_id,a.account,a.nickname,CONCAT(a.province_name,a.city_name,a.county_name,a.town_name,a.address) buyer_address,
-    b.id sku_id,b.name sku_name,d.price,d.status sku_price_status FROM user_info a
+    b.id sku_id,b.name sku_name,IFNULL(d.price,b.list_price) price,d.status sku_price_status
+    FROM user_info a
     INNER JOIN buyer_seller c on a.id = c.buyer_id
     INNER JOIN goods_sku b on b.seller_id = c.seller_id
     LEFT JOIN goods_sku_price d on d.sku_id = b.id
@@ -39,10 +40,14 @@ findUserANdPrice:
 #获取经销商的商品信息
 findGoodsInfo:
   SELECT a.id goods_id,a.num goods_num,a.main_pic_url,a.name goods_name,a.producer,
-    b.id sku_id,b.name sku_name,b.release_date,b.status,c.goods_sku_count seller_count
+    b.id sku_id,b.name sku_name,b.release_date,b.status,b.list_price,c.goods_sku_count seller_count
     FROM goods_info a
     INNER JOIN goods_sku b on a.num = b.goods_num
     LEFT JOIN order_goods c on b.id = c.sku_id
     WHERE a.seller_id = ? AND a.deleted_at is null AND b.deleted_at is null
+
+#获取经销商下单个商品不可购买的所有用户总数
+findPriceCount:
+  SELECT count(id) count FROM goods_sku_price WHERE status = 0 AND sku_id = ? AND seller_id = ?
 
 

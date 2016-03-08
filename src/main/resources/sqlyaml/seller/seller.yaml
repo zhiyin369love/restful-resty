@@ -31,3 +31,7 @@ getAccountPermissionById:
   					user_id = ?
   			)
   	)
+
+#查询经销商下所有零售商总数
+findAllUserCount:
+  SELECT count(id) count FROM buyer_seller WHERE seller_id = ? AND deleted_at is null
