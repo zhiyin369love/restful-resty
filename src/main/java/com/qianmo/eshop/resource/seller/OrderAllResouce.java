@@ -32,45 +32,47 @@ import java.util.*;
 public class OrderAllResouce extends SellerResource {
 
     @GET
-    public HashMap getList(String buyer_name,String date_range,Integer id,Integer order_status,Integer page_num,Integer page_size,Integer seller_id,Integer sort_col,String sort_rule) {
+    public HashMap getList(String buyer_name_num,String date_range,Integer order_status,Integer page_start,Integer page_step,Integer seller_id,Integer sort_col,String sort_rule) {
 
-        HashMap result = new HashMap();
 
-        String sql3 = YamlRead.getSQL("getFieldOrderInfoAll","seller/order");
-        String sql4 = YamlRead.getSQL("getFirldOrderRemarkAll","seller/order");
 
-        //商品信息
-        HashMap result2 =  new HashMap();
-        /*String sql2_1 = YamlRead.getSQL("getFirldGoodsInfoAll","seller/order");
-        String sql2_2 = YamlRead.getSQL("getFieldGoodsSkuListAll","seller/order");
-        String sql2_3 = YamlRead.getSQL("getFieldGoodsTypeALL","seller/order");
-        List<goods_info>  goods_infoList =  goods_info.dao.find(sql2_1,id);
-        result2.put("goods_info", goods_info.dao.find(sql2_1,id));*/
 
-        OrderResource resource = new OrderResource();
-        List<HashMap> resultMap = resource.getOrderHashMaps(id);
-        //用户信息
-        HashMap result3 =  new HashMap();
-        String sql1_1 = YamlRead.getSQL("getFieldBuyerInfoAll","seller/order");
-        String sql1_2 = YamlRead.getSQL("getFieldBuyerReceiveAll","seller/order");
-        order_user o = new order_user();
-        if(order_user.dao.find(sql1_1,id)!=null && order_user.dao.find(sql1_1,id).size()>0){
-            o = order_user.dao.find(sql1_1,id).get(0);
+
+
+
+
+        //判断buyer_name_num是订单号还是商家名称
+        if(buyer_name_num != null){
+            boolean boo = buyer_name_num.matches("[0-9]+");
+            if (boo == true){
+                System.out.println("该字符串是订单号");
+                //去调用订单详情
+                OrderResource orderresource = new OrderResource();
+                orderresource.getList(Integer.parseInt(buyer_name_num));
+            }else {
+                System.out.println("该字符串是买家名称");
+                String order_user_buyer_sql = YamlRead.getSQL("getFirldOrderUserBuyerAll","seller/order");
+                List<order_user>  order_user_buyer_List =  order_user.dao.find(order_user_buyer_sql,buyer_name_num);
+                for(order_user or_us_list:order_user_buyer_List){
+                    long id = (Long)((JSONObject)or_us_list.get("order_user")).get("id");
+                    //再次调用单个订单详情获取这个买家的所以订单
+                    OrderResource orderresource = new OrderResource();
+                    orderresource.getList(Integer.parseInt(buyer_name_num));
+                }
+
+            }
         }
-        result3.put("buyer_id",o.get("buyer_id"));
-        result3.put("name",o.get("name"));
-        result3.put("buyer_receive", buyer_receive_address.dao.find(sql1_2,id));
+        //
+        HashMap resulfinal = new HashMap();
+        //获取所以订单
+        List<HashMap> tempResult = getHashMaps(order_status, seller_id);
+        //分页
+        FullPage<order_user> inviteCodeList  =  order_user.dao.fullPaginateBy(page_start/page_step + 1,page_step,"page_start = ? and page_step = ?",seller_id, ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE);
+        HashMap count =  new HashMap();
 
-        result.put("buyer_info",result3);
-        result.put("goods_list",resultMap);
 
-        if ( order_status != null){
-            sql3 = sql3 + " and oi.status = ?";
-            result.put("order_info",order_info.dao.find(sql3,id,order_status));
-        }else{
-            result.put("order_info",order_info.dao.find(sql3,id));
-        }
-        result.put("order_remark_list", order_remark.dao.find(sql4,id));
+        resulfinal.put("order_list",tempResult);
+        resulfinal.put("total_count",inviteCodeList.getTotalRow());  //3
 
         String sqlcount = YamlRead.getSQL("getFieldOrderCountAll","seller/order");
 
@@ -81,10 +83,52 @@ public class OrderAllResouce extends SellerResource {
         HashMap count2 = new HashMap();
         count2.put("count",orderNum);
         count2.put("total_price",totalPrice);
-        result.put("order_total",count2);
-        return result;
+        resulfinal.put("order_total",count2);  //4
+
+        return resulfinal;
     }
 
+    private List<HashMap> getHashMaps(Integer order_status, Integer seller_id) {
+        HashMap result = new HashMap();
+        String sql3 = YamlRead.getSQL("getFieldOrderInfoAll","seller/order");
+        String sql4 = YamlRead.getSQL("getFirldOrderRemarkAll","seller/order");
+
+        List<HashMap> tempResult = new LinkedList<HashMap>();
+        String order_user_sql = YamlRead.getSQL("getFirldOrderUserAll","seller/order");
+        List<order_user>  order_userList =  order_user.dao.find(order_user_sql,seller_id);
+        for (order_user or_numlist : order_userList)
+        {
+            long order_numlist = (Long)((JSONObject)or_numlist.get("order_user")).get("order_num");
+            //商品信息
+            HashMap result2 =  new HashMap();
+            OrderResource resource = new OrderResource();
+            List<HashMap> resultMap = resource.getOrderHashMaps(order_numlist);
+            //用户信息
+            HashMap result3 =  new HashMap();
+            String sql1_1 = YamlRead.getSQL("getFieldBuyerInfoAll","seller/order");
+            String sql1_2 = YamlRead.getSQL("getFieldBuyerReceiveAll","seller/order");
+            order_user o = new order_user();
+            if(order_user.dao.find(sql1_1,order_numlist)!=null && order_user.dao.find(sql1_1,order_numlist).size()>0){
+                o = order_user.dao.find(sql1_1,order_numlist).get(0);
+            }
+            result3.put("buyer_id",o.get("buyer_id"));
+            result3.put("name",o.get("name"));
+            result3.put("buyer_receive", buyer_receive_address.dao.find(sql1_2,order_numlist));
+
+            result.put("buyer_info",result3);     //0
+            result.put("goods_list",resultMap);
+
+            if ( order_status != null){
+                sql3 = sql3 + " and oi.status = ?";
+                result.put("order_info", order_info.dao.find(sql3,order_numlist,order_status));
+            }else{
+                result.put("order_info",order_info.dao.find(sql3,order_numlist));  //1
+            }
+            result.put("order_remark_list", order_remark.dao.find(sql4,order_numlist));  //2
+            tempResult.add(result);
+        }
+        return tempResult;
+    }
 
 
 }
