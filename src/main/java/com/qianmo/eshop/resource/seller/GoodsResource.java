@@ -3,11 +3,14 @@ package com.qianmo.eshop.resource.seller;
 import cn.dreampie.common.http.UploadedFile;
 import cn.dreampie.common.http.result.HttpStatus;
 import cn.dreampie.common.http.result.WebResult;
+import cn.dreampie.orm.page.FullPage;
 import cn.dreampie.orm.transaction.Transaction;
 import cn.dreampie.route.annotation.*;
 import cn.dreampie.route.core.multipart.FILE;
 import cn.dreampie.security.Subject;
 import com.alibaba.fastjson.JSONObject;
+import com.qianmo.eshop.bean.goods.GoodsInfo;
+import com.qianmo.eshop.bean.goods.GoodsSku;
 import com.qianmo.eshop.common.CodeUtils;
 import com.qianmo.eshop.common.ConstantsUtils;
 import com.qianmo.eshop.common.YamlRead;
@@ -27,6 +30,19 @@ import java.util.*;
 public class GoodsResource extends SellerResource {
     @GET
     public HashMap list(String goods_name,Integer goods_status,Integer category_id,Integer sub_category_id,Integer page_start,Integer page_step){
+        user_info userInfo = (user_info) Subject.getPrincipal().getModel();
+        long seller_id = 0;
+        //判断登录用户是否为子账号，如果是则获取其父级id
+        if(userInfo!=null){
+            if(Long.parseLong(userInfo.get("pid").toString())==0){
+                seller_id = Long.parseLong(userInfo.get("id").toString());
+            }else{
+                seller_id = Long.parseLong(userInfo.get("pid").toString());
+            }
+        }
+        /*
+        判断是否有分页信息，如果没有，给定默认值
+         */
         if (page_start==null){
             page_start = ConstantsUtils.DEFAULT_PAGE_START;
         }
@@ -34,7 +50,83 @@ public class GoodsResource extends SellerResource {
             page_step = ConstantsUtils.DEFAULT_PAGE_STEP;
         }
         HashMap resultMap = new HashMap();
+        String sql = YamlRead.getSQL("findGoodsInfo","seller/goods");
+        /*
+        判断是根据一级分类查商品还是二级分类查商品
+         */
+        if(sub_category_id!=null && sub_category_id>0){
+            sql = sql + " AND a.category_id="+sub_category_id;
+        }else{
+            sql = sql + " AND a.category_id in (SELECT id from goods_category where pid="+category_id+")";
+        }
+        /*
+        判断是否根据商品上下架状态查商品
+         */
+        if (goods_status!=null){
+            sql = sql + " AND b.status="+goods_status;
+        }
+        /*
+        判断是否根据商品名称模糊搜索
+         */
+        if (goods_name!=null && !"".equals(goods_name)){
+            sql = sql + " AND a.name like '%"+goods_name+"%'";
+        }
+        HashMap<Long,GoodsInfo> map = new HashMap<Long, GoodsInfo>();
+        FullPage<goods_info> list = goods_info.dao.fullPaginate(page_start/page_step + 1,page_step,sql,seller_id);
+        if (list!=null && list.getTotalRow()>0){
+            for(goods_info goodsInfo : list.getList()){
+                GoodsInfo goods = map.get(Long.parseLong(goodsInfo.get("goods_id").toString()));
+                if (goods == null){
+                    goods = new GoodsInfo();
+                    goods.setGoods_id(Long.parseLong(goodsInfo.get("goods_id").toString()));
+                    goods.setGoods_name(goodsInfo.get("goods_name").toString());
+                    goods.setGoods_num(Long.parseLong(goodsInfo.get("goods_id").toString()));
+                    goods.setGeneric_name(goodsInfo.get("generic_name").toString());
+                    //判断是否有主图
+                    if(goodsInfo.get("main_pic_url")!=null){
+                        goods.setMain_pic_url(goodsInfo.get("main_pic_url").toString());
+                    }
+                    goods.setProducer(goodsInfo.get("producer").toString());
 
+                    List<GoodsSku> skuList = new ArrayList<GoodsSku>();
+                    GoodsSku goodsSku = new GoodsSku();
+                    goodsSku.setSku_id(Long.parseLong(goodsInfo.get("sku_id").toString()));
+                    goodsSku.setSku_name(goodsInfo.get("sku_name").toString());
+                    goodsSku.setStatus(Integer.parseInt(goodsInfo.get("status").toString()));
+                    if(goodsInfo.get("price")!=null){
+                        goodsSku.setPrice(Double.parseDouble(goodsInfo.get("price").toString()));
+                    }
+                    if(goodsInfo.get("release_date")!=null){
+                        goodsSku.setRelease_date(goodsInfo.get("release_date").toString());
+                    }
+                    skuList.add(goodsSku);
+                    goods.setSkuList(skuList);
+                }else{
+                    List<GoodsSku> skuList = (List)goods.getSkuList();
+                    GoodsSku goodsSku = new GoodsSku();
+                    goodsSku.setSku_id(Long.parseLong(goodsInfo.get("sku_id").toString()));
+                    goodsSku.setSku_name(goodsInfo.get("sku_name").toString());
+                    goodsSku.setStatus(Integer.parseInt(goodsInfo.get("status").toString()));
+                    if(goodsInfo.get("price")!=null){
+                        goodsSku.setPrice(Double.parseDouble(goodsInfo.get("price").toString()));
+                    }
+                    if(goodsInfo.get("release_date")!=null){
+                        goodsSku.setRelease_date(goodsInfo.get("release_date").toString());
+                    }
+                    skuList.add(goodsSku);
+                    goods.setSkuList(skuList);
+                }
+                map.put(goods.getGoods_id(),goods);
+            }
+        }
+        List<GoodsInfo> goodsInfoList = new ArrayList<GoodsInfo>();
+        if (map!=null && map.size()>0){
+            for(Long goodsId:map.keySet()){
+                goodsInfoList.add(map.get(goodsId));
+            }
+        }
+        resultMap.put("goods_list",goodsInfoList);
+        resultMap.put("total_count",goodsInfoList.size());
         return resultMap;
     }
 
@@ -49,7 +141,9 @@ public class GoodsResource extends SellerResource {
         HashMap resultMap = new HashMap();
         goods_info goodsInfo = goods_info.dao.findFirst(YamlRead.getSQL("findGoods","seller/goods"),id);
         long seller_id = 0;
-        //判断当前登录用户是否为子账号，如果是则获取其父级id
+        /*
+        判断当前登录用户是否为子账号，如果是则获取其父级id
+         */
         if(userInfo!=null){
             if(Long.parseLong(userInfo.get("pid").toString())==0){
                 seller_id = Long.parseLong(userInfo.get("id").toString());
@@ -75,55 +169,49 @@ public class GoodsResource extends SellerResource {
     @POST
     @Transaction
     public WebResult add(goods_info goods){
-        try {
-            user_info userInfo = user_info.dao.findById(goods.get("seller_id"));
-//            user_info userInfo = (user_info) Subject.getPrincipal().getModel();
-            long seller_id = 0;
-            //判断添加商品的用户是否为子账号，如果是则获取其父级id
-            if(userInfo!=null){
-                if(Long.parseLong(userInfo.get("pid").toString())==0){
-                    seller_id = Long.parseLong(userInfo.get("id").toString());
-                }else{
-                    seller_id = Long.parseLong(userInfo.get("pid").toString());
-                }
+        user_info userInfo = (user_info) Subject.getPrincipal().getModel();
+        long seller_id = 0;
+        //判断添加商品的用户是否为子账号，如果是则获取其父级id
+        if(userInfo!=null){
+            if(Long.parseLong(userInfo.get("pid").toString())==0){
+                seller_id = Long.parseLong(userInfo.get("id").toString());
+            }else{
+                seller_id = Long.parseLong(userInfo.get("pid").toString());
             }
-            /*
-            添加商品基本信息
-            */
-            goods_info goodsInfo = goods.get("goods_info",goods_info.class);
-            //生成商品编号
-            String goodsNum = CodeUtils.code(goodsInfo.get("goods_type_id").toString(),ConstantsUtils.GOODS_NUM_TYPE);
-            goodsInfo.set("area_id",ConstantsUtils.ALL_AREA_ID);
-            goodsInfo.set("num",goodsNum);
-            goodsInfo.set("type_id",goodsInfo.get("goods_type_id"));
-            goodsInfo.set("name",goodsInfo.get("goods_name"));
-            goodsInfo.set("seller_id",seller_id);
-            goodsInfo.set("status",ConstantsUtils.RELEASE_STATUS_OFF);//商品状态(0 未上架 1 已上架)
-            goodsInfo.save();
-            /*
-            添加商品规格信息
-             */
-            List<JSONObject> list = goods.get("goods_sku_list");
-            List<goods_sku> skuList = new ArrayList<goods_sku>();
-            if(list!=null && list.size()>0){
-                for(JSONObject obj : list){
-                    goods_sku goodsSku = new goods_sku();
-                    goodsSku.set("status",ConstantsUtils.RELEASE_STATUS_OFF);//商品规格状态(0 未上架 1 已上架)
-                    goodsSku.set("area_id",ConstantsUtils.ALL_AREA_ID);
-                    goodsSku.set("goods_num",goodsNum);
-                    goodsSku.set("amount",obj.get("sku_amount"));
-                    goodsSku.set("name",obj.get("sku_name"));
-                    goodsSku.set("unit_id",obj.get("sku_unit_id"));
-                    goodsSku.set("seller_id",seller_id);
-                    skuList.add(goodsSku);
-                }
-            }
-            goods_sku.dao.save(skuList);
-            return new WebResult(HttpStatus.OK, "添加商品成功");
-        } catch (Exception e) {
-            //异常情况，按理说需要记录日志，也可考虑做统一的日志拦截 TODO
-            return new WebResult(HttpStatus.EXPECTATION_FAILED, "添加商品失败");
         }
+        /*
+        添加商品基本信息
+        */
+        goods_info goodsInfo = goods.get("goods_info",goods_info.class);
+        //生成商品编号
+        String goodsNum = CodeUtils.code(goodsInfo.get("category_id").toString(),ConstantsUtils.GOODS_NUM_TYPE);
+        goodsInfo.set("area_id",ConstantsUtils.ALL_AREA_ID);
+        goodsInfo.set("num",goodsNum);
+        goodsInfo.set("category_id",goodsInfo.get("category_id"));
+        goodsInfo.set("name",goodsInfo.get("goods_name"));
+        goodsInfo.set("seller_id",seller_id);
+        goodsInfo.set("status",ConstantsUtils.RELEASE_STATUS_OFF);//商品状态(0 未上架 1 已上架)
+        goodsInfo.save();
+        /*
+        添加商品规格信息
+         */
+        List<JSONObject> list = goods.get("goods_sku_list");
+        List<goods_sku> skuList = new ArrayList<goods_sku>();
+        if(list!=null && list.size()>0){
+            for(JSONObject obj : list){
+                goods_sku goodsSku = new goods_sku();
+                goodsSku.set("status",ConstantsUtils.RELEASE_STATUS_OFF);//商品规格状态(0 未上架 1 已上架)
+                goodsSku.set("area_id",ConstantsUtils.ALL_AREA_ID);
+                goodsSku.set("goods_num",goodsNum);
+                goodsSku.set("amount",obj.get("sku_amount"));
+                goodsSku.set("name",obj.get("sku_name"));
+                goodsSku.set("unit_id",obj.get("sku_unit_id"));
+                goodsSku.set("seller_id",seller_id);
+                skuList.add(goodsSku);
+            }
+        }
+        goods_sku.dao.save(skuList);
+        return new WebResult(HttpStatus.OK, "添加商品成功");
     }
     /**
      * 编辑商品

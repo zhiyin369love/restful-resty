@@ -32,11 +32,16 @@ public class goods_sku_unit extends Model<goods_sku_unit> {
                 }
             }
         }
+        /*
+        物理规格单位
+         */
         Map physicalMap = new HashMap();
         physicalMap.put("type",ConstantsUtils.PHYSICAL_UNIT);
         physicalMap.put("goods_sku_unit_list",physicalList);
         list.add(physicalMap);
-
+        /*
+        包装规格单位
+         */
         Map packageMap = new HashMap();
         packageMap.put("type",ConstantsUtils.PACKAGE_UNIT);
         packageMap.put("goods_sku_unit_list",packageList);

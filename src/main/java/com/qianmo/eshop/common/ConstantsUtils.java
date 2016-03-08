@@ -11,9 +11,9 @@ public class ConstantsUtils {
 
 	/**************************商品规格单位**************************/
 	/**物理单位**/
-	public final static Integer PHYSICAL_UNIT = 0;
+	public final static Integer PHYSICAL_UNIT = 1;
 	/**包装单位**/
-	public final static Integer PACKAGE_UNIT = 0;
+	public final static Integer PACKAGE_UNIT = 2;
 	/**********************************************************/
 
 	/**************************数字1是0否**************************/
@@ -169,5 +169,16 @@ public class ConstantsUtils {
 	public final static Integer DEFAULT_PAGE_START = 1;
 	/**默认返回10条**/
 	public final static Integer DEFAULT_PAGE_STEP = 10;
+	/*************************************************************/
+
+	/****************************排序*****************************/
+	/**新品**/
+	public final static Integer SORT_NEW = 1;
+	/**价格**/
+	public final static Integer SORT_PRICE = 1;
+	/**降序**/
+	public final static Integer SORT_DESC = 1;
+	/**升序**/
+	public final static Integer SORT_ASC = 2;
 	/*************************************************************/
 }

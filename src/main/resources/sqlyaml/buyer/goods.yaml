@@ -1,13 +1,10 @@
-getFieldActivityAll:
-  select a.id,a.fieldid,a.activitytypeid,a.input,a.inputQuantity,a.intro,a.created_at,b.name activitytype
-  from activity_info a
-  left outer join activity_type b on a.activitytypeid = b.id
-  where a.fieldid = ?
-
 #获取商品信息
 findGoods:
   SELECT a.id goods_id,a.name goods_name,a.num goods_num,a.type_id,a.details,a.form_id,a.generic_name,a.ingredient,
-    a.seller_id,a.license_num,a.main_pic_url,a.pic_url_list,a.producer,a.standard FROM goods_info a WHERE a.id=?
+    a.seller_id,a.license_num,a.main_pic_url,a.pic_url_list,a.producer,a.standard,b.name form_name
+    FROM goods_info a
+    INNER JOIN goods_form b ON a.form_id = b.form_id WHERE a.id=?
+
 
 #获取商品规格及价格信息
 findGoodsSku:
@@ -15,3 +12,13 @@ findGoodsSku:
   FROM goods_sku a
   INNER JOIN goods_sku_price b ON a.id = b.sku_id
   WHERE a.goods_num=? AND a.status=1 AND a.deleted_at is null AND b.buyer_id=? AND b.status=1
+
+#获取商品信息列表
+findGoodsInfo:
+  SELECT a.id goods_id,a.num goods_num,a.main_pic_url,a.name goods_name,a.producer,a.ingredient
+	b.id sku_id,b.name sku_name,b.status,c.price,d.nickname seller_name
+    FROM goods_info a
+    INNER JOIN goods_sku b ON a.num = b.goods_num
+    INNER JOIN goods_sku_price c ON b.id = c.sku_id
+    INNER JOIN user_info d ON a.seller_id = d.id
+    WHERE c.buyer_id = ? AND a.deleted_at is null AND b.deleted_at is null AND b.status = 1
