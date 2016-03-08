@@ -54,12 +54,12 @@ public class OrderOpResource extends SellerResource {
                 if(order_user.dao.find(creditorder,id)!=null && order_user.dao.find(creditorder,id).size()>0){
                     o = order_user.dao.find(creditorder,id).get(0);
                 }
-                result3.put("buyer_id",o.get("buyer_id"));
-                result3.put("seller_id",o.get("seller_id"));
-                new credit().set("order_num",id).set("status",0).set("buyer_id",o.get("buyer_id")).set("seller_id",o.get("seller_id")).save();
+                /*result3.put("buyer_id",o.get("buyer_id"));
+                result3.put("seller_id",o.get("seller_id"));*/
+                new credit().set("area_id",ConstantsUtils.ALL_AREA_ID).set("order_num",id).set("status",0).set("buyer_id",o.get("buyer_id")).set("seller_id",o.get("seller_id")).save();
             }else {
                 //当卖家不同意买家赊账时订单取消 op==5时
-                order_info.dao.deleteBy("num = ?",id);    //注：除了要删除订单主表之外，可能还要删除其他关联表，“待开发”
+                order_info.dao.update("update order_info set status = ? where id = ? ",ConstantsUtils.ORDER_INFO_STATUS_CACEL,id);    //注：除了要删除订单主表之外，可能还要删除其他关联表，“待开发”
                 return new WebResult(HttpStatus.OK, "删除订单成功");
             }
             return new WebResult(HttpStatus.OK, "操作订单成功");
