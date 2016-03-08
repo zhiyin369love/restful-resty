@@ -111,8 +111,7 @@ public class GoodsResource extends BuyerResource {
                     goods = new GoodsInfo();
                     goods.setGoods_id(Long.parseLong(goodsInfo.get("goods_id").toString()));
                     goods.setGoods_name(goodsInfo.get("goods_name").toString());
-                    goods.setGoods_num(Long.parseLong(goodsInfo.get("goods_id").toString()));
-                    goods.setGeneric_name(goodsInfo.get("generic_name").toString());
+                    goods.setGoods_num(Long.parseLong(goodsInfo.get("goods_num").toString()));
                     //判断是否有主图
                     if(goodsInfo.get("main_pic_url")!=null){
                         goods.setMain_pic_url(goodsInfo.get("main_pic_url").toString());
