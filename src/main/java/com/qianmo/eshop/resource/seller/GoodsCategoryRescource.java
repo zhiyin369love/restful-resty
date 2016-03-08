@@ -3,6 +3,7 @@ package com.qianmo.eshop.resource.seller;
 import cn.dreampie.route.annotation.API;
 import cn.dreampie.route.annotation.GET;
 import cn.dreampie.security.Subject;
+import com.alibaba.fastjson.JSONObject;
 import com.qianmo.eshop.bean.goods.GoodsCategory;
 import com.qianmo.eshop.common.YamlRead;
 import com.qianmo.eshop.model.goods.goods_category;
@@ -35,7 +36,7 @@ public class GoodsCategoryRescource extends GoodsResource {
     @GET("/count")
     public List getList(String goods_name){
         user_info userInfo = (user_info) Subject.getPrincipal().getModel();
-        long seller_id = 1;
+        long seller_id = 0;
         //判断登录用户是否为子账号，如果是则获取其父级id
         if(userInfo!=null){
             if(Long.parseLong(userInfo.get("pid").toString())==0){
@@ -55,11 +56,9 @@ public class GoodsCategoryRescource extends GoodsResource {
                     for(GoodsCategory childCategory:childList){
                         long childCount = 0;
                         if (goods_name!=null && !"".equals(goods_name)){
-                            sql = sql + " AND name like '%?%'";
-                            childCount = goods_info.dao.queryFirst(sql,childCategory.getCategory_id(),seller_id,goods_name);
-                        }else{
-                            childCount = goods_info.dao.queryFirst(sql,childCategory.getCategory_id(),seller_id);
+                            sql = sql + " AND name like '%"+goods_name+"%' ";
                         }
+                        childCount = goods_info.dao.queryFirst(sql,childCategory.getCategory_id(),seller_id);
                         childCategory.setGoods_count(childCount);
                         count += childCount;
                     }
