@@ -373,7 +373,17 @@ public class RetailerResource extends ApiResource {
                         //型号名称
                         long skuId = goodsSkuPriceTemp.<Long>get("sku_id");
                         temp.put("sku_name", goods_sku.dao.findById(skuId).get("name"));
-                        temp.put("price", goodsSkuPriceTemp.get("price"));
+                        if(goodsSkuPriceTemp.get("price") != null) {
+                            temp.put("price", goodsSkuPriceTemp.get("price"));
+                        } else {
+                           long skuIdTemp =  goodsSkuPriceTemp.<Long>get("sku_id");
+                            goods_sku skuPrice =  goods_sku.dao.findFirstBy(" seller_id =? and id = ?",id, skuIdTemp);
+                            if(skuPrice != null && skuPrice.get("list_price") != null) {
+                                temp.put("price", skuPrice.get("list_price"));
+                            } else {
+                                temp.put("price", null);
+                            }
+                        }
                         temp.put("sku_id", goodsSkuPriceTemp.get("sku_id"));
                         temp.put("type", goodsSkuPriceTemp.get("type"));
                         goodsSkuPriceResultList.add(temp);
