@@ -25,7 +25,7 @@ import java.util.*;
  * 零售商api
  * Created by ccq on 16-1-1.
  */
-@API("/seller")
+@API("/seller/retailer")
 public class RetailerResource extends ApiResource {
     private long seller_id = SessionUtil.getUserId();
     /**
@@ -92,7 +92,7 @@ public class RetailerResource extends ApiResource {
      * @param id        零售商id
      * @param op        操作类别
      */
-    @PUT("/cooperation")
+    @PUT("/:id")
     public WebResult cooperation(Long id, Long op) {
         try {
             if ((id == null || id == 0l) || (op == null || op == 0l) ||  seller_id == 0l) {
@@ -120,7 +120,7 @@ public class RetailerResource extends ApiResource {
      * @param page_step  返回多少条
      * @param phone      手机号
      */
-    @GET("/retailerList")
+    @GET
     public HashMap getRetailerList(String buyer_name, String name, Integer page_start, Integer page_step, String phone) {
         HashMap resultMap = new HashMap();
         List<invite_verify_code> inviteVerifyCodes = new ArrayList<invite_verify_code>();
@@ -406,7 +406,7 @@ public class RetailerResource extends ApiResource {
      * @param goods_num  商品编号
      * @param goods_name 商品名称
      */
-    @GET("/getBuyOrNot")
+    @GET("/buy_count")
     public HashMap getRetailerList(Long buyer_id, Long goods_num, String goods_name) {
         HashMap resultMap = new HashMap();
         //可购买总数
