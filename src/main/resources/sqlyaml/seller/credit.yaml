@@ -9,6 +9,8 @@ getFieldBuyerInfoAll:
       from user_info ui left join order_user ou on ui.id = ou.buyer_id
        left join order_info oi on  ou.order_num = oi.num LEFT JOIN credit c on oi.num = c.order_num
         where c.buyer_id = ?
+getFirldOrderUserCreditAll:
+  select id,area_id,order_num,buyer_id,seller_id,created_at,updated_at,deleted_at from order_user where buyer_id = ?
 
 getFirldCreditAll:
     select c.id,c.status from credit c where c.buyer_id = ?

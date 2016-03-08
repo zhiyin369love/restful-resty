@@ -7,7 +7,7 @@ import com.qianmo.eshop.common.YamlRead;
 import com.qianmo.eshop.model.buyer.buyer_receive_address;
 import com.qianmo.eshop.model.goods.goods_info;
 import com.qianmo.eshop.model.goods.goods_sku;
-import com.qianmo.eshop.model.goods.goods_type;
+import com.qianmo.eshop.model.goods.goods_category;
 import com.qianmo.eshop.model.order.order_goods;
 import com.qianmo.eshop.model.order.order_info;
 import com.qianmo.eshop.model.order.order_remark;
@@ -36,12 +36,14 @@ public class OrderResource extends SellerResource {
             String sql4 = YamlRead.getSQL("getFirldOrderRemarkAll","seller/order");
 //商品信息
             HashMap result2 =  new HashMap();
-            String sql2_1 = YamlRead.getSQL("getFirldGoodsInfoAll","seller/order");
+            /*String sql2_1 = YamlRead.getSQL("getFirldGoodsInfoAll","seller/order");
             String sql2_2 = YamlRead.getSQL("getFieldGoodsSkuListAll","seller/order");
             String sql2_3 = YamlRead.getSQL("getFieldGoodsTypeALL","seller/order");
             result2.put("goods_info", goods_info.dao.find(sql2_1,id));
             result2.put("goods_sku_list", goods_sku.dao.find(sql2_2,id));
-            result2.put("goods_type", goods_type.dao.find(sql2_3,id));
+            result2.put("goods_type", goods_type.dao.find(sql2_3,id));*/
+            com.qianmo.eshop.resource.buyer.OrderResource resource = new com.qianmo.eshop.resource.buyer.OrderResource();
+            List<HashMap> resultMap = resource.getOrderHashMaps(id);
 //用户信息
             HashMap result3 = new HashMap();
             String sql1_1 = YamlRead.getSQL("getFieldBuyerInfoAll","seller/order");
@@ -55,7 +57,7 @@ public class OrderResource extends SellerResource {
             result3.put("buyer_receive", buyer_receive_address.dao.find(sql1_2,id));
 
             result.put("buyer_info",result3);
-            result.put("goods_list",result2);
+            result.put("goods_list",resultMap);
             result.put("order_info",order_info.dao.find(sql3,id));
             result.put("order_remark_list", order_remark.dao.find(sql4,id));
             return result;

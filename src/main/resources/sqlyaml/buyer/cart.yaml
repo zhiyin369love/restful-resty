@@ -3,3 +3,8 @@ getFieldActivityAll:
   from activity_info a
   left outer join activity_type b on a.activitytypeid = b.id
   where a.fieldid = ?
+
+getFieldCartAll:
+   select t.area_id,t.goods_num,t.goods_sku_id,t.goods_sku_count,t.status,t.buyer_id,t.seller_id,t.seller_name,t.created_at,t.updated_at,t.deleted_at
+    from cart t
+     where  t.id IN(?);

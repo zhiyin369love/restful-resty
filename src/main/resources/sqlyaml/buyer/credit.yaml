@@ -21,7 +21,8 @@ getFieldBuyerReceiveAll:
    select bra.name,bra.phone,bra.address
      from buyer_receive_address bra LEFT JOIN order_user ou on bra.buyer_id = ou.buyer_id LEFT JOIN order_info oi on oi.num = ou.order_num LEFT JOIN credit c on oi.num = c.order_num
     where c.buyer_id = ?
-
+getFirldOrderUserCreditAll:
+  select id,area_id,order_num,buyer_id,seller_id,created_at,updated_at,deleted_at from order_user where buyer_id = ?
 getFirldGoodsInfoAll:
    select gi.details,gi.form_id,gi.generic_name,gi.id,gi.name,gi.ingredient,gi.license_num,gi.main_pic_url,gi.number,gi.pic_url_list,gi.producer,gi.standard
         from goods_info gi LEFT JOIN order_goods og on gi.num = og.goods_num LEFT JOIN order_info oi on og.order_num = oi.num LEFT JOIN credit c on oi.num = c.order_num where c.buyer_id = ?

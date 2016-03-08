@@ -7,6 +7,4 @@ getFieldActivityAll:
 getSellerIdByVerifyCode:
   select   a.user_id
      from  invite_verify_code a
-     where
-               a.code = ?
-          and  a.type = ?
+     where a.code = ?  and  a.type = ?

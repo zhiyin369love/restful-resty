@@ -1,3 +1,7 @@
+getFieldGoodsSkuPriceAll:
+  select  gsp.price from goods_sku_price gsp where gsp.sku_id = ? and gsp.buyer_id = ? and gsp.seller_id = ?
+  where a.fieldid = ?
+
 #获取商品信息
 findGoods:
   SELECT a.id goods_id,a.name goods_name,a.num goods_num,a.type_id,a.details,a.form_id,a.generic_name,a.ingredient,

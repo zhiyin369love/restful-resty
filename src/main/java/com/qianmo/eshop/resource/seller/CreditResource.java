@@ -12,7 +12,7 @@ import com.qianmo.eshop.model.buyer.buyer_receive_address;
 import com.qianmo.eshop.model.cart.cart;
 import com.qianmo.eshop.model.goods.goods_info;
 import com.qianmo.eshop.model.goods.goods_sku;
-import com.qianmo.eshop.model.goods.goods_type;
+import com.qianmo.eshop.model.goods.goods_category;
 import com.qianmo.eshop.model.order.order_info;
 import com.qianmo.eshop.model.order.order_remark;
 import com.qianmo.eshop.model.order.order_user;
@@ -91,7 +91,7 @@ public class CreditResource extends SellerResource {
          String sql2_3 = YamlRead.getSQL("getFieldGoodsTypeALL","seller/order");
          result5.put("goods_info", goods_info.dao.find(sql2_1,buyer_id));
          result5.put("goods_sku_list", goods_sku.dao.find(sql2_2,buyer_id));
-         result5.put("goods_type", goods_type.dao.find(sql2_3,buyer_id));
+         result5.put("goods_type", goods_category.dao.find(sql2_3,buyer_id));
          result4.put("goods_list",result5);
       //订单实体
          String sql3 = YamlRead.getSQL("getFieldOrderInfoAll","buyer/order");
