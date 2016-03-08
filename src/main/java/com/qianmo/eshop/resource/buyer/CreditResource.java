@@ -5,6 +5,7 @@ import cn.dreampie.route.annotation.API;
 import cn.dreampie.route.annotation.GET;
 import com.alibaba.fastjson.JSONObject;
 import com.qianmo.eshop.common.ConstantsUtils;
+import com.qianmo.eshop.common.SessionUtil;
 import com.qianmo.eshop.common.YamlRead;
 import com.qianmo.eshop.model.buyer.buyer_receive_address;
 import com.qianmo.eshop.model.cart.cart;
@@ -29,13 +30,13 @@ import java.util.List;
 @API("/credit")
 public class CreditResource extends BuyerResource {
     @GET
-    public HashMap getCredit(int buyer_id,int page_start,int 	page_step) {
-
+    public HashMap getCredit(int page_start,int 	page_step) {
+        long buyer_id = SessionUtil.getUserId();
         HashMap resulttall_count = new HashMap();
         try {
             HashMap resultall = new HashMap();
             HashMap result = new HashMap();
-            //订单+赊账实体
+            //赊账实体
             String sqlcredit = YamlRead.getSQL("getFieldCreditOrderAll","buyer/credit");
             //订单备注列表
             String sql4 = YamlRead.getSQL("getFirldOrderRemarkAll","buyer/order");

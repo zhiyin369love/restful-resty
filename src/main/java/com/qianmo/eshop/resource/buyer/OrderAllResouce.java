@@ -26,8 +26,8 @@ import java.util.*;
  *  传入参数：order_num：订单ID
  */
 
-@API("/buyer/order")
-public class OrderAllResouce extends ApiResource {
+@API("/order")
+public class OrderAllResouce extends BuyerResource {
     @GET
     public HashMap getList(Integer order_num,Integer order_status,Integer page_start,Integer page_step) {
 
@@ -42,6 +42,7 @@ public class OrderAllResouce extends ApiResource {
         String sql2_2 = YamlRead.getSQL("getFieldGoodsSkuListAll","buyer/order");
         String sql2_3 = YamlRead.getSQL("getFieldGoodsTypeALL","buyer/order");
 */
+
         OrderResource resource = new OrderResource();
         List<HashMap> resultMap = resource.getOrderHashMaps(order_num);
 
@@ -57,7 +58,7 @@ public class OrderAllResouce extends ApiResource {
         result3.put("buyer_id",o.get("buyer_id"));
         result3.put("buyer_name",o.get("name"));
         result3.put("buyer_receive", buyer_receive_address.dao.find(sql1_2,order_num));
-
+        //分页
         FullPage<order_user> inviteCodeList  =  order_user.dao.fullPaginateBy(page_start/page_step + 1,page_step,"page_start = ? and page_step = ?",o.get("seller_id"), ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE);
 
         result.put("buyer_info",result3);

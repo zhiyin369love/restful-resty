@@ -6,6 +6,7 @@ import cn.dreampie.route.annotation.API;
 import cn.dreampie.route.annotation.PUT;
 import com.alibaba.fastjson.JSONObject;
 import com.qianmo.eshop.common.ConstantsUtils;
+import com.qianmo.eshop.common.SessionUtil;
 import com.qianmo.eshop.common.YamlRead;
 import com.qianmo.eshop.model.goods.goods_sku;
 import com.qianmo.eshop.model.order.order_info;
@@ -23,10 +24,11 @@ import java.util.List;
  *    id:订单编号 、op:必填 0选择支付方式 1选择银行 2我已付款 3确认收货 4取消订单 5再买一次、 value：选填 操作值（取消订单时，传入订单取消原因）
  *
  */
-@API("/buyer/order")
-public class OrderOpResource extends ApiResource {
+@API("/order")
+public class OrderOpResource extends BuyerResource {
     @PUT
-    public WebResult opOrder(Integer bank_id,int buyer_id,int id,int op,int value, List<JSONObject> goods){
+    public WebResult opOrder(Integer bank_id,int id,int op,int value, List<JSONObject> goods){
+        long buyer_id = SessionUtil.getUserId();
         try {
 
               if(op == ConstantsUtils.ORDER_OP_PAY_TYPE){   // 0 选择支付方式
@@ -49,7 +51,7 @@ public class OrderOpResource extends ApiResource {
                   new order_remark().set("order_num",id).set("op",op).set("reason",value).set("user_id",buyer_id).save();
               }else{  //5再买一次  添加一次购物车
                   CartResource  cartResource = new CartResource();
-                  cartResource.addCartGoods(buyer_id,goods);
+                  cartResource.addCartGoods(goods);
               }
 
             return new WebResult(HttpStatus.OK, "操作订单成功");

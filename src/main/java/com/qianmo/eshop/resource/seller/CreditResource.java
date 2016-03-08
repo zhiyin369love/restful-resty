@@ -7,6 +7,7 @@ import cn.dreampie.route.annotation.API;
 import cn.dreampie.route.annotation.GET;
 import cn.dreampie.route.annotation.PUT;
 import com.qianmo.eshop.common.ConstantsUtils;
+import com.qianmo.eshop.common.SessionUtil;
 import com.qianmo.eshop.common.YamlRead;
 import com.qianmo.eshop.model.buyer.buyer_receive_address;
 import com.qianmo.eshop.model.cart.cart;
@@ -29,7 +30,9 @@ import com.qianmo.eshop.resource.buyer.OrderResource;
 @API("/credit")
 public class CreditResource extends SellerResource {
     @GET
-    public HashMap getCredit(int buyer_id,int page_start,int 	page_step,int seller_id,int show_type,int status) {
+    public HashMap getCredit(int page_start,int page_step,int show_type,int status) {
+        long seller_id = SessionUtil.getUserId();
+       long buyer_id = SessionUtil.getUserId();
         HashMap all = new HashMap();
         HashMap result2 = new HashMap();
      if(show_type == 0){

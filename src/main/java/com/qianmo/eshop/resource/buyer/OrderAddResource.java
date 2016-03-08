@@ -7,6 +7,7 @@ import cn.dreampie.route.annotation.GET;
 import cn.dreampie.route.annotation.POST;
 import com.qianmo.eshop.common.CodeUtils;
 import com.qianmo.eshop.common.ConstantsUtils;
+import com.qianmo.eshop.common.SessionUtil;
 import com.qianmo.eshop.common.YamlRead;
 import com.qianmo.eshop.model.buyer.buyer_receive_address;
 import com.qianmo.eshop.model.cart.cart;
@@ -33,15 +34,16 @@ import java.util.*;
  *   cart_list 购物车ID数组 String类型 ［1，2，3，4，5］、seller_id 卖家id
  */
 
-@API("buyer/order")
-public class OrderAddResource extends ApiResource {
+@API("/order")
+public class OrderAddResource extends BuyerResource {
 
 
     //添加订单
     @POST
     @Transaction
-    public WebResult addOrder(int buyer_id, int buyer_receive_id, String cart_list, int seller_id) {
-       try {
+    public WebResult addOrder(int buyer_receive_id, String cart_list, int seller_id) {
+        long buyer_id = SessionUtil.getUserId();
+        try {
            HashMap result = new HashMap();
            //订单编号组成的规则、年月日时分秒+4位随机数
            long l = System.currentTimeMillis();

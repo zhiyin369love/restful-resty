@@ -6,6 +6,7 @@ import cn.dreampie.route.annotation.API;
 import cn.dreampie.route.annotation.GET;
 import com.alibaba.fastjson.JSONObject;
 import com.qianmo.eshop.common.ConstantsUtils;
+import com.qianmo.eshop.common.SessionUtil;
 import com.qianmo.eshop.common.YamlRead;
 import com.qianmo.eshop.model.buyer.buyer_receive_address;
 import com.qianmo.eshop.model.goods.goods_info;
@@ -32,14 +33,8 @@ import java.util.*;
 public class OrderAllResouce extends SellerResource {
 
     @GET
-    public HashMap getList(String buyer_name_num,String date_range,Integer order_status,Integer page_start,Integer page_step,Integer seller_id,Integer sort_col,String sort_rule) {
-
-
-
-
-
-
-
+    public HashMap getList(String buyer_name_num,String date_range,Integer order_status,Integer page_start,Integer page_step,Integer sort_col,String sort_rule) {
+            long seller_id = SessionUtil.getUserId();
 
         //判断buyer_name_num是订单号还是商家名称
         if(buyer_name_num != null){
@@ -88,7 +83,7 @@ public class OrderAllResouce extends SellerResource {
         return resulfinal;
     }
 
-    private List<HashMap> getHashMaps(Integer order_status, Integer seller_id) {
+    private List<HashMap> getHashMaps(Integer order_status, long seller_id) {
         HashMap result = new HashMap();
         String sql3 = YamlRead.getSQL("getFieldOrderInfoAll","seller/order");
         String sql4 = YamlRead.getSQL("getFirldOrderRemarkAll","seller/order");

@@ -3,6 +3,7 @@ package com.qianmo.eshop.resource.buyer;
 
 import cn.dreampie.route.annotation.API;
 import cn.dreampie.route.annotation.GET;
+import com.qianmo.eshop.common.SessionUtil;
 import com.qianmo.eshop.common.YamlRead;
 import com.qianmo.eshop.model.seller.seller_bank;
 import com.qianmo.eshop.model.seller.seller_pay;
@@ -17,11 +18,11 @@ import java.util.List;
  * author:wss
  *  传入参数： id：支付方式id  、seller_id ：卖家id
  */
-@API("/buyer/pay/order")
-public class OrderPayResouce extends ApiResource {
+@API("/pay/order")
+public class OrderPayResouce extends BuyerResource {
     @GET
-    public HashMap getList(int id,int seller_id){
-
+    public HashMap getList(int id){
+       long seller_id = SessionUtil.getUserId();
         HashMap result = new HashMap();
         try {
             //支付银行列表查询sql
