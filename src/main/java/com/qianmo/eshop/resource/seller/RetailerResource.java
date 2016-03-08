@@ -133,8 +133,8 @@ public class RetailerResource extends ApiResource {
             if (seller_id != null && seller_id != 0l) {
                 //需要判断是否已注册,如果已经注册过，需要根据phone去找买家id，如果没有注册过，那么返回结果中is_invited是0
                 if(!(page_start != null && page_start != 0 && page_step != null && page_step != 0)) {
-                    page_start = 0;
-                    page_step = 10;
+                    page_start = ConstantsUtils.DEFAULT_PAGE_START;
+                    page_step = ConstantsUtils.DEFAULT_PAGE_STEP;
                 }
                 int pageNumber = page_start / page_step + 1;
                 FullPage<invite_verify_code> inviteCodeList = null;
@@ -297,8 +297,8 @@ public class RetailerResource extends ApiResource {
             if (id != null && id != 0l) {
                 //需要判断是否已注册,如果已经注册过，需要根据phone去找买家id，如果没有注册过，那么返回结果中is_invited是0
                 if (!(page_start != null && page_start != 0 && page_step != null && page_step != 0)) {
-                    page_start = 0;
-                    page_step = 10;
+                    page_start = ConstantsUtils.DEFAULT_PAGE_START;
+                    page_step = ConstantsUtils.DEFAULT_PAGE_STEP;
                 }
                 int pageNumber = page_start / page_step + 1;
                 FullPage<goods_sku_price> goodSkuPriceList = null;
