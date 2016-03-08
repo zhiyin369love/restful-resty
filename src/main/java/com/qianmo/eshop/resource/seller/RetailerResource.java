@@ -27,15 +27,14 @@ import java.util.*;
  */
 @API("/seller")
 public class RetailerResource extends ApiResource {
-
+    private long seller_id = SessionUtil.getUserId();
     /**
      * 发送邀请码(批量)
      *
      * @param accounts  账号列表
-     * @param seller_id 卖家id
      */
     @PUT("/sendcode")
-    public WebResult addSendCode(List<JSONObject> accounts, Long seller_id) {
+    public WebResult addSendCode(List<JSONObject> accounts) {
         try {
             //从property文件中获取属性
             String content = PropertyUtil.getProperty("sms.content");
@@ -45,7 +44,7 @@ public class RetailerResource extends ApiResource {
             String resultContent = "";
             JSONObject returnResult = new JSONObject();
             Date afterOneDay = new Date(System.currentTimeMillis() + 24 * 60 * 60 * 1000);
-            if (seller_id == null || seller_id == 0l) {
+            if (seller_id == 0l) {
                 return new WebResult(HttpStatus.EXPECTATION_FAILED, "输入参数有误");
             }
             if (accounts != null && accounts.size() > 0) {
@@ -92,12 +91,11 @@ public class RetailerResource extends ApiResource {
      *
      * @param id        零售商id
      * @param op        操作类别
-     * @param seller_id 卖家id
      */
     @PUT("/cooperation")
-    public WebResult cooperation(Long id, Long op, Long seller_id) {
+    public WebResult cooperation(Long id, Long op) {
         try {
-            if ((id == null || id == 0l) || (op == null || op == 0l) || (seller_id == null || seller_id == 0l)) {
+            if ((id == null || id == 0l) || (op == null || op == 0l) ||  seller_id == 0l) {
                 return new WebResult(HttpStatus.EXPECTATION_FAILED, "输入参数有误");
             }
             buyer_seller buyerSeller = buyer_seller.dao.findFirstBy("buyer_id = ? and seller_id = ?", id, seller_id);
@@ -121,16 +119,15 @@ public class RetailerResource extends ApiResource {
      * @param page_start 第几条开始
      * @param page_step  返回多少条
      * @param phone      手机号
-     * @param seller_id  卖家id 必填
      */
     @GET("/retailerList")
-    public HashMap getRetailerList(String buyer_name, String name, Integer page_start, Integer page_step, String phone, Long seller_id) {
+    public HashMap getRetailerList(String buyer_name, String name, Integer page_start, Integer page_step, String phone) {
         HashMap resultMap = new HashMap();
         List<invite_verify_code> inviteVerifyCodes = new ArrayList<invite_verify_code>();
         List<HashMap> buyerSellerResultList = new ArrayList<HashMap>();
         Map pageInfo = new HashMap();
         try {
-            if (seller_id != null && seller_id != 0l) {
+            if (seller_id != 0l) {
                 //需要判断是否已注册,如果已经注册过，需要根据phone去找买家id，如果没有注册过，那么返回结果中is_invited是0
                 if(!(page_start != null && page_start != 0 && page_step != null && page_step != 0)) {
                     page_start = ConstantsUtils.DEFAULT_PAGE_START;
@@ -282,19 +279,18 @@ public class RetailerResource extends ApiResource {
      *
      * @param goods_id    商品id
      * @param goos_sku_id 商品型号id
-     * @param id          卖家id
      * @param page_start  第几条开始
      * @param page_step   返回多少条
      * @param type        是否购买
      */
     @GET("/price/:id")
-    public HashMap getRetailerPriceList(Long goods_id, Long goos_sku_id, Long id, Integer page_start, Integer page_step, Integer type) {
+    public HashMap getRetailerPriceList(Long goods_id, Long goos_sku_id, Integer page_start, Integer page_step, Integer type) {
         HashMap resultMap = new HashMap();
         List<goods_sku_price> goodsSkuPrices = new ArrayList<goods_sku_price>();
         List<HashMap> goodsSkuPriceResultList = new ArrayList<HashMap>();
         Map pageInfo = new HashMap();
         try {
-            if (id != null && id != 0l) {
+            if (seller_id != 0l) {
                 //需要判断是否已注册,如果已经注册过，需要根据phone去找买家id，如果没有注册过，那么返回结果中is_invited是0
                 if (!(page_start != null && page_start != 0 && page_step != null && page_step != 0)) {
                     page_start = ConstantsUtils.DEFAULT_PAGE_START;
@@ -304,28 +300,28 @@ public class RetailerResource extends ApiResource {
                 FullPage<goods_sku_price> goodSkuPriceList = null;
                 if (goods_id != null && goods_id != 0 && goos_sku_id != null && goos_sku_id != 0 && type != null && type != 0) {
                     goodSkuPriceList = goods_sku_price.dao.fullPaginateBy(pageNumber, page_step, "seller_id = ? and goods_num = ? and sku_id = ? and type = ?",
-                            id, goods_id, goos_sku_id, ConstantsUtils.GOODS_SKU_PRICE_BUY_ENBLE);
+                            seller_id, goods_id, goos_sku_id, ConstantsUtils.GOODS_SKU_PRICE_BUY_ENBLE);
                 } else if (goods_id != null && goods_id != 0 && goos_sku_id != null && goos_sku_id != 0) {
                     goodSkuPriceList = goods_sku_price.dao.fullPaginateBy(pageNumber, page_step, "seller_id = ? and goods_num = ? and sku_id = ? ",
-                            id, goods_id, goos_sku_id);
+                            seller_id, goods_id, goos_sku_id);
                 } else if (goos_sku_id != null && goos_sku_id != 0 && type != null && type != 0) {
                     goodSkuPriceList = goods_sku_price.dao.fullPaginateBy(pageNumber, page_step, "seller_id = ? and sku_id = ? and type = ? ",
-                            id, goos_sku_id, ConstantsUtils.GOODS_SKU_PRICE_BUY_ENBLE);
+                            seller_id, goos_sku_id, ConstantsUtils.GOODS_SKU_PRICE_BUY_ENBLE);
                 } else if (goods_id != null && goods_id != 0 && type != null && type != 0) {
                     goodSkuPriceList = goods_sku_price.dao.fullPaginateBy(pageNumber, page_step, "seller_id = ? and goods_num = ?  and type = ?",
-                            id, goods_id, ConstantsUtils.GOODS_SKU_PRICE_BUY_ENBLE);
+                            seller_id, goods_id, ConstantsUtils.GOODS_SKU_PRICE_BUY_ENBLE);
                 } else if (goods_id != null && goods_id != 0) {
                     goodSkuPriceList = goods_sku_price.dao.fullPaginateBy(pageNumber, page_step, "seller_id = ? and goods_num = ? ",
-                            id, goods_id);
+                            seller_id, goods_id);
                 } else if (goos_sku_id != null && goos_sku_id != 0) {
                     goodSkuPriceList = goods_sku_price.dao.fullPaginateBy(pageNumber, page_step, "seller_id = ? and sku_id = ? ",
-                            id, goos_sku_id);
+                            seller_id, goos_sku_id);
                 } else if (type != null && type != 0) {
                     goodSkuPriceList = goods_sku_price.dao.fullPaginateBy(pageNumber, page_step, "seller_id = ?  and type = ?",
-                            id, ConstantsUtils.GOODS_SKU_PRICE_BUY_ENBLE);
+                            seller_id, ConstantsUtils.GOODS_SKU_PRICE_BUY_ENBLE);
                 } else {
                     goodSkuPriceList = goods_sku_price.dao.fullPaginateBy(pageNumber, page_step, "seller_id = ?  ",
-                            id);
+                            seller_id);
                 }
                 goodsSkuPrices = goodSkuPriceList.getList();
                 pageInfo.put("page_size", page_step);
@@ -377,7 +373,7 @@ public class RetailerResource extends ApiResource {
                             temp.put("price", goodsSkuPriceTemp.get("price"));
                         } else {
                            long skuIdTemp =  goodsSkuPriceTemp.<Long>get("sku_id");
-                            goods_sku skuPrice =  goods_sku.dao.findFirstBy(" seller_id =? and id = ?",id, skuIdTemp);
+                            goods_sku skuPrice =  goods_sku.dao.findFirstBy(" seller_id =? and id = ?",seller_id, skuIdTemp);
                             if(skuPrice != null && skuPrice.get("list_price") != null) {
                                 temp.put("price", skuPrice.get("list_price"));
                             } else {
@@ -407,12 +403,11 @@ public class RetailerResource extends ApiResource {
      * 获取用户商品购买不可购买总数
      *
      * @param buyer_id   买家id
-     * @param seller_id  卖家id
      * @param goods_num  商品编号
      * @param goods_name 商品名称
      */
     @GET("/getBuyOrNot")
-    public HashMap getRetailerList(Long buyer_id, Long seller_id, Long goods_num, String goods_name) {
+    public HashMap getRetailerList(Long buyer_id, Long goods_num, String goods_name) {
         HashMap resultMap = new HashMap();
         //可购买总数
         long couldBuy = 0l;

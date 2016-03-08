@@ -4,6 +4,7 @@ package com.qianmo.eshop.resource.seller;
 import cn.dreampie.route.annotation.API;
 import cn.dreampie.route.annotation.GET;
 import com.qianmo.eshop.common.ConstantsUtils;
+import com.qianmo.eshop.common.SessionUtil;
 import com.qianmo.eshop.model.cart.cart;
 import com.qianmo.eshop.model.credit.credit;
 import com.qianmo.eshop.model.goods.goods_info;
@@ -25,20 +26,19 @@ import java.util.HashMap;
  */
 @API("/total")
 public class IndexResource extends SellerResource {
-
+  private long seller_id = SessionUtil.getUserId();
 
   /**
    *
    * 获取首页汇总信息
    *
-   * @param seller_id   买家用户id
    */
   @GET
-  public HashMap getIndexSummary(Long seller_id) {
+  public HashMap getIndexSummary() {
     HashMap resultMap = new HashMap();
     HashMap total = new HashMap();
     try {
-      if(seller_id == null || seller_id ==0) {
+      if(seller_id ==0) {
         resultMap.put("total",null);
         return resultMap;
       }

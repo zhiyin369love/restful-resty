@@ -5,6 +5,7 @@ import cn.dreampie.common.http.result.WebResult;
 import cn.dreampie.route.annotation.*;
 import com.alibaba.fastjson.JSONObject;
 import com.qianmo.eshop.common.ConstantsUtils;
+import com.qianmo.eshop.common.SessionUtil;
 import com.qianmo.eshop.model.buyer.buyer_seller;
 import com.qianmo.eshop.model.cart.cart;
 import com.qianmo.eshop.model.goods.goods_info;
@@ -31,17 +32,16 @@ import java.util.jar.JarEntry;
  */
 @API("/cart")
 public class CartResource extends BuyerResource {
-
+   private long buyer_id = SessionUtil.getUserId();
 
   /**
    *
    * 删除购物车商品，此处是用买家id+商品+商品型号id来联合删除的，实际上也可以用购物车id来做删除
-   * @param buyer_id   买家用户id
    * @param goods_id 商品id
    * @param goods_sku_id 商品型号id
    */
   @DELETE
-  public WebResult deleteCartGoods(long buyer_id, long goods_id, int goods_sku_id) {
+  public WebResult deleteCartGoods(long goods_id, int goods_sku_id) {
     try {
       if (buyer_id != 0 && goods_id != 0 && goods_sku_id != 0) {
         cart.dao.deleteBy("buyer_id = ?  and goods_num = ? and goods_sku_id = ?", buyer_id, goods_id, goods_sku_id);
@@ -59,11 +59,10 @@ public class CartResource extends BuyerResource {
   /**
    *
    *  添加商品到购物车
-   * @param buyer_id   买家用户id
    * @param goods 商品 array<Object>
    */
   @POST
-  public WebResult addCartGoods(long buyer_id, List<JSONObject> goods) {
+  public WebResult addCartGoods(List<JSONObject> goods) {
     try {
       //List<cart> carts = new ArrayList<cart>();
       if(goods != null && goods.size() > 0) {
@@ -104,12 +103,11 @@ public class CartResource extends BuyerResource {
   /**
    *
    *  编辑购物车
-   * @param buyer_id 买家用户id
    * @param cart_id 购物车id
    * @param count  订购数量
    */
   @PUT
-  public WebResult updateCartGoods(long buyer_id, long cart_id, int count) {
+  public WebResult updateCartGoods(long cart_id, int count) {
     try {
       if (buyer_id != 0 && cart_id != 0 && count != 0) {
         cart.dao.update("update cart set goods_sku_count = ?  where id = ? and buyer_id = ?", count, cart_id, buyer_id);
@@ -128,10 +126,9 @@ public class CartResource extends BuyerResource {
    *
    * 获取用户购物车信息列表
    *
-   * @param buyer_id   买家用户id
    */
   @GET
-  public HashMap getCartList(long buyer_id) {
+  public HashMap getCartList() {
     HashMap resultMap = new HashMap();
     List<Map> resultCartList = new ArrayList<Map>();
     try {

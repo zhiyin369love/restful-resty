@@ -35,4 +35,9 @@ public class SessionUtil {
             return null;
         }
     }
+
+    public static long getUserId() {
+        Long userID = (Long) SessionUtil.getUserAttribute("id");
+       return  userID == null ? 0: userID;
+    }
 }

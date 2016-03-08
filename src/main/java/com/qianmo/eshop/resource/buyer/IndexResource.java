@@ -4,6 +4,7 @@ import cn.dreampie.common.http.result.HttpStatus;
 import cn.dreampie.common.http.result.WebResult;
 import cn.dreampie.route.annotation.*;
 import com.alibaba.fastjson.JSONObject;
+import com.qianmo.eshop.common.SessionUtil;
 import com.qianmo.eshop.model.buyer.buyer_seller;
 import com.qianmo.eshop.model.cart.cart;
 import com.qianmo.eshop.model.order.order_info;
@@ -26,7 +27,7 @@ import java.util.List;
  */
 @API("/buyer")
 public class IndexResource extends ApiResource {
-
+  private long buyer_id = SessionUtil.getUserId();
 
   /**
    *
@@ -34,14 +35,13 @@ public class IndexResource extends ApiResource {
    * 通过验证码查找卖家，然后买家绑定卖家
    *
    * @param bind_code  绑定码
-   * @param buyer_id   买家用户id
    */
   @POST("/bind")
-  public WebResult addBuyerSeller(int bind_code, long buyer_id) {
+  public WebResult addBuyerSeller(int bind_code) {
     try {
       //通过验证码找卖家id
       invite_verify_code code = getInviteByVerifyCode(bind_code);
-      if (code != null) {
+      if (code != null && buyer_id !=0) {
         Long seller_Id = code.<Long>get("user_id");
         //查看是否已经绑定过
         buyer_seller buyerSeller = buyer_seller.dao.findFirstBy("buyer_id = ? and seller_id = ? ", buyer_id, seller_Id);
@@ -70,10 +70,9 @@ public class IndexResource extends ApiResource {
    * 根据验证码获取经销商信息
    *
    * @param bind_code  绑定码
-   * @param buyer_id   买家用户id
    */
   @GET("/seller")
-  public HashMap getSellerInfoByVerifyCode(int bind_code, long buyer_id) {
+  public HashMap getSellerInfoByVerifyCode(int bind_code) {
     HashMap resultMap = new HashMap();
     try {
       //通过验证码找卖家id
@@ -102,10 +101,9 @@ public class IndexResource extends ApiResource {
    *
    * 获取首页汇总信息
    *
-   * @param buyer_id   买家用户id
    */
   @GET("/total")
-  public HashMap getIndexSummary(long buyer_id) {
+  public HashMap getIndexSummary() {
     HashMap resultMap = new HashMap();
     HashMap total = new HashMap();
     try {
