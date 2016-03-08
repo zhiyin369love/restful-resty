@@ -27,8 +27,8 @@ import java.util.*;
  * 传入参数说明：id 订单ID
  */
 
-@API("/buyer/order")
-public class OrderResource extends ApiResource {
+@API("/order")
+public class OrderResource extends BuyerResource {
 
     @GET("/:id")
     public HashMap getList(int id) {
@@ -70,8 +70,8 @@ public class OrderResource extends ApiResource {
         return result;
        }
     }
-
-    public List<HashMap> getOrderHashMaps(int id) {
+//商品实体封装
+    public List<HashMap> getOrderHashMaps(long id) {
         HashMap result2 =  new HashMap();
         //商品信息
         String sql2_1 = YamlRead.getSQL("getFirldGoodsInfoAll","buyer/order");
