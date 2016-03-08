@@ -283,7 +283,7 @@ public class RetailerResource extends ApiResource {
      * @param page_step   返回多少条
      * @param type        是否购买
      */
-    @GET("/price/:id")
+    @GET("/price/:goods_id")
     public HashMap getRetailerPriceList(Long goods_id, Long goos_sku_id, Integer page_start, Integer page_step, Integer type) {
         HashMap resultMap = new HashMap();
         List<goods_sku_price> goodsSkuPrices = new ArrayList<goods_sku_price>();
