@@ -41,16 +41,19 @@ public class CreditResource extends BuyerResource {
             String sql4 = YamlRead.getSQL("getFirldOrderRemarkAll","buyer/order");
             //商品信息
             HashMap result2 =  new HashMap();
-           //遍历order_user通过buyer_id获取所有的订单编号（order_num）
-            String order_user_credit = YamlRead.getSQL("getFirldOrderUserCreditAll","buyer/order");
-            List<order_user>  order_userList =  order_user.dao.find(order_user_credit,buyer_id);
+            List<credit>  CreditOrderList =  credit.dao.find(sqlcredit,buyer_id);
             List<HashMap> resultMap = new ArrayList<HashMap>();
             HashMap result3 = new HashMap();
-            for (order_user order_user_list : order_userList){
+            for (credit credit_list : CreditOrderList){
+                result.clear();
+                resultall.clear();
+                result2.clear();
                 //一个订单对应一个赊账
-                int buyer_id_list = order_user_list.get("order_num");
+                int id = credit_list.get("id");
+                int status = credit_list.get("status");
+                int credit_id_list = credit_list.get("order_num");
                 OrderResource resource = new OrderResource();
-                List<HashMap> resultMap2 = resource.getOrderHashMaps(buyer_id_list);
+                List<HashMap> resultMap2 = resource.getOrderHashMaps(credit_id_list);
                 //用户信息
                 String sql1_1 = YamlRead.getSQL("getFieldBuyerInfoAll","buyer/order");
                 String sql1_2 = YamlRead.getSQL("getFieldBuyerReceiveAll","buyer/order");
@@ -61,25 +64,21 @@ public class CreditResource extends BuyerResource {
                 result3.put("buyer_id",o.get("buyer_id"));
                 result3.put("name",o.get("name"));
                 result3.put("buyer_receive", buyer_receive_address.dao.find(sql1_2,buyer_id));
-                //赊账实体表
-                FullPage<order_user> inviteCodeList  =  order_user.dao.fullPaginateBy(page_start/page_step + 1,page_step,"page_start = ? and page_step = ?",o.get("seller_id"), ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE);
-                HashMap count =  new HashMap();
-                count.put("total_count",inviteCodeList.getTotalRow());
-                String sqlcre = YamlRead.getSQL("getFirldCreditAll","buyer/credit");
-                credit cc = new credit();
-                if(credit.dao.find(sqlcre,buyer_id) !=null && cc.dao.find(sqlcre,buyer_id).size()>0){
-                    cc = credit.dao.find(sqlcre,buyer_id).get(0);
-                }
-                resultall.put("credit_id",cc.get("id"));
-                resultall.put("credit_status",cc.get("status"));
-                resultall.put("order",result);
-                resultall.put("page_info",count);
+
                 //一个买家对应对个订单实体
                 result.put("buyer_info",result3);
                 result.put("goods_list",resultMap2);
                 result.put("order_info", order_info.dao.find(sqlcredit,buyer_id));
                 result.put("order_remark_list", order_remark.dao.find(sql4,buyer_id));
                 result2.put("order",result);
+                //赊账实体表
+                FullPage<order_user> inviteCodeList  =  order_user.dao.fullPaginateBy(page_start/page_step + 1,page_step,"page_start = ? and page_step = ?",o.get("seller_id"), ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE);
+                HashMap count =  new HashMap();
+                count.put("total_count",inviteCodeList.getTotalRow());
+                resultall.put("credit_id",id);
+                resultall.put("credit_status",status);
+                resultall.put("order",result);
+                resultall.put("page_info",count);
             }
 
            /* String sql2_1 = YamlRead.getSQL("getFirldGoodsInfoAll","buyer/order");
@@ -91,7 +90,7 @@ public class CreditResource extends BuyerResource {
 
             //分页信息
 
-            resulttall_count.put("credit",resultall);
+            resulttall_count.put("credit_list",resultall);
             return resulttall_count;
         }catch (Exception e){
             return null;

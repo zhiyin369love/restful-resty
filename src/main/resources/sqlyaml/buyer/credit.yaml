@@ -5,9 +5,8 @@ getFieldActivityAll:
   where a.fieldid = ?
 
 getFieldCreditOrderAll:
-  select oi.created_at,oi.id,oi.num,oi.status,oi.pay_status,oi.pay_type_id,oi.total_price,ou.seller_id,ui.name
-      from credit c LEFT JOIN order_info oi ON c.order_num = oi.num left join order_user ou on oi.num = ou.order_num left join user_info ui on ui.id = ou.seller_id
-      where  c.buyer_id = ?
+  select c.id,c.area_id,c.order_num,c.status,c.buyer_id,c.seller_id,c.created_at,c.updated_at,deleted_at from credit c
+   where  c.buyer_id = ?
 getFirldCreditAll:
     select c.id,c.status from credit c where c.buyer_id = ?
 
