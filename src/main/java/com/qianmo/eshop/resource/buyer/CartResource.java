@@ -64,7 +64,7 @@ public class CartResource extends BuyerResource {
   @POST
   public WebResult addCartGoods(List<JSONObject> goods) {
     try {
-      //List<cart> carts = new ArrayList<cart>();
+      List<cart> carts = new ArrayList<cart>();
       if(goods != null && goods.size() > 0) {
         for(JSONObject good : goods) {
           cart tempCart = new cart();
@@ -85,11 +85,11 @@ public class CartResource extends BuyerResource {
           tempCart.set("status",goodsSku.get("status"));
           //区域id
           tempCart.set("area_id",ConstantsUtils.ALL_AREA_ID);
-          cart.dao.save(tempCart);
-         // carts.add(tempCart);
+          //cart.dao.save(tempCart);
+          carts.add(tempCart);
         }
        //框架不支持批量保存
-        //cart.dao.save(carts);
+        cart.dao.save(carts);
         return new WebResult(HttpStatus.OK, "添加商品到购物车成功");
       } else {
         return new WebResult(HttpStatus.OK, "输入参数有误");
