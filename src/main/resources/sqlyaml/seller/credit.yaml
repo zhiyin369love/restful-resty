@@ -12,8 +12,9 @@ getFieldBuyerInfoAll:
 getFirldOrderUserCreditAll:
   select id,area_id,order_num,buyer_id,seller_id,created_at,updated_at,deleted_at from order_user where buyer_id = ?
 
-getFirldCreditAll:
-    select c.id,c.status from credit c where c.buyer_id = ?
+getFirldSellerCreditAll:
+    select c.id,c.area_id,c.order_num,c.status,c.buyer_id,c.seller_id,c.created_at,c.updated_at,deleted_at from credit c
+       where  c.seller_id = ?
 
 getFirldCountOrderUserAll:
     select COUNT(*) from order_user ou where ou.seller_id = ?
