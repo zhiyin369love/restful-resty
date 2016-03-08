@@ -24,8 +24,8 @@ import java.util.*;
  * 传入参数：id  订单id
  */
 
-@API("/seller/order")
-public class OrderResource extends ApiResource {
+@API("/order")
+public class OrderResource extends SellerResource {
 
     @GET("/:id")
     public HashMap getList(int id) {

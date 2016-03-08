@@ -25,8 +25,8 @@ import java.util.List;
 /**
  * Created by Administrator on 2016/3/3 0003.
  */
-@API("seller/credit")
-public class CreditResource extends ApiResource {
+@API("/credit")
+public class CreditResource extends SellerResource {
     @GET
     public HashMap getCredit(int buyer_id,int page_start,int 	page_step,int seller_id,int show_type,int status) {
         HashMap result2 = new HashMap();

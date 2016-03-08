@@ -24,7 +24,7 @@ import java.util.*;
  * Created by fxg06 on 2016/3/1.
  */
 @API("/goods")
-public class GoodsResource extends ApiResource {
+public class GoodsResource extends SellerResource {
     @GET
     public HashMap list(String goods_name,Integer goods_status,Integer category_id,Integer sub_category_id,Integer page_start,Integer page_step){
         if (page_start==null){

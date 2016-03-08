@@ -30,7 +30,7 @@ import java.util.jar.JarEntry;
  * </p>
  */
 @API("/cart")
-public class CartResource extends ApiResource {
+public class CartResource extends BuyerResource {
 
 
   /**

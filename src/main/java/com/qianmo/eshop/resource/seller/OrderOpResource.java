@@ -25,8 +25,8 @@ import java.util.List;
  * op 必填 0收到货款 1发货 2取消 3卖家备注订单 4同意买家赊账 5不同意买家赊账
  * remark   操作备注
  */
-@API("seller/order")
-public class OrderOpResource extends ApiResource {
+@API("/order")
+public class OrderOpResource extends SellerResource {
     @PUT
     public WebResult opOrder(Integer id,int op,String remark){
         try {

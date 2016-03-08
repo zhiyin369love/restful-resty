@@ -401,7 +401,7 @@ public class RetailerResource extends ApiResource {
      * @param goods_num  商品编号
      * @param goods_name 商品名称
      */
-    @GET("/retailerList")
+    @GET("/retailerListaaa")
     public HashMap getRetailerList(Long buyer_id, Long seller_id, Long goods_num, String goods_name) {
         HashMap resultMap = new HashMap();
         //可购买总数

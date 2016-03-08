@@ -13,21 +13,21 @@ import java.util.HashMap;
  * 买家收货地址api
  * Created by ccq on 16-1-1.
  */
-@API("/receive")
-public class ReceiveResource extends BuyerResource {
+@API("/address")
+public class AddressResource extends BuyerResource {
 
 
   @GET
   public HashMap List(long buyer_id) {
     HashMap result = new HashMap();
-    result.put("buyer_receive_list", buyer_receive_address.dao.List(buyer_id));
+    result.put("buyer_address_list", buyer_receive_address.dao.List(buyer_id));
     return result;
   }
 
   @GET("/:id")
   public HashMap Details(long id) {
     HashMap result = new HashMap();
-    result.put("buyer_receive_list", buyer_receive_address.dao.Details(id));
+    result.put("buyer_address", buyer_receive_address.dao.Details(id));
 
     return result;
   }
@@ -53,12 +53,12 @@ public class ReceiveResource extends BuyerResource {
   }
 
   @POST
-  public HashMap Add(buyer_receive_address model) {
+  public HashMap Add(String buyer_id, buyer_receive_address buyer_address) {
     HashMap result = new HashMap();
     int code;
     String message;
 
-    if(buyer_receive_address.dao.Add(model)){
+    if(buyer_receive_address.dao.Add(buyer_address)){
       code = HttpStatus.CREATED.getCode();
       message = "添加成功";
     }

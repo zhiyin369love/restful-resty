@@ -23,7 +23,7 @@ import java.util.HashMap;
  * </p>
  */
 @API("/total")
-public class IndexResource extends ApiResource {
+public class IndexResource extends SellerResource {
 
 
   /**

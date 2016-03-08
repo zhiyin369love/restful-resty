@@ -15,7 +15,7 @@ import java.util.List;
  * Created by fxg06 on 2016/3/6.
  */
 @API("/goods")
-public class GoodsResource extends ApiResource {
+public class GoodsResource extends BuyerResource {
     /**
      * 获取商品分类
      * @return

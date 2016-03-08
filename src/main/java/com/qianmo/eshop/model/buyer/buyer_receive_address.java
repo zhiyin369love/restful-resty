@@ -2,6 +2,8 @@ package com.qianmo.eshop.model.buyer;
 
 import cn.dreampie.orm.Model;
 import cn.dreampie.orm.annotation.Table;
+import cn.dreampie.security.Subject;
+import com.qianmo.eshop.common.ConstantsUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +30,8 @@ public class buyer_receive_address extends Model<buyer_receive_address> {
     //添加收货地址
     public boolean Add(buyer_receive_address model){
         boolean result;
+        model.set("area_id", ConstantsUtils.ALL_AREA_ID);
+        model.set("buyer_id", Subject.getPrincipal().getModel().get("id"));
         if (model.save()){
             result = true;
         }

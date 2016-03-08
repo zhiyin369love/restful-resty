@@ -25,8 +25,8 @@ import java.util.*;
  * wss
  */
 
-@API("seller/order")
-public class OrderAllResouce extends ApiResource {
+@API("/order")
+public class OrderAllResouce extends SellerResource {
 
     @GET
     public HashMap getList(String buyer_name,String date_range,Integer order_num,Integer order_status,Integer page_num,Integer page_size,Integer seller_id,Integer sort_col,String sort_rule) {

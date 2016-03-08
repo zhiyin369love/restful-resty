@@ -23,8 +23,8 @@ import java.util.HashMap;
  * author:wss
  * 传入参数说明：buyer_id 买家id 、page_start 第几条开始 、	page_step 返回多少条
  */
-@API("buyer/credit")
-public class CreditResource extends ApiResource {
+@API("/credit")
+public class CreditResource extends BuyerResource {
     @GET
     public HashMap getCredit(int buyer_id,int page_start,int 	page_step) {
 
