@@ -41,9 +41,8 @@ public class OrderAddResource extends BuyerResource {
     //添加订单
     @POST
     @Transaction
-    public WebResult addOrder(int buyer_receive_id, String cart_list) {
+    public WebResult addOrder(int buyer_receive_id, String cart_list,Long seller_id) {
         long buyer_id = SessionUtil.getUserId();
-        long seller_id = SessionUtil.getUserId();
         try {
            HashMap result = new HashMap();
            //订单编号组成的规则、年月日时分秒+4位随机数
