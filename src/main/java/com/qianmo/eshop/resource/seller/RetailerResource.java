@@ -411,7 +411,7 @@ public class RetailerResource extends ApiResource {
      * @param goods_num  商品编号
      * @param goods_name 商品名称
      */
-    @GET("/retailerListaaa")
+    @GET("/getBuyOrNot")
     public HashMap getRetailerList(Long buyer_id, Long seller_id, Long goods_num, String goods_name) {
         HashMap resultMap = new HashMap();
         //可购买总数
@@ -420,21 +420,20 @@ public class RetailerResource extends ApiResource {
         long couldNotBuy = 0l;
         try {
             String sql = "SELECT COUNT(*) cn, 0 FROM goods_sku_price a LEFT JOIN goods_info b" +
-                    "ON a.goods_num = b.num  where a.buyer_id = ? and b.seller_id = ? ";
+                    "ON a.goods_num = b.num  where a.buyer_id = ? and b.seller_id = ? and a.status = ? ";
             if (goods_num != null && goods_num != 0 && !StringUtils.isEmpty(goods_name)) {
-                sql += " and a.goods_num = ? and b.name = ? and a.status = ？";
-                couldBuy = getCountByGoods(sql, buyer_id, seller_id, goods_num, goods_name, ConstantsUtils.GOODS_SKU_PRICE_BUY_ENBLE);
-                couldNotBuy = getCountByGoods(sql, buyer_id, seller_id, goods_num, goods_name, ConstantsUtils.GOODS_SKU_PRICE_BUY_DISABLE);
+                sql += " and a.goods_num = ? and b.name = ? ";
+                couldBuy = getCountByGoods(sql, buyer_id, seller_id, ConstantsUtils.GOODS_SKU_PRICE_BUY_ENBLE, goods_num, goods_name);
+                couldNotBuy = getCountByGoods(sql, buyer_id, seller_id, ConstantsUtils.GOODS_SKU_PRICE_BUY_DISABLE, goods_num, goods_name);
             } else if (goods_num != null && goods_num != 0) {
-                sql += " and a.goods_num = ?  and a.status = ？";
-                couldBuy = getCountByGoods(sql, buyer_id, seller_id, goods_num, ConstantsUtils.GOODS_SKU_PRICE_BUY_ENBLE);
-                couldNotBuy = getCountByGoods(sql, buyer_id, seller_id, goods_num, ConstantsUtils.GOODS_SKU_PRICE_BUY_DISABLE);
+                sql += " and a.goods_num = ?  ";
+                couldBuy = getCountByGoods(sql, buyer_id, seller_id, ConstantsUtils.GOODS_SKU_PRICE_BUY_ENBLE, goods_num);
+                couldNotBuy = getCountByGoods(sql, buyer_id, seller_id, ConstantsUtils.GOODS_SKU_PRICE_BUY_DISABLE, goods_num);
             } else if (!StringUtils.isEmpty(goods_name)) {
-                sql += " and b.name = ?  and a.status = ？";
-                couldBuy = getCountByGoods(sql, buyer_id, seller_id, goods_name, ConstantsUtils.GOODS_SKU_PRICE_BUY_ENBLE);
-                couldNotBuy = getCountByGoods(sql, buyer_id, seller_id, goods_name, ConstantsUtils.GOODS_SKU_PRICE_BUY_DISABLE);
+                sql += " and b.name = ?  ";
+                couldBuy = getCountByGoods(sql, buyer_id, seller_id, ConstantsUtils.GOODS_SKU_PRICE_BUY_ENBLE, goods_name);
+                couldNotBuy = getCountByGoods(sql, buyer_id, seller_id, ConstantsUtils.GOODS_SKU_PRICE_BUY_DISABLE, goods_name);
             } else {
-                sql += " and a.status = ？";
                 couldBuy = getCountByGoods(sql, buyer_id, seller_id, ConstantsUtils.GOODS_SKU_PRICE_BUY_ENBLE);
                 couldNotBuy = getCountByGoods(sql, buyer_id, seller_id, ConstantsUtils.GOODS_SKU_PRICE_BUY_DISABLE);
             }

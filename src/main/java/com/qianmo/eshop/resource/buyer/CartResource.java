@@ -203,12 +203,10 @@ public class CartResource extends BuyerResource {
     goodsskulist.add(goodssku);
     //商品型号列表
     jsonObject.put("goods_sku_list", goodsskulist);
-
     //商品id
     jsonObject.put("goods_num", goods_infotemp.get("num"));
     //商品名称
     jsonObject.put("goods_name", goods_infotemp.get("name"));
-    //商品主图,商品货号，商品生产厂家都已经存在goods_infotemp中了。
     //商品主图
     jsonObject.put("main_pic_url",goods_infotemp.get("main_pic_url"));
     //商品生产厂家
@@ -217,7 +215,8 @@ public class CartResource extends BuyerResource {
   }
 
   private JSONObject getGoods_sku(long buyer_id, cart tempCart) {
-    goods_sku goodssku = goods_sku.dao.findById(tempCart.get("goods_sku_id"));
+    long goodsSkuId = tempCart.<Long>get("goods_sku_id");
+    goods_sku goodssku = goods_sku.dao.findById(goodsSkuId);
     JSONObject jsonObject = new JSONObject();
     //购物车id
     jsonObject.put("cart_id", tempCart.get("id"));
@@ -234,6 +233,13 @@ public class CartResource extends BuyerResource {
     jsonObject.put("sku_id", goodssku.get("id"));
     //规格名称
     jsonObject.put("sku_name", goodssku.get("name"));
+    goods_sku_price goodsSkuPrice = goods_sku_price.dao.findFirstBy(" sku_id = ? and buyer_id = ?", goodsSkuId,buyer_id);
+    //商品下架或者不可购买，都是属于下架状态
+    if (goodssku.<Long>get("status") ==0 || (goodsSkuPrice != null && goodsSkuPrice.<Long>get("status") == 0)) {
+      jsonObject.put("status", 0);
+    } else {
+      jsonObject.put("status", 1);
+    }
     return jsonObject;
   }
 }

@@ -7,6 +7,7 @@ import com.qianmo.eshop.common.ConstantsUtils;
 import com.qianmo.eshop.model.cart.cart;
 import com.qianmo.eshop.model.credit.credit;
 import com.qianmo.eshop.model.goods.goods_info;
+import com.qianmo.eshop.model.goods.goods_sku;
 import com.qianmo.eshop.model.order.order_info;
 import com.qianmo.eshop.model.user.user_info;
 import com.qianmo.eshop.resource.z_common.ApiResource;
@@ -95,7 +96,7 @@ public class IndexResource extends SellerResource {
   }
 
   private Long getGoodsBySellIdStatus(long seller_id,int status) {
-    return goods_info.dao.findFirst("select count(*) cn from goods_info where seller_id = ? and status = ?", seller_id, status).<Long>get("cn");
+    return goods_sku.dao.findFirst("select count(*) cn from goods_sku where seller_id = ? and status = ?", seller_id, status).<Long>get("cn");
   }
 
 }
