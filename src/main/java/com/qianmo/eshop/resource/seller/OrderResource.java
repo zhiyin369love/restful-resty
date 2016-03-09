@@ -196,25 +196,25 @@ public class OrderResource extends SellerResource {
     }
         //商品实体封装
         public List<HashMap> getOrderHashMaps(long id) {
-            HashMap result2 =  new HashMap();
+            HashMap resultGoods =  new HashMap();
             //商品信息
-            String sql2_1 = YamlRead.getSQL("getFirldGoodsInfoAll","seller/order");
+            String sqlGoodInfo = YamlRead.getSQL("getFirldGoodsInfoAll","seller/order");
             //商品规格列表
-            String sql2_2 = YamlRead.getSQL("getFieldGoodsSkuAll","seller/order");
+            String sqlGoodsSku = YamlRead.getSQL("getFieldGoodsSkuAll","seller/order");
             //商品分类
-            String sql2_3 = YamlRead.getSQL("getFieldGoodsTypeALL","seller/order");
+            String sqlGoodType = YamlRead.getSQL("getFieldGoodsTypeALL","seller/order");
             Map goodsResult = new HashMap();
 
-            List<goods_info>  goods_infoList =  goods_info.dao.find(sql2_1,id);
+            List<goods_info>  goods_infoList =  goods_info.dao.find(sqlGoodInfo,id);
             List<HashMap> resultMap = new ArrayList<HashMap>();
             for (goods_info goodlist: goods_infoList ){
-                result2.clear();
-                result2.put("goods_info", goods_info.dao.find(sql2_1,id));
+                resultGoods.clear();
+                resultGoods.put("goods_info", goods_info.dao.find(sqlGoodInfo,id));
                 long goodsNum = (Long)((JSONObject)goodlist.get("goods_info")).get("id");
                 long category_id = (Long)((JSONObject)goodlist.get("goods_info")).get("category_id");
-                result2.put("goods_sku_list", goods_sku.dao.find(sql2_2,goodsNum));
-                result2.put("goods_type", goods_category.dao.find(sql2_3,category_id));
-                resultMap.add(result2);
+                resultGoods.put("goods_sku_list", goods_sku.dao.find(sqlGoodsSku,goodsNum));
+                resultGoods.put("goods_type", goods_category.dao.find(sqlGoodType,category_id));
+                resultMap.add(resultGoods);
             }
             return resultMap;
         }
