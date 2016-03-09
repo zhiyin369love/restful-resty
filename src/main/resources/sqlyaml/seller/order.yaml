@@ -27,9 +27,10 @@ getFieldGoodsSkuListAll:
      select gs.amount,gsp.price,gsp.sku_id,gs.`name`
          from goods_sku_price gsp LEFT JOIN  goods_sku gs on gsp.goods_num = gs.goods_num LEFT JOIN goods_info gi on gs.goods_num = gi.id LEFT JOIN order_goods og on gi.num = og.goods_num LEFT JOIN order_info oi on og.order_num = oi.num where oi.id = ?
 getFieldGoodsTypeALL:
-    select gi.`name`,gi.type_id
+    select gi.name,gi.type_id
         from goods_info gi LEFT JOIN order_goods og on gi.num = og.goods_num LEFT JOIN order_info oi on og.order_num = oi.num where oi.id = ?
-
+getFieldGoodsSkuAll:
+    select gs.amount as count,gs.status as goods_status,gsp.price,gsp.sku_id,gs.name as sku_name from goods_sku_price gsp ,goods_sku gs , order_goods og where gs.goods_num = gsp.goods_num = og.goods_num = ?
 getFirldOrderRemarkAll:
    select order_remark.created_at, order_remark.details,order_remark.op,order_remark.order_num,order_remark.reason,order_remark.user_id
    from order_remark
