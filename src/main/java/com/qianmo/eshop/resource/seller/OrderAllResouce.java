@@ -92,6 +92,7 @@ public class OrderAllResouce extends SellerResource {
         if (data_start != null && data_end != null){
             order_user_sql = order_user_sql + " and ou.created_at > " + DateUtils.formatDate(data_start,DateUtils.format_yyyyMMdd) + " and ou.created_at <" + DateUtils.formatDate(data_end,DateUtils.format_yyyyMMdd) ;
         }
+
         List<order_user> order_userList = order_user.dao.find(order_user_sql, seller_id);
         for (order_user or_numlist : order_userList)
         {
