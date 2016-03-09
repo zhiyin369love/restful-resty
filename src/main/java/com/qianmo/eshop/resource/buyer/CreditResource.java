@@ -30,7 +30,7 @@ import java.util.List;
 @API("/credit")
 public class CreditResource extends BuyerResource {
     @GET
-    public HashMap getCredit(int page_start,int 	page_step) {
+    public HashMap getCredit(int page_start,int page_step) {
         long buyer_id = SessionUtil.getUserId();
         HashMap resulttall_count = new HashMap();
         try {
@@ -41,14 +41,14 @@ public class CreditResource extends BuyerResource {
             //订单备注列表
             String sql4 = YamlRead.getSQL("getFirldOrderRemarkAll","buyer/order");
             //商品信息
-            HashMap result2 =  new HashMap();
+            HashMap result_goods =  new HashMap();
             List<credit>  CreditOrderList =  credit.dao.find(sqlcredit,buyer_id);
             List<HashMap> resultMap = new ArrayList<HashMap>();
-            HashMap result3 = new HashMap();
+            HashMap result_buyer = new HashMap();
             for (credit credit_list : CreditOrderList){
                 result.clear();
                 resultall.clear();
-                result2.clear();
+                result_goods.clear();
                 //一个订单对应一个赊账
                 int id = credit_list.get("id");
                 int status = credit_list.get("status");
@@ -56,22 +56,21 @@ public class CreditResource extends BuyerResource {
                 OrderResource resource = new OrderResource();
                 List<HashMap> resultMap2 = resource.getOrderHashMaps(credit_id_list);
                 //用户信息
-                String sql1_1 = YamlRead.getSQL("getFieldBuyerInfoAll","buyer/order");
-                String sql1_2 = YamlRead.getSQL("getFieldBuyerReceiveAll","buyer/order");
+                String sqlbuyerinfo = YamlRead.getSQL("getFieldBuyerInfoAll","buyer/order");
+                String sqlbuyerreceive = YamlRead.getSQL("getFieldBuyerReceiveAll","buyer/order");
                 order_user o = new order_user();
-                if(order_user.dao.find(sql1_1,buyer_id)!=null && order_user.dao.find(sql1_1,buyer_id).size()>0){
-                    o = order_user.dao.find(sql1_1,buyer_id).get(0);
+                if(order_user.dao.find(sqlbuyerinfo,buyer_id)!=null && order_user.dao.find(sqlbuyerinfo,buyer_id).size()>0){
+                    o = order_user.dao.find(sqlbuyerinfo,buyer_id).get(0);
                 }
-                result3.put("buyer_id",o.get("buyer_id"));
-                result3.put("name",o.get("name"));
-                result3.put("buyer_receive", buyer_receive_address.dao.find(sql1_2,buyer_id));
-
+                result_buyer.put("buyer_id",o.get("buyer_id"));
+                result_buyer.put("name",o.get("name"));
+                result_buyer.put("buyer_receive", buyer_receive_address.dao.find(sqlbuyerreceive,buyer_id));
                 //一个买家对应对个订单实体
-                result.put("buyer_info",result3);
+                result.put("buyer_info",result_buyer);
                 result.put("goods_list",resultMap2);
                 result.put("order_info", order_info.dao.find(sqlcredit,buyer_id));
                 result.put("order_remark_list", order_remark.dao.find(sql4,buyer_id));
-                result2.put("order",result);
+                result_goods.put("order",result);
                 //赊账实体表
                 FullPage<order_user> inviteCodeList  =  order_user.dao.fullPaginateBy(page_start/page_step + 1,page_step,"page_start = ? and page_step = ?",o.get("seller_id"), ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE);
                 HashMap count =  new HashMap();
