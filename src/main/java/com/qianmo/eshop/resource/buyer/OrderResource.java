@@ -62,7 +62,7 @@ import java.util.*;
 public class OrderResource extends BuyerResource {
 
     @GET("/:id")
-    public HashMap getList(int id) {
+    public HashMap getOrderDetail(int id) {
        HashMap result = new HashMap();
        try {
 
@@ -160,7 +160,7 @@ public class OrderResource extends BuyerResource {
 
     //获取所有订单详情
     @GET
-    public HashMap getList(Integer order_num,Integer order_status,Integer page_start,Integer page_step) {
+    public HashMap getOrderList(Integer order_num,Integer order_status,Integer page_start,Integer page_step) {
         //根据循环获取买家Id
         long buyerId = SessionUtil.getUserId();
         //根据买家id获取订单号列表
@@ -180,7 +180,7 @@ public class OrderResource extends BuyerResource {
             for(order_user orderUser : orderUserList) {
                 orderMap.clear();
                 OrderResource resource = new OrderResource();
-                orderMap = resource.getList(order_num);
+                orderMap = resource.getOrderDetail(order_num);
                 resultMapList.add(orderMap);
             }
         }
