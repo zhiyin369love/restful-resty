@@ -121,10 +121,8 @@ public class CreditResource extends SellerResource {
                 //买家信息实体
                 String sql_buyer_info = YamlRead.getSQL("getFieldBuyerInfoAll", "seller/order");
                 String sql_buyer_receive = YamlRead.getSQL("getFieldBuyerReceiveAll", "seller/order");
-                order_user o = new order_user();
-                if (order_user.dao.find(sql_buyer_info, seller_id) != null && order_user.dao.find(sql_buyer_info, seller_id).size() > 0) {
-                    o = order_user.dao.find(sql_buyer_info, seller_id).get(0);
-                }
+                order_user o = order_user.dao.findFirst(sql_buyer_info, seller_id);
+
                 result_buyer_info.put("buyer_id", o.get("buyer_id"));
                 result_buyer_info.put("name", o.get("name"));
                 result_buyer_info.put("buyer_receive", buyer_receive_address.dao.find(sql_buyer_receive, seller_id));
