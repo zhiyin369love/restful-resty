@@ -40,6 +40,7 @@ public class CreditResource extends SellerResource {
         //long buyer_id = SessionUtil.getUserId();
         HashMap all = new HashMap();
         HashMap result_buyer_credit = new HashMap();
+        List<HashMap> creditsList = new ArrayList<HashMap>();
         if (show_type == 0) {
             //用户信息
             List<credit> order_users_list = new ArrayList<credit>();
@@ -78,25 +79,24 @@ public class CreditResource extends SellerResource {
                     order_info_count = credit_order_count.get(0);
                 }
 
+                //分页
+                //FullPage<order_user> inviteCodeList  =  order_user.dao.fullPaginateBy(page_start/page_step + 1,page_step,"page_start = ? and page_step = ?",seller_id, ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE);
+                FullPage<credit> inviteCodeList = credit.dao.fullPaginateBy(page_start / page_step + 1, page_step, "id = ?", seller_id, ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE);
+                HashMap count = new HashMap();
+                count.put("total_count", inviteCodeList.getTotalRow());
+                String sqlcre = YamlRead.getSQL("getFirldCreditAll", "seller/credit");
+                credit order_name_list_credit = credit.dao.findFirst(sqlcre, seller_id);
                 result_buyer_credit.put("total_order_count", order_info_count.get("num"));
                 result_buyer_credit.put("total_price", order_info_list.get("total_price"));
+                result_buyer_credit.put("buyer_info", resultMapBuyer);
+                result_buyer_credit.put("credit_id", order_name_list_credit.get("id"));
+                result_buyer_credit.put("page_info", count);
+                result_buyer_credit.put("status", order_name_list_credit.get("status"));
+                creditsList.add(result_buyer_credit);
 
             }
-            //分页
-            //FullPage<order_user> inviteCodeList  =  order_user.dao.fullPaginateBy(page_start/page_step + 1,page_step,"page_start = ? and page_step = ?",seller_id, ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE);
-            FullPage<credit> inviteCodeList = credit.dao.fullPaginateBy(page_start / page_step + 1, page_step, "id = ?", seller_id, ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE);
-            HashMap count = new HashMap();
-            count.put("total_count", inviteCodeList.getTotalRow());
 
-            String sqlcre = YamlRead.getSQL("getFirldCreditAll", "seller/credit");
-            credit order_name_list_credit = credit.dao.findFirst(sqlcre, seller_id);
-
-            result_buyer_credit.put("buyer_info", resultMapBuyer);
-            result_buyer_credit.put("credit_id", order_name_list_credit.get("id"));
-            result_buyer_credit.put("page_info", count);
-            result_buyer_credit.put("status", order_name_list_credit.get("status"));
-
-            all.put("credit_list", result_buyer_credit);
+            all.put("credit_list", creditsList);
         } else if (show_type == 1) {
             HashMap resultall = new HashMap();
             HashMap result_buyer_info = new HashMap();
