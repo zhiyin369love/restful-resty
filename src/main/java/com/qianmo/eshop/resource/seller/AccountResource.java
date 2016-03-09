@@ -1,10 +1,8 @@
 package com.qianmo.eshop.resource.seller;
 
 
-import cn.dreampie.common.http.result.HttpStatus;
 import cn.dreampie.route.annotation.*;
 import com.qianmo.eshop.common.CommonUtils;
-import com.qianmo.eshop.model.buyer.buyer_receive_address;
 import com.qianmo.eshop.model.user.user_info;
 
 import java.util.HashMap;

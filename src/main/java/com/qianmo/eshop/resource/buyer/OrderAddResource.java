@@ -37,7 +37,6 @@ import java.util.*;
 @API("/order")
 public class OrderAddResource extends BuyerResource {
 
-
     //添加订单
     @POST
     @Transaction

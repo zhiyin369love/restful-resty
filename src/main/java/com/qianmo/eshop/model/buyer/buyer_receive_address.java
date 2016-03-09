@@ -16,7 +16,7 @@ public class buyer_receive_address extends Model<buyer_receive_address> {
     public final static buyer_receive_address dao = new buyer_receive_address();
 
     //获取收货地址列表
-    public List<buyer_receive_address> List(long BuyerId){
+    public List<buyer_receive_address> List(Object BuyerId){
         List<buyer_receive_address> receiveAddressList = dao.findBy("buyer_id = ?",BuyerId);
         return receiveAddressList;
     }
