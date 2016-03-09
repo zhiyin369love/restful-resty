@@ -30,7 +30,7 @@
             <!--oss.sonatype.org是远程的仓库-->
             <!--<url>https://oss.sonatype.org/content/repositories/snapshots</url>-->
             <!--192.168.1.108是公司内网私有仓库,自行选择使用哪个-->
-            <url>https://192.168.1.108:8081/nexus/content/repositories/snapshots</url>
+            <url>http://192.168.1.108:8081/nexus/content/repositories/snapshots</url>
             <releases>
                 <enabled>true</enabled>
             </releases>
