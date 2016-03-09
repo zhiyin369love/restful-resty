@@ -55,7 +55,12 @@ public class ConstantsUtils {
 	public final static Integer ORDER_INFO_STATUS_FINISHED = 3;
 	/**********************************************************/
 
-
+  /********************************按时间段筛选订单***********************************/
+	   //(1:表示今天，7表示近7天，30:近30天)
+    public final static Integer ORDER_TIME_TODAY = 1;
+	public final static Integer ORDER_TIME_F= 7;
+	public final static Integer ORDER_TIME_s= 30;
+/********************************************************/
 
 
 
