@@ -4,6 +4,7 @@ import cn.dreampie.common.http.result.HttpStatus;
 import cn.dreampie.common.http.result.WebResult;
 import cn.dreampie.common.util.Maper;
 import cn.dreampie.orm.page.FullPage;
+import cn.dreampie.orm.page.Page;
 import cn.dreampie.route.annotation.API;
 import cn.dreampie.route.annotation.GET;
 import cn.dreampie.route.annotation.PUT;
@@ -154,12 +155,22 @@ public class OrderResource extends SellerResource {
         if(order_status != null && order_status !=0) {
             orderInfoSql += " and a.status =  " + order_status ;
         }
+        if(page_start == null || page_start ==0) {
+            page_start = ConstantsUtils.DEFAULT_PAGE_START;
+        }
+        if(page_step == null || page_step == 0) {
+            page_step = ConstantsUtils.DEFAULT_PAGE_STEP;
+        }
+        int pageNumber = page_start/page_step + 1;
+        Page<order_info> orderUserPage = null;
         List<order_info> order_userList = null;
         //判断buyer_name_num是订单号还是商家名称
         if (exitsBuyerNameNum) {
-            order_userList = order_info.dao.find(orderInfoSql,"%" + buyer_name_num + "%");
+            orderUserPage = order_info.dao.paginate(pageNumber,page_step,orderInfoSql,"%" + buyer_name_num + "%");
+            order_userList = orderUserPage == null? new ArrayList<order_info>(): orderUserPage.getList();
         } else {
-            order_userList = order_info.dao.find(orderInfoSql);
+            orderUserPage = order_info.dao.paginate(pageNumber,page_step,orderInfoSql);
+            order_userList = orderUserPage == null? new ArrayList<order_info>(): orderUserPage.getList();
         }
         //订单实体
         HashMap orderMap = new HashMap();

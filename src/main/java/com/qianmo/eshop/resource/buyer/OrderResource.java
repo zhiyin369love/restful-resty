@@ -3,6 +3,7 @@ package com.qianmo.eshop.resource.buyer;
 import cn.dreampie.common.http.result.HttpStatus;
 import cn.dreampie.common.http.result.WebResult;
 import cn.dreampie.common.util.Maper;
+import cn.dreampie.orm.page.Page;
 import cn.dreampie.orm.transaction.Transaction;
 import cn.dreampie.route.annotation.API;
 import cn.dreampie.route.annotation.GET;
@@ -166,11 +167,21 @@ public class OrderResource extends BuyerResource {
         //根据买家id获取订单号列表
         List<order_user> orderUserList = null;
         //如果状态不为空，则需要根据状态去找order list
+        if(page_start == null || page_start ==0) {
+            page_start = ConstantsUtils.DEFAULT_PAGE_START;
+        }
+        if(page_step == null || page_step == 0) {
+            page_step = ConstantsUtils.DEFAULT_PAGE_STEP;
+        }
+        int pageNumber = page_start/page_step + 1;
+        Page<order_user> orderUserPage = null;
         if(order_status != null && order_status != 0) {
             String getOrderNumByStatusSql = YamlRead.getSQL("getOrderNumByStatus","buyer/order");
-            orderUserList = order_user.dao.find(getOrderNumByStatusSql,order_status, buyerId);
+            orderUserPage = order_user.dao.paginate(pageNumber,page_step,getOrderNumByStatusSql,order_status, buyerId);
+            orderUserList = orderUserPage == null? new ArrayList<order_user>(): orderUserPage.getList();
         } else {
-            orderUserList = order_user.dao.findBy("buyer_id = ?", buyerId);
+            orderUserPage = order_user.dao.paginateBy(pageNumber,page_step,"buyer_id = ?", buyerId);
+            orderUserList = orderUserPage == null? new ArrayList<order_user>(): orderUserPage.getList();
         }
         //订单实体
         HashMap orderMap = new HashMap();
