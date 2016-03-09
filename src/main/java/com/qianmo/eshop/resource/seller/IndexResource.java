@@ -7,11 +7,9 @@ import com.qianmo.eshop.common.ConstantsUtils;
 import com.qianmo.eshop.common.SessionUtil;
 import com.qianmo.eshop.model.cart.cart;
 import com.qianmo.eshop.model.credit.credit;
-import com.qianmo.eshop.model.goods.goods_info;
 import com.qianmo.eshop.model.goods.goods_sku;
 import com.qianmo.eshop.model.order.order_info;
 import com.qianmo.eshop.model.user.user_info;
-import com.qianmo.eshop.resource.z_common.ApiResource;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -53,9 +51,9 @@ public class IndexResource extends SellerResource {
       //出售中的商品
       long sellingGoods = getGoodsBySellIdStatus(seller_id,ConstantsUtils.GOODS_SELLING);
       //今日订单数
-      long orderNum = order_info.dao.findFirst("select count(*) cn from order_info where seller_id = ?  and status != ? and date(created_at) = date(sysdate())", seller_id, ConstantsUtils.ORDER_INFO_STATUS_CACEL).<Long>get("cn");
+      long orderNum = order_info.dao.findFirst("select count(*) cn from order_info where seller_id = ?  and status != ? and date(created_at) = date(sysdate())", seller_id, ConstantsUtils.ORDER_INFO_STATUS_CANCEL).<Long>get("cn");
       //今日交易额
-      double totalPrice = order_info.dao.findFirst("select sum(total_price) cn from order_info where seller_id = ?  and status != ? and date(created_at) = date(sysdate())", seller_id, ConstantsUtils.ORDER_INFO_STATUS_CACEL).<Long>get("cn");
+      double totalPrice = order_info.dao.findFirst("select sum(total_price) cn from order_info where seller_id = ?  and status != ? and date(created_at) = date(sysdate())", seller_id, ConstantsUtils.ORDER_INFO_STATUS_CANCEL).<Long>get("cn");
       //待发货订单数
       long waitSendOrders = getOrderInfoBySellingStatus(seller_id, ConstantsUtils.ORDER_INFO_STATUS_WAIT_RECEIVE);
       //待收款订单数

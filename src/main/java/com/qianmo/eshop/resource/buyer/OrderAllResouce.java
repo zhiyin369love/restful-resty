@@ -4,7 +4,9 @@ import cn.dreampie.common.util.Maper;
 import cn.dreampie.orm.page.FullPage;
 import cn.dreampie.route.annotation.API;
 import cn.dreampie.route.annotation.GET;
+import com.alibaba.fastjson.JSONObject;
 import com.qianmo.eshop.common.ConstantsUtils;
+import com.qianmo.eshop.common.SessionUtil;
 import com.qianmo.eshop.common.YamlRead;
 import com.qianmo.eshop.model.buyer.buyer_receive_address;
 import com.qianmo.eshop.model.goods.goods_info;
@@ -30,18 +32,46 @@ import java.util.*;
 public class OrderAllResouce extends BuyerResource {
     @GET
     public HashMap getList(Integer order_num,Integer order_status,Integer page_start,Integer page_step) {
-
-        HashMap result = new HashMap();
+        //根据循环获取买家Id
+        long buyerId = SessionUtil.getUserId();
+        //根据买家id获取订单号列表
+        List<order_user> orderUserList = null;
+        //如果状态不为空，则需要根据状态去找order list
+        if(order_status != null && order_status != 0) {
+            String getOrderNumByStatusSql = YamlRead.getSQL("getOrderNumByStatus","buyer/order");
+            orderUserList = order_user.dao.find(getOrderNumByStatusSql,order_status, buyerId);
+        } else {
+            orderUserList = order_user.dao.findBy("buyer_id = ?", buyerId);
+        }
+        //订单实体
+        HashMap orderMap = new HashMap();
+        //返回订单列表
+        List<HashMap> resultMapList = new ArrayList<HashMap>();
+        if (orderUserList != null && orderUserList.size() > 0) {
+            for(order_user orderUser : orderUserList) {
+                orderMap.clear();
+                OrderResource resource = new OrderResource();
+                orderMap = resource.getList(order_num);
+                resultMapList.add(orderMap);
+            }
+        }
+        HashMap resultMap = new HashMap();
+        resultMap.put("order_list",resultMapList);
+        JSONObject pageInfo = new JSONObject();
+        pageInfo.put("total_count",resultMapList.size());
+        resultMap.put("page_info",pageInfo);
+        return resultMap;
+       /* HashMap result = new HashMap();
         String sql3 = YamlRead.getSQL("getFieldOrderInfoAll","buyer/order");
         String sql4 = YamlRead.getSQL("getFirldOrderRemarkAll","buyer/order");
 
         //商品信息
         HashMap result2 =  new HashMap();
 
-       /* String sql2_1 = YamlRead.getSQL("getFirldGoodsInfoAll","buyer/order");
+       *//* String sql2_1 = YamlRead.getSQL("getFirldGoodsInfoAll","buyer/order");
         String sql2_2 = YamlRead.getSQL("getFieldGoodsSkuListAll","buyer/order");
         String sql2_3 = YamlRead.getSQL("getFieldGoodsTypeALL","buyer/order");
-*/
+*//*
 
         OrderResource resource = new OrderResource();
         List<HashMap> resultMap = resource.getOrderHashMaps(order_num);
@@ -75,7 +105,7 @@ public class OrderAllResouce extends BuyerResource {
         result.put("order_remark_list", order_remark.dao.find(sql4,order_num));
         result.put("page_info",count);
 
-        return result;
+        return result;*/
     }
 
 }

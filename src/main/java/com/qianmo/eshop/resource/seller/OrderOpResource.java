@@ -3,20 +3,15 @@ package com.qianmo.eshop.resource.seller;
 import cn.dreampie.common.http.result.HttpStatus;
 import cn.dreampie.common.http.result.WebResult;
 import cn.dreampie.route.annotation.API;
-import cn.dreampie.route.annotation.DELETE;
 import cn.dreampie.route.annotation.PUT;
 import com.qianmo.eshop.common.ConstantsUtils;
 import com.qianmo.eshop.common.YamlRead;
-import com.qianmo.eshop.model.goods.goods_sku;
 import com.qianmo.eshop.model.order.order_info;
 import com.qianmo.eshop.model.credit.credit;
 import com.qianmo.eshop.model.order.order_remark;
 import com.qianmo.eshop.model.order.order_user;
-import com.qianmo.eshop.resource.z_common.ApiResource;
-import com.qianmo.eshop.resource.buyer.CartResource;
 
 import java.util.HashMap;
-import java.util.List;
 
 /**
  * 卖家操作订单
@@ -39,7 +34,7 @@ public class OrderOpResource extends SellerResource {
                 new order_remark().set("order_num",id).set("op",op).set("details",remark).save();
             }else if (op == ConstantsUtils.SELLER_ORDER_OP_PAY_STATUS){
                 //取消
-                order_info.dao.update("update order_info set status = ?  where id = ? ", ConstantsUtils.ORDER_INFO_STATUS_CACEL, id);
+                order_info.dao.update("update order_info set status = ?  where id = ? ", ConstantsUtils.ORDER_INFO_STATUS_CANCEL, id);
                 new order_remark().set("order_num",id).set("op",op).set("details",remark).save();
             }else if (op == ConstantsUtils.SELLER_ORDER_OP_PAY_GOODS){
                 //卖家备注订单
@@ -59,7 +54,7 @@ public class OrderOpResource extends SellerResource {
                 new credit().set("area_id",ConstantsUtils.ALL_AREA_ID).set("order_num",id).set("status",0).set("buyer_id",o.get("buyer_id")).set("seller_id",o.get("seller_id")).save();
             }else {
                 //当卖家不同意买家赊账时订单取消 op==5时
-                order_info.dao.update("update order_info set status = ? where id = ? ",ConstantsUtils.ORDER_INFO_STATUS_CACEL,id);    //注：除了要删除订单主表之外，可能还要删除其他关联表，“待开发”
+                order_info.dao.update("update order_info set status = ? where id = ? ",ConstantsUtils.ORDER_INFO_STATUS_CANCEL,id);    //注：除了要删除订单主表之外，可能还要删除其他关联表，“待开发”
                 return new WebResult(HttpStatus.OK, "删除订单成功");
             }
             return new WebResult(HttpStatus.OK, "操作订单成功");

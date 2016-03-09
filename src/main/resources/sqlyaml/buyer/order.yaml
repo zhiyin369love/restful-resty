@@ -36,4 +36,32 @@ getFirldOrderRemarkAll:
 getFieldSellerBankAll:
    select sb.account_address,sb.account_name,sb.account_num,sb.name from seller_bank sb where sb.seller_id = ?
 
+getSellPayList:
+  SELECT id pay_id,NAME pay_name,seller_id,details,STATUS FROM seller_pay
+
+getOrderNumByStatus:
+  SELECT a.* FROM order_user a LEFT JOIN order_info b ON a.order_num = b.num
+      WHERE b.num IS NOT NULL AND b.status = ? AND a.buyer_id = ?
+
+getBuyerPrice:
+   SELECT
+     IFNULL(price, list_price) price
+   FROM
+     (SELECT
+       price,
+       NULL list_price
+     FROM
+       goods_sku_price a
+     WHERE a.buyer_id = ?
+       AND a.seller_id = ?
+       AND a.sku_id = ?
+     UNION
+     ALL
+     SELECT
+       NULL price,
+       b.list_price
+     FROM
+       goods_sku b
+     WHERE b.id = ?) a
+
 

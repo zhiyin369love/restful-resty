@@ -1,6 +1,5 @@
 getFieldGoodsSkuPriceAll:
   select  gsp.price from goods_sku_price gsp where gsp.sku_id = ? and gsp.buyer_id = ? and gsp.seller_id = ?
-  where a.fieldid = ?
 
 #获取商品信息
 findGoods:

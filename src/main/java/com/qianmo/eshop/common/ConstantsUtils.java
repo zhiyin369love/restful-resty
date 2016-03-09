@@ -46,13 +46,15 @@ public class ConstantsUtils {
 
 	/**************************订单状态**************************/
 	/**订单状态-已取消**/
-	public final static Integer ORDER_INFO_STATUS_CACEL = 0;
+	public final static Integer ORDER_INFO_STATUS_CANCEL = 0;
 	/**订单状态-已创建**/
 	public final static Integer ORDER_INFO_STATUS_CREATED = 1;
-	/**订单状态-待收货**/
+	/**订单状态-待收货/待发货**/
 	public final static Integer ORDER_INFO_STATUS_WAIT_RECEIVE = 2;
+	/**订单状态-已发货发货**/
+	public final static Integer ORDER_INFO_STATUS_ALREADY = 3;
 	/**订单状态-已完成**/
-	public final static Integer ORDER_INFO_STATUS_FINISHED = 3;
+	public final static Integer ORDER_INFO_STATUS_FINISHED = 4;
 	/**********************************************************/
 
   /********************************按时间段筛选订单***********************************/
@@ -186,4 +188,14 @@ public class ConstantsUtils {
 	/**升序**/
 	public final static Integer SORT_ASC = 2;
 	/*************************************************************/
+
+	/**************************支付方式名称**************************/
+	/**支付方式名称 **/
+	/**	1：银行汇款 2：货到付款 3：记账 4：在线支付**/
+	public final static String PAY_TYPE_NAME_ONLINNE = "在线支付";
+	public final static String PAY_TYPE_NAME_BANK = "银行汇款";
+	public final static String PAY_TYPE_NAME_CREDIT = "记账";
+	public final static String PAY_TYPE_NAME_OFFLINE = "货到付款";
+	/**********************************************************/
+
 }

@@ -1,6 +1,5 @@
 package com.qianmo.eshop.resource.seller;
 
-import cn.dreampie.common.util.Maper;
 import cn.dreampie.orm.page.FullPage;
 import cn.dreampie.route.annotation.API;
 import cn.dreampie.route.annotation.GET;
@@ -10,19 +9,11 @@ import com.qianmo.eshop.common.DateUtils;
 import com.qianmo.eshop.common.SessionUtil;
 import com.qianmo.eshop.common.YamlRead;
 import com.qianmo.eshop.model.buyer.buyer_receive_address;
-import com.qianmo.eshop.model.goods.goods_info;
-import com.qianmo.eshop.model.goods.goods_sku;
-import com.qianmo.eshop.model.goods.goods_category;
-import com.qianmo.eshop.model.order.order_goods;
 import com.qianmo.eshop.model.order.order_info;
 import com.qianmo.eshop.model.order.order_remark;
 import com.qianmo.eshop.model.order.order_user;
-import com.qianmo.eshop.resource.buyer.*;
 import com.qianmo.eshop.resource.buyer.OrderResource;
-import com.qianmo.eshop.resource.z_common.ApiResource;
-import org.apache.poi.ss.formula.functions.T;
-import  com.qianmo.eshop.resource.buyer.OrderResource;
-import java.text.SimpleDateFormat;
+
 import java.util.*;
 
 /**
@@ -132,9 +123,9 @@ public class OrderAllResouce extends SellerResource {
            // String sqlcount = YamlRead.getSQL("getFieldOrderCountAll", "seller/order");
 
             //今日订单数
-            int orderNum = order_info.dao.findFirst("select count(*) cn from order_info where seller_id = ?  and status != ? and date(created_at) = date(sysdate())", seller_id, ConstantsUtils.ORDER_INFO_STATUS_CACEL).<Integer>get("cn");
+            int orderNum = order_info.dao.findFirst("select count(*) cn from order_info where seller_id = ?  and status != ? and date(created_at) = date(sysdate())", seller_id, ConstantsUtils.ORDER_INFO_STATUS_CANCEL).<Integer>get("cn");
             //今日交易额
-            double totalPrice = order_info.dao.findFirst("select sum(total_price) cn from order_info where seller_id = ?  and status != ? and date(created_at) = date(sysdate())", seller_id, ConstantsUtils.ORDER_INFO_STATUS_CACEL).<Integer>get("cn");
+            double totalPrice = order_info.dao.findFirst("select sum(total_price) cn from order_info where seller_id = ?  and status != ? and date(created_at) = date(sysdate())", seller_id, ConstantsUtils.ORDER_INFO_STATUS_CANCEL).<Integer>get("cn");
             HashMap count2 = new HashMap();
             count2.put("count", orderNum);
             count2.put("total_price", totalPrice);

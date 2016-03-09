@@ -279,19 +279,21 @@ public class RetailerResource extends ApiResource {
      *
      * @param goods_id    商品id
      * @param goos_sku_id 商品型号id
+     * @param id 用户id
      * @param page_start  第几条开始
      * @param page_step   返回多少条
      * @param type        是否购买
      */
-    @GET("/price/:goods_id")
-    public HashMap getRetailerPriceList(Long goods_id, Long goos_sku_id, Integer page_start, Integer page_step, Integer type) {
+    @GET("/price/:id")
+    public HashMap getRetailerPriceList(Long goods_id, Long goos_sku_id,Long id, Integer page_start, Integer page_step, Integer type) {
+        //TODO id是后来接口中加的，需要确定是什么含义
         HashMap resultMap = new HashMap();
         List<goods_sku_price> goodsSkuPrices = new ArrayList<goods_sku_price>();
         List<HashMap> goodsSkuPriceResultList = new ArrayList<HashMap>();
         Map pageInfo = new HashMap();
         try {
             if (seller_id != 0l) {
-                //需要判断是否已注册,如果已经注册过，需要根据phone去找买家id，如果没有注册过，那么返回结果中is_invited是0
+                //需要判断是否已注册,如果没有注册过，那么返回结果中is_invited是0
                 if (!(page_start != null && page_start != 0 && page_step != null && page_step != 0)) {
                     page_start = ConstantsUtils.DEFAULT_PAGE_START;
                     page_step = ConstantsUtils.DEFAULT_PAGE_STEP;
