@@ -33,7 +33,7 @@ import com.qianmo.eshop.resource.buyer.OrderResource;
 @API("/credit")
 public class CreditResource extends SellerResource {
     @GET
-    public HashMap getCredit(long buyer_id,int page_start,int page_step,int show_type,Integer status) {
+    public HashMap getCredit(int page_start,int page_step,int show_type,Integer status) {
         long seller_id = SessionUtil.getUserId();
        //long buyer_id = SessionUtil.getUserId();
         HashMap all = new HashMap();
@@ -43,16 +43,16 @@ public class CreditResource extends SellerResource {
          List<credit> order_users_list = new ArrayList<credit>();
          HashMap result_buyerinfo = new HashMap();
          List<HashMap> resultMapBuyer = new ArrayList<HashMap>();
-         String sqlbuyer_info = YamlRead.getSQL("getFieldBuyerInfoAll","seller/order");
+         String sqlbuyer_info = YamlRead.getSQL("getFieldBuyerInfoAll","seller/credit");
          if (status != null){
-                 sqlbuyer_info = sqlbuyer_info + "c.status = ?";
+                 sqlbuyer_info = sqlbuyer_info + "and c.status = ?";
                  order_users_list = credit.dao.find(sqlbuyer_info,seller_id,status);
          }else {
-             order_users_list = credit.dao.find(sqlbuyer_info, seller_id); //获取一个卖家对应的所有卖家
+             order_users_list = credit.dao.find(sqlbuyer_info, seller_id); //获取一个卖家对应的所有买家
          }
          for (credit credit_list:order_users_list){
              long buyer_id_list =  credit_list.get("buyer_id");
-             String users_buyer_name = YamlRead.getSQL("getFieldUserInfoAll","seller/order");
+             String users_buyer_name = YamlRead.getSQL("getFieldUserInfoAll","seller/credit");
              List<user_info> order_name_list = user_info.dao.find(users_buyer_name,buyer_id_list);
              user_info o = new user_info();
              if(order_name_list!=null && order_name_list.size()>0){
@@ -61,6 +61,24 @@ public class CreditResource extends SellerResource {
              result_buyerinfo.put("name",o.get("name"));
              result_buyerinfo.put("buyer_id",buyer_id_list);
              resultMapBuyer.add(result_buyerinfo);
+
+             String total_order_count = YamlRead.getSQL("getFirldCountOrderUserAll","seller/credit");
+             String total_price_count = YamlRead.getSQL("getFirldCountPriceOrderInfoAll","seller/credit");
+             //订单买家汇总赊账金额
+             order_info order_info_list = new order_info();
+             order_info order_info_count = new order_info();
+             List<order_info> credit_order_id = order_info.dao.find(total_price_count,buyer_id_list,seller_id);
+             if (order_info_list != null && credit_order_id.size() > 0){
+                 order_info_list = credit_order_id.get(0);
+             }
+             List<order_info> credit_order_count = order_info.dao.find(total_order_count,buyer_id_list,seller_id);
+             if (credit_order_count != null && credit_order_count.size() > 0){
+                 order_info_count = credit_order_count.get(0);
+             }
+
+             result_buyer_credit.put("total_order_count",order_info_count.get("num"));
+             result_buyer_credit.put("total_price",order_info_list.get("total_price"));
+
          }
          //分页
          //FullPage<order_user> inviteCodeList  =  order_user.dao.fullPaginateBy(page_start/page_step + 1,page_step,"page_start = ? and page_step = ?",seller_id, ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE);
@@ -74,15 +92,13 @@ public class CreditResource extends SellerResource {
          if(order_name_list_credit !=null && order_name_list_credit.size()>0){
              cc = order_name_list_credit.get(0);
          }
-         String total_order_count = YamlRead.getSQL("getFirldCountOrderUserAll","seller/cart");
-         String total_price_count = YamlRead.getSQL("getFirldCountPriceOrderInfoAll","seller/cart");
 
-         result_buyer_credit.put("buyer_info",resultMapBuyer);
+
+
+             result_buyer_credit.put("buyer_info",resultMapBuyer);
          result_buyer_credit.put("credit_id",cc.get("id"));
          result_buyer_credit.put("page_info",count);
          result_buyer_credit.put("status",cc.get("status"));
-         result_buyer_credit.put("total_order_count",order_user.dao.find(total_order_count,seller_id));
-         result_buyer_credit.put("total_price",order_info.dao.find(total_price_count,buyer_id));
 
          all.put("credit_list",result_buyer_credit);
      }else if (show_type == 1)
