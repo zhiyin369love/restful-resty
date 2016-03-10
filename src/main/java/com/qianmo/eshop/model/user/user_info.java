@@ -5,6 +5,7 @@ import cn.dreampie.orm.annotation.Table;
 import com.alibaba.fastjson.annotation.JSONField;
 import com.qianmo.eshop.common.CommonUtils;
 import com.qianmo.eshop.common.ConstantsUtils;
+import com.qianmo.eshop.common.YamlRead;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -166,5 +167,12 @@ public class user_info extends Model<user_info> {
             }
         }
         return result;
+    }
+
+
+    public user_info getUserInfoById(Long id) {
+        String getUserInfoSql = YamlRead.getSQL("findUserInfoById","buyer/order");
+        user_info  userTemp = user_info.dao.findFirst(getUserInfoSql,id);
+        return userTemp == null ? new user_info(): userTemp;
     }
 }

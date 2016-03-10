@@ -13,14 +13,15 @@ import java.util.Properties;
  */
 public class PropertyUtil {
     //从property文件中根据key获取对应的值
-    public static String getProperty(String key) throws Exception {
+    public static String getProperty(String key)  {
         try {
             Properties p = new Properties();
             p.load(RetailerResource.class.getClassLoader().getResourceAsStream("application.properties"));
             String value = p.getProperty(key)==null?"":p.getProperty(key);
             return new String(value.getBytes("iso-8859-1"),"UTF-8");
         } catch(Exception e) {
-            throw  e;
+            e.printStackTrace();
+            return "";
         }
     }
 }

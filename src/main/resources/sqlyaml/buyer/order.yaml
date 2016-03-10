@@ -64,4 +64,11 @@ getBuyerPrice:
        goods_sku b
      WHERE b.id = ?) a
 
+findUserInfoById:
+     SELECT CONCAT(a.province_name,a.city_name,a.county_name,a.town_name,a.address) address_full,name,nickname,phone,id seller_id
+      from  user_info
+      where id = ?
+
+
+
 
