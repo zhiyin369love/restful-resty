@@ -15,7 +15,7 @@ getFileCreditOrderUserAll:
    select  ou.buyer_id,ou.seller_id from order_user ou where ou.order_num = ?
 
 getFieldBuyerReceiveAll:
-  select bra.`name`,bra.phone,bra.address
+  select bra.name,bra.phone,bra.address
   from buyer_receive_address bra LEFT JOIN order_user ou on bra.buyer_id = ou.buyer_id LEFT JOIN order_info oi on oi.num = ou.order_num
   where oi.id = ?
 

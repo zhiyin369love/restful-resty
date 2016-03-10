@@ -5,10 +5,8 @@ getFieldActivityAll:
   where a.fieldid = ?
 
 getFieldBuyerInfoAll:
-     select ou.buyer_id,ui.name
-      from user_info ui left join order_user ou on ui.id = ou.buyer_id
-       left join order_info oi on  ou.order_num = oi.num LEFT JOIN credit c on oi.num = c.order_num
-        where c.buyer_id = ?
+     select distinct c.buyer_id, c.id,c.area_id,c.order_num,c.status,c.seller_id,c.created_at,c.deleted_at from credit c
+      where c.seller_id = ?
 getFirldOrderUserCreditAll:
   select id,area_id,order_num,buyer_id,seller_id,created_at,updated_at,deleted_at from order_user where buyer_id = ?
 
@@ -17,16 +15,18 @@ getFirldSellerCreditAll:
        where  c.seller_id = ?
 
 getFirldCountOrderUserAll:
-    select COUNT(*) from order_user ou where ou.seller_id = ?
+     select SUM(oi.num) as num  from order_info oi LEFT JOIN order_user ou on oi.num = ou.order_num where ou.buyer_id = ? and oi.pay_type_id = 3 and ou.seller = ?
 
 getFirldCountPriceOrderInfoAll:
-   select oi.total_price from order_info oi LEFT JOIN order_user ou on oi.num = ou.order_num where ou.buyer_id = ? and oi.pay_type_id = 3
+   select SUM(oi.total_price) as total_price  from order_info oi LEFT JOIN order_user ou on oi.num = ou.order_num where ou.buyer_id = ? and oi.pay_type_id = 3 and ou.seller = ?
 
 getFieldOrderInfoAll:
    select oi.created_at,oi.id,oi.num,oi.status,oi.pay_status,oi.pay_type_id,oi.total_price,ou.seller_id,ui.name
     from  order_info oi left join credit c on oi.num = c.order_num left join order_user ou  on c.order_num = ou.order_num  left join user_info ui on ui.id = ou.seller_id
     where c.seller_id = ?
 
+getFieldUserInfoAll:
+   select name from user_info where id = ?
 getFirldOrderRemarkAll:
 select order_remark.created_at, order_remark.details,order_remark.op,order_remark.order_num,order_remark.reason,order_remark.user_id
    from order_remark
