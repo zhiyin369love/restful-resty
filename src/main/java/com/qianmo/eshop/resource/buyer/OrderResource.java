@@ -27,45 +27,22 @@ import com.qianmo.eshop.model.order.order_user;
 import com.qianmo.eshop.resource.z_common.ApiResource;
 import org.apache.poi.ss.formula.functions.T;
 
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
+ *
  * 查看单个订单详情
  * author:wss
- * 传入参数说明：id 订单ID
+ * @param
  */
-
-/**
- * 操作订单
- * author:wss
- * 传入参数说明：
- *    bank_id ：选择的银行ID 选填 当支付方式选择银行汇款时需传此字段、buyer_id：卖家ID 必填 、 goods:商品实体 选填 当操作选择再买一次时，传入此array
- *    id:订单编号 、op:必填 0选择支付方式 1选择银行 2我已付款 3确认收货 4取消订单 5再买一次、 value：选填 操作值（取消订单时，传入订单取消原因）
- *
- */
-
-/**
- * 获取所有订单信息 --买家订单列表
- *  author:wss
- *  传入参数：order_num：订单ID
- */
-/**
- * 买家添加订单
- * author：wss
- * 传入参数说明：
- * buyer_id 买家id 、buyer_receive_id 买家收货地址ID、
- * cart_list 购物车ID数组 String类型 ［1，2，3，4，5］、seller_id 卖家id
- */
-
-
 @API("/order")
 public class OrderResource extends BuyerResource {
 
     @GET("/:id")
-    public HashMap getOrderDetail(int id) {
+    public HashMap getOrderDetail(long id) {
        HashMap result = new HashMap();
-       try {
 
         //订单实体查询sql
         String sqlOrderinfo = YamlRead.getSQL("getFieldOrderInfoAll","buyer/order");
@@ -94,14 +71,6 @@ public class OrderResource extends BuyerResource {
         result.put("order_info",order_info.dao.find(sqlOrderinfo,id));
         result.put("order_remark_list", order_remark.dao.find(sqlOrderremark,id));
         return result;
-       }catch (Exception e) {
-        //异常情况，方便记录日志 TODO
-        result.put("buyer_info",null);
-        result.put("goods_list",null);
-        result.put("order_info",null);
-        result.put("order_remark_list",null);
-        return result;
-       }
     }
 //商品实体封装
     public List<HashMap> getOrderHashMaps(long id) {
@@ -128,38 +97,61 @@ public class OrderResource extends BuyerResource {
         return resultMap;
     }
 
-    //操作订单
+    /**
+     * 操作订单
+     * author:wss
+     * @param  bank_id 选择的银行ID 选填 当支付方式选择银行汇款时需传此字段
+     * @param goods 商品实体 选填 当操作选择再买一次时，传入此array
+     * @param  id 订单编号
+     * @param  op 必填 0选择支付方式 1选择银行 2我已付款 3确认收货 4取消订单 5再买一次
+     * @param value 选填 操作值（取消订单时，传入订单取消原因）
+     *
+     */
     @PUT
     @Transaction
-    public WebResult opOrder(Integer bank_id,int id,int op,String value, List<JSONObject> goods){
+    public WebResult opOrder(Integer bank_id,long id,int op,String value, List<JSONObject> goods){
             long buyer_id = SessionUtil.getUserId();
-            if(op == ConstantsUtils.ORDER_OP_PAY_TYPE){   // 0 选择支付方式
-                if("1".equals(value)){                               // 当支付方式选择银行支付的时候
-                    if (bank_id != null){
+            switch (op){
+                case ConstantsUtils.ORDER_OP_PAY_TYPE:
+                    if("1".equals(value)){                               // 当支付方式选择银行支付的时候
+                        if (bank_id != null){
                         order_info.dao.update("update order_info set pay_type_id = ?  where num = ? ", op, id);
+                       }
                     }
-                }
-            }else  if (op == ConstantsUtils.ORDER_OP_BANK){     // 1 选择银行  目前默认为农行
-                if (bank_id != null){
-                    //待开发
-                }
-            }else  if(op == ConstantsUtils.ORDER_OP_PAY_STATUS){    // 2 我已付款
-                order_info.dao.update("update order_info set pay_status = ?  where num = ? ",ConstantsUtils.ORDER_PAYMENT_STATUS_RECEIVED, id);
-            }else  if(op == ConstantsUtils.ORDER_OP_PAY_GOODS){    // 3 确认收货
-                order_info.dao.update("update order_info set status = ?  where num = ? ", ConstantsUtils.ORDER_INFO_STATUS_FINISHED,id);
+                    break;
+                case ConstantsUtils.ORDER_OP_BANK:
+                    if (bank_id != null){  // 1 选择银行  目前默认为农行
+                        //待开发
+                    }
+                    break;
+                case ConstantsUtils.ORDER_OP_PAY_STATUS: // 2 我已付款
+                    order_info.dao.update("update order_info set pay_status = ?  where num = ? ",ConstantsUtils.ORDER_PAYMENT_STATUS_RECEIVED, id);
+                    break;
+                case  ConstantsUtils.ORDER_OP_PAY_GOODS: // 3 确认收货
+                    order_info.dao.update("update order_info set status = ?  where num = ? ", ConstantsUtils.ORDER_INFO_STATUS_FINISHED,id);
+                    break;
+                case  ConstantsUtils.ORDER_OP_PAY_CELL: // 4 取消订单
+                    order_info.dao.update("update order_info set status = ?  where num = ? ", ConstantsUtils.ORDER_INFO_STATUS_CANCEL,id);
+                    new order_remark().set("order_num",id).set("op",op).set("reason",value).set("user_id",buyer_id).save();
+                    break;
+                case ConstantsUtils.ORDER_OP_BUYER_AGAIN:  //5再买一次  添加一次购物车
+                    CartResource  cartResource = new CartResource();
+                    cartResource.addCartGoods(goods);
+                    break;
 
-            }else if(op == ConstantsUtils.ORDER_OP_PAY_CELL){  // 4 取消订单
-                order_info.dao.update("update order_info set status = ?  where num = ? ", ConstantsUtils.ORDER_INFO_STATUS_CANCEL,id);
-                new order_remark().set("order_num",id).set("op",op).set("reason",value).set("user_id",buyer_id).save();
-            }else{  //5再买一次  添加一次购物车
-                CartResource  cartResource = new CartResource();
-                cartResource.addCartGoods(goods);
             }
             return new WebResult(HttpStatus.OK, "操作订单成功");
-
     }
 
-    //获取所有订单详情
+    /**
+     * 获取所有订单信息 --买家订单列表
+     *  author:wss
+     *  @param order_num 订单ID
+     *  @param order_status 订单状态
+     *  @param page_start
+     *  @param page_step
+     *
+     */
     @GET
     public HashMap getOrderList(Integer order_num,Integer order_status,Integer page_start,Integer page_step) {
         //根据循环获取买家Id
@@ -248,11 +240,16 @@ public class OrderResource extends BuyerResource {
         return result;*/
     }
 
-
-    //添加订单
+    /**
+     * 买家添加订单
+     * author：wss
+     * @param buyer_receive_id 买家收货地址ID、
+     * @param cart_list 购物车ID数组 String类型 ［1，2，3，4，5］
+     * @param seller_id 卖家id
+     */
     @POST
     @Transaction
-    public WebResult addOrder(int buyer_receive_id, String cart_list, Long seller_id) {
+    public HashMap addOrder(int buyer_receive_id, String cart_list, Long seller_id) {
         long buyer_id = SessionUtil.getUserId();
         HashMap result = new HashMap();
         //订单编号组成的规则、年月日时分秒+4位随机数
@@ -266,30 +263,22 @@ public class OrderResource extends BuyerResource {
         String sql3 = YamlRead.getSQL("getFieldCartAll", "buyer/cart");
         List<cart> results = cart.dao.findBy( "id in (" + cart_list +")");
         //商品表中订单总价
-        double total_price = 0;
+
+        BigDecimal total_price  = new BigDecimal(0);;
         //遍历购物车
         if (results != null && results.size() > 0) {
             for (cart cart : results) {
                 //商品单价
                 String sqlprice = YamlRead.getSQL("getBuyerPrice", "buyer/order");
                 goods_sku_price results_goods = goods_sku_price.dao.findFirst(sqlprice, cart.get("buyer_id"), cart.get("seller_id"),cart.get("goods_sku_id"),cart.get("goods_sku_id"));
-                //if (results2 != null && results2.size() > 0) {
-                //  for (goods_sku_price gsp : results2) {
                 long goods_sku_count = cart.get("goods_sku_count");
-                double goods_sku_price = results_goods.get("price");
-                double single_total_price = goods_sku_count * goods_sku_price;
-                //for (int i = 0; i < results2.size(); i++) {
-                total_price += single_total_price;
-                //}
+                BigDecimal goods_sku_price = results_goods.get("price");
+                BigDecimal single_total_price =  new BigDecimal(goods_sku_count).multiply(goods_sku_price) ;
+                total_price.add(single_total_price);
                 //插入订单商品表和订单用户表
                 new order_goods().set("area_id", cart.get("area_id")).set("goods_num", cart.get("goods_num")).set("sku_id", cart.get("goods_sku_id")).set("order_num", num).set("goods_sku_price", goods_sku_price).set("goods_sku_count", cart.get("goods_sku_count")).set("single_total_price", single_total_price).save();
-                new order_user().set("area_id", cart.get("area_id")).set("order_num", num).set("buyer_id", buyer_id).set("seller_id", seller_id).save();
+               // new order_user().set("area_id", cart.get("area_id")).set("order_num", num).set("buyer_id", buyer_id).set("seller_id", seller_id).save();
             }
-            //}
-            // order_info aa = order_info.dao.findById("1");
-            // order_info.dao.deleteById("1");
-            // aa.set("goods_num","1").update();
-            //插入订单表
 
             new order_info().set("area_id", ConstantsUtils.ALL_AREA_ID).set("num", num).set("status", ConstantsUtils.ORDER_INFO_STATUS_CREATED).set("pay_status", ConstantsUtils.ORDER_PAYMENT_STATUS_WAITE).set("total_price", total_price).set("buyer_receive_id", buyer_receive_id).set("created_at", dateFormat.format(date)).set("updated_at", dateFormat.format(date)).set("deleted_at", dateFormat.format(date)).save();
         }
@@ -299,7 +288,7 @@ public class OrderResource extends BuyerResource {
         //返回订单ID 和 订单编号
         hash.put("order_id", order_info.dao.find(order_id, num));
         hash.put("order_num", num);
-        return new WebResult(HttpStatus.OK, "添加订单成功");
+        return hash;
     }
 
 }
