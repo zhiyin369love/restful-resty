@@ -131,7 +131,7 @@ public class CartResource extends BuyerResource {
         //group by 有利于组装新的数据结构，如果去掉 order by 下面的整个逻辑都需要变动
         List<cart> cartlist = cart.dao.findBy("buyer_id = ?  order by seller_id,goods_num", buyer_id);
         Map cartResult = new HashMap();
-
+        goods_sku_price goodsSkuPriceModel = new goods_sku_price();
         if (cartlist != null && cartlist.size() > 0) {
             for (cart tempCart : cartlist) {
                 //如果卖家id之前已经存在了，那么表示在同一个cart里
@@ -146,7 +146,7 @@ public class CartResource extends BuyerResource {
                             goodsNumIsExist = true;
                             //如果卖家id和商品id已经存在了，那么表示需要往型号list里加型号
                             List<JSONObject> goosSkuTempList = (List<JSONObject>) ((JSONObject) goodsInfoTemp.get("goods_info")).get("goods_sku_list");
-                            JSONObject goodssku = getGoods_sku(buyer_id, tempCart);
+                            JSONObject goodssku = getGoods_sku(buyer_id, tempCart,goodsSkuPriceModel);
                             goosSkuTempList.add(goodssku);
                             ((JSONObject) goodsInfoTemp.get("goods_info")).put("goods_sku_list", goosSkuTempList);
                         }
@@ -154,7 +154,7 @@ public class CartResource extends BuyerResource {
                     //如果只是卖家id一致，表示已经是不同的商品了，那么需要往商品list里加
                     JSONObject goods = new JSONObject();
                     if (!goodsNumIsExist) {
-                        getGoodsInfo(buyer_id, goods, tempCart);
+                        getGoodsInfo(buyer_id, goods, tempCart,goodsSkuPriceModel);
                         goods_infoList.add(goods);
                         cartResult.put("goods_list", goods_infoList);
                     }
@@ -164,7 +164,7 @@ public class CartResource extends BuyerResource {
                     JSONObject goods = new JSONObject();
                     cartResult = new HashMap();
                     //如果卖家和商品编号都一样的话，那么去将商品规格信息收集起来
-                    getGoodsInfo(buyer_id, goods, tempCart);
+                    getGoodsInfo(buyer_id, goods, tempCart,goodsSkuPriceModel);
                     goodInfoList.add(goods);
                     //卖家id
                     cartResult.put("seller_id", tempCart.get("seller_id"));
@@ -189,11 +189,11 @@ public class CartResource extends BuyerResource {
     }*/
     }
 
-    private void getGoodsInfo(long buyer_id, JSONObject goods, cart tempCart) {
+    private void getGoodsInfo(long buyer_id, JSONObject goods, cart tempCart,goods_sku_price goodsSkuPriceModel) {
         goods_info goods_infotemp = goods_info.dao.findFirstBy("num = ?", tempCart.get("goods_num"));
         JSONObject jsonObject = new JSONObject();
         List<JSONObject> goodsskulist = new ArrayList<JSONObject>();
-        JSONObject goodssku = getGoods_sku(buyer_id, tempCart);
+        JSONObject goodssku = getGoods_sku(buyer_id, tempCart,goodsSkuPriceModel);
         goodsskulist.add(goodssku);
         //商品型号列表
         jsonObject.put("goods_sku_list", goodsskulist);
@@ -208,7 +208,7 @@ public class CartResource extends BuyerResource {
         goods.put("goods_info", jsonObject);
     }
 
-    private JSONObject getGoods_sku(long buyer_id, cart tempCart) {
+    private JSONObject getGoods_sku(long buyer_id, cart tempCart,goods_sku_price goodsSkuPriceModel) {
         long goodsSkuId = tempCart.<Long>get("goods_sku_id");
         goods_sku goodssku = goods_sku.dao.findById(goodsSkuId);
         JSONObject jsonObject = new JSONObject();
@@ -218,9 +218,10 @@ public class CartResource extends BuyerResource {
         String skuCount = tempCart.get("goods_sku_count") == null ? "0" : tempCart.get("goods_sku_count").toString();
         jsonObject.put("count", tempCart.get("goods_sku_count"));
         //单价
-        goods_sku_price goodsskuprice = goods_sku_price.dao.findFirstBy("goods_num = ? and sku_id = ? and buyer_id = ?", tempCart.get("goods_num"), tempCart.get("goods_sku_id"), buyer_id);
-        BigDecimal skuPrice = goodsskuprice.get("price") == null ? new BigDecimal("0") : goodsskuprice.<BigDecimal>get("price");
-        jsonObject.put("price", goodsskuprice.get("price"));
+/*        goods_sku_price goodsskuprice = goods_sku_price.dao.findFirstBy("goods_num = ? and sku_id = ? and buyer_id = ?", tempCart.get("goods_num"), tempCart.get("goods_sku_id"), buyer_id);
+        BigDecimal skuPrice = goodsskuprice.get("price") == null ? new BigDecimal("0") : goodsskuprice.<BigDecimal>get("price");*/
+        BigDecimal skuPrice = goodsSkuPriceModel.getSkuPrice(buyer_id,tempCart.<Long>get("seller_id"),tempCart.<Long>get("goods_sku_id"));
+        jsonObject.put("price", skuPrice);
         //小计
         jsonObject.put("single_total_price", new BigDecimal(skuCount).multiply(skuPrice).doubleValue());
         //规格id
