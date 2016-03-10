@@ -5,7 +5,6 @@ import cn.dreampie.common.http.result.WebResult;
 import cn.dreampie.orm.page.FullPage;
 import cn.dreampie.route.annotation.API;
 import cn.dreampie.route.annotation.GET;
-import cn.dreampie.security.Subject;
 import com.qianmo.eshop.bean.goods.GoodsInfo;
 import com.qianmo.eshop.bean.goods.GoodsSku;
 import com.qianmo.eshop.common.ConstantsUtils;
@@ -14,11 +13,8 @@ import com.qianmo.eshop.common.YamlRead;
 import com.qianmo.eshop.model.goods.goods_category;
 import com.qianmo.eshop.model.goods.goods_info;
 import com.qianmo.eshop.model.goods.goods_sku;
-import com.qianmo.eshop.model.user.user_info;
-import com.qianmo.eshop.resource.z_common.ApiResource;
 
 import java.math.BigDecimal;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -44,6 +40,9 @@ public class GoodsResource extends BuyerResource {
     @GET
     public WebResult goods(String goods_name, Integer category_id, Integer sub_category_id,
                            Integer page_start, Integer page_step, Integer sort, Integer sort_style, Integer sort_type) {
+        if (category_id == null) {
+            return new WebResult(HttpStatus.INTERNAL_SERVER_ERROR, "查询不到商品信息");
+        }
         //获取用户ID
         Long buyer_id = SessionUtil.getUserId();
         /*
@@ -176,7 +175,10 @@ public class GoodsResource extends BuyerResource {
      */
     @GET("/:id")
     public WebResult goods(Long id) {
-        long buyer_id = SessionUtil.getUserId();
+        if (id == null) {
+            return new WebResult(HttpStatus.INTERNAL_SERVER_ERROR, "查询不到商品信息");
+        }
+        Long buyer_id = SessionUtil.getUserId();
         HashMap resultMap = new HashMap();
         goods_info goodsInfo = goods_info.dao.findFirst(YamlRead.getSQL("findGoods", "buyer/goods"), id);
         resultMap.put("goods_info", goodsInfo);
