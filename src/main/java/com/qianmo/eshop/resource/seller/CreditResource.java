@@ -47,13 +47,17 @@ public class CreditResource extends SellerResource {
             HashMap result_buyerinfo = new HashMap();
             List<HashMap> resultMapBuyer = new ArrayList<HashMap>();
             String sqlbuyer_info = YamlRead.getSQL("getFieldBuyerInfoAll", "seller/credit");
+            //分页
+            FullPage<credit> creditFullPagelist = null;
             if (status != null) {
                 sqlbuyer_info = sqlbuyer_info + "and c.status = ?";
-                order_users_list = credit.dao.find(sqlbuyer_info, seller_id, status);
+               // order_users_list = credit.dao.find(sqlbuyer_info, seller_id, status);
+                creditFullPagelist = credit.dao.fullPaginate(page_start/page_step + 1,page_step,sqlbuyer_info,seller_id,status);
             } else {
-                order_users_list = credit.dao.find(sqlbuyer_info, seller_id); //获取一个卖家对应的所有买家
+                creditFullPagelist = credit.dao.fullPaginate(page_start/page_step + 1,page_step,sqlbuyer_info,seller_id); //获取一个卖家对应的所有买家
             }
-            for (credit credit_list : order_users_list) {
+            if (creditFullPagelist != null)
+            for (credit credit_list : creditFullPagelist.getList()) {
                 long buyer_id_list = credit_list.get("buyer_id");
                 String users_buyer_name = YamlRead.getSQL("getFieldUserInfoAll", "seller/credit");
                 List<user_info> order_name_list = user_info.dao.find(users_buyer_name, buyer_id_list);
@@ -70,16 +74,8 @@ public class CreditResource extends SellerResource {
                 //订单买家汇总赊账金额
                 order_info order_info_list = new order_info();
                 order_info order_info_count = new order_info();
-                List<order_info> credit_order_id = order_info.dao.find(total_price_count, buyer_id_list, seller_id);
-                if (order_info_list != null && credit_order_id.size() > 0) {
-                    order_info_list = credit_order_id.get(0);
-                }
-                List<order_info> credit_order_count = order_info.dao.find(total_order_count, buyer_id_list, seller_id);
-                if (credit_order_count != null && credit_order_count.size() > 0) {
-                    order_info_count = credit_order_count.get(0);
-                }
-
-
+                order_info credit_order_id = order_info.dao.findFirst(total_price_count, buyer_id_list, seller_id);
+                order_info credit_order_count = order_info.dao.findFirst(total_order_count, buyer_id_list, seller_id);
 
                 String sqlcre = YamlRead.getSQL("getFirldCreditAll", "seller/credit");
                 credit order_name_list_credit = credit.dao.findFirst(sqlcre, seller_id);
@@ -93,8 +89,8 @@ public class CreditResource extends SellerResource {
 
             }
             //分页
-            FullPage<credit> inviteCodeList = credit.dao.fullPaginateBy(page_start / page_step + 1, page_step, "id = ?", seller_id, ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE);
-            all.put("total_count", inviteCodeList.getTotalRow());
+           // FullPage<credit> inviteCodeList = credit.dao.fullPaginateBy(page_start / page_step + 1, page_step, "id = ?", seller_id, ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE);
+            all.put("total_count", creditsList.size());
 
             all.put("credit_list", creditsList);
         } else if (show_type == 1) {
@@ -102,50 +98,50 @@ public class CreditResource extends SellerResource {
             HashMap result_buyer_info = new HashMap();
             HashMap result_goods_order = new HashMap();
             HashMap result_goods_list = new HashMap();
-            List<credit> CreditOrderList = new ArrayList<credit>();
+            //List<credit> creditOrderList = new ArrayList<credit>();
+            //分页
+            FullPage<credit> creditFullPagelist = null;
             String sqlcre = YamlRead.getSQL("getFirldSellerCreditAll", "seller/credit");
             if (status != null) {   //判断订单赊账是否
                 sqlcre = sqlcre + "c.status = ?";
-                CreditOrderList = credit.dao.find(sqlcre, seller_id, status);
+                //creditOrderList = credit.dao.find(sqlcre, seller_id, status);
+                creditFullPagelist = credit.dao.fullPaginate(page_start/page_step + 1,page_step,sqlcre,seller_id,status);
             } else {
-                CreditOrderList = credit.dao.find(sqlcre, seller_id);
+                creditFullPagelist = credit.dao.fullPaginate(page_start/page_step + 1,page_step,sqlcre,seller_id);
             }
-            for (credit credit_list : CreditOrderList) {
-                //一个订单对应一个赊账
-                int id = credit_list.get("id");
-                int seller_status = credit_list.get("status");
-                int credit_id_list = credit_list.get("order_num");
-                OrderResource resource = new com.qianmo.eshop.resource.buyer.OrderResource();
-                List<HashMap> resultMap2 = resource.getOrderHashMaps(credit_id_list);
-                result_goods_order.put("goods_list", result_goods_list);                             //1
-                //买家信息实体
-                String sql_buyer_info = YamlRead.getSQL("getFieldBuyerInfoAll", "seller/order");
-                String sql_buyer_receive = YamlRead.getSQL("getFieldBuyerReceiveAll", "seller/order");
-                order_user o = order_user.dao.findFirst(sql_buyer_info, seller_id);
+            if (creditFullPagelist != null){
+                for (credit credit_list : creditFullPagelist.getList()) {
+                    //一个订单对应一个赊账
+                    int id = credit_list.get("id");
+                    int seller_status = credit_list.get("status");
+                    int credit_id_list = credit_list.get("order_num");
+                    OrderResource resource = new com.qianmo.eshop.resource.buyer.OrderResource();
+                    List<HashMap> resultMap2 = resource.getOrderHashMaps(credit_id_list);
+                    result_goods_order.put("goods_list", result_goods_list);                             //1
+                    //买家信息实体
+                    String sql_buyer_info = YamlRead.getSQL("getFieldBuyerInfoAll", "seller/order");
+                    String sql_buyer_receive = YamlRead.getSQL("getFieldBuyerReceiveAll", "seller/order");
+                    order_user o = order_user.dao.findFirst(sql_buyer_info, seller_id);
 
-                result_buyer_info.put("buyer_id", o.get("buyer_id"));
-                result_buyer_info.put("name", o.get("name"));
-                result_buyer_info.put("buyer_receive", buyer_receive_address.dao.find(sql_buyer_receive, seller_id));
-                result_goods_order.put("buyer_info", result_buyer_info);                        //2
-                //订单实体
-                String sql3 = YamlRead.getSQL("getFieldOrderInfoAll", "seller/order");
-                result_goods_order.put("order_info", order_info.dao.find(sql3, seller_id));   //3
-                //订单备注
-                String sql4 = YamlRead.getSQL("getFirldOrderRemarkAll", "seller/order");
-                result_goods_order.put("order_remark_list", order_remark.dao.find(sql4, seller_id));  //4
+                    result_buyer_info.put("buyer_id", o.get("buyer_id"));
+                    result_buyer_info.put("name", o.get("name"));
+                    result_buyer_info.put("buyer_receive", buyer_receive_address.dao.find(sql_buyer_receive, seller_id));
+                    result_goods_order.put("buyer_info", result_buyer_info);                        //2
+                    //订单实体
+                    String sql3 = YamlRead.getSQL("getFieldOrderInfoAll", "seller/order");
+                    result_goods_order.put("order_info", order_info.dao.find(sql3, seller_id));   //3
+                    //订单备注
+                    String sql4 = YamlRead.getSQL("getFirldOrderRemarkAll", "seller/order");
+                    result_goods_order.put("order_remark_list", order_remark.dao.find(sql4, seller_id));  //4
 
-                //多个订单实体
-                result_buyer_credit.put("order", result_goods_order);
-                result_buyer_credit.put("credit_id", id);
-                result_buyer_credit.put("status", seller_status);
-                creditsList.add(result_buyer_credit);
+                    //多个订单实体
+                    result_buyer_credit.put("order", result_goods_order);
+                    result_buyer_credit.put("credit_id", id);
+                    result_buyer_credit.put("status", seller_status);
+                    creditsList.add(result_buyer_credit);
+                }
             }
-            //分页
-            FullPage<credit> inviteCodeList
-                    = credit.dao.fullPaginateBy(page_start / page_step + 1, page_step, "id = ?",
-                    seller_id, ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE);
-            all.put("total_count", inviteCodeList.getTotalRow());
-
+            all.put("total_count", creditsList.size());
             all.put("credit_list", creditsList);
 
         }
@@ -155,7 +151,7 @@ public class CreditResource extends SellerResource {
     //销账
     @PUT
     public WebResult opOrder(List<credit> credits) {
-        try {
+
             for (credit c2 : credits) {
                 if (c2.get("buyer_id") != null) {
                     credit.dao.update("update credit set status = ?  where buyer_id = ? ", ConstantsUtils.CREDIT_ALREADY_STATUS, c2.get("buyer_id"));
@@ -164,12 +160,6 @@ public class CreditResource extends SellerResource {
                 }
             }
             return new WebResult(HttpStatus.OK, "操作赊账成功");
-        } catch (Exception e) {
-            //异常情况，按理说需要记录日志，也可考虑做统一的日志拦截 TODO
-            return new WebResult(HttpStatus.EXPECTATION_FAILED, "操作赊账失败");
-        }
     }
-
-
 }
 
