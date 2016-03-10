@@ -33,7 +33,7 @@ public class CreditResource extends BuyerResource {
     public HashMap getCredit(int page_start,int page_step) {
         long buyer_id = SessionUtil.getUserId();
         HashMap resulttall_count = new HashMap();
-        try {
+
             HashMap resultall = new HashMap();
             HashMap result = new HashMap();
             //赊账实体
@@ -42,6 +42,7 @@ public class CreditResource extends BuyerResource {
             String sql4 = YamlRead.getSQL("getFirldOrderRemarkAll","buyer/order");
             //商品信息
             HashMap result_goods =  new HashMap();
+            List<HashMap> creditsList = new ArrayList<HashMap>();
             List<credit>  CreditOrderList =  credit.dao.find(sqlcredit,buyer_id);
             List<HashMap> resultMap = new ArrayList<HashMap>();
             HashMap result_buyer = new HashMap();
@@ -79,6 +80,7 @@ public class CreditResource extends BuyerResource {
                 resultall.put("credit_status",status);
                 resultall.put("order",result);
                 resultall.put("page_info",count);
+                creditsList.add(resultall);
             }
 
            /* String sql2_1 = YamlRead.getSQL("getFirldGoodsInfoAll","buyer/order");
@@ -90,11 +92,9 @@ public class CreditResource extends BuyerResource {
 
             //分页信息
 
-            resulttall_count.put("credit_list",resultall);
+            resulttall_count.put("credit_list",creditsList);
             return resulttall_count;
-        }catch (Exception e){
-            return null;
-        }
+
     }
 }
 

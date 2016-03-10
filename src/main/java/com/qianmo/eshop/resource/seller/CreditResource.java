@@ -144,7 +144,8 @@ public class CreditResource extends SellerResource {
                     = credit.dao.fullPaginateBy(page_start / page_step + 1, page_step, "id = ?",
                     seller_id, ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE);
             result_buyer_credit.put("total_count", inviteCodeList.getTotalRow());
-            all.put("credit_list", result_buyer_credit);
+            creditsList.add(result_buyer_credit);
+            all.put("credit_list", creditsList);
         }
         return all;
     }
