@@ -73,13 +73,12 @@ public class CreditResource extends BuyerResource {
                 result.put("order_remark_list", order_remark.dao.find(sql4,buyer_id));
                 result_goods.put("order",result);
                 //赊账实体表
-                FullPage<order_user> inviteCodeList  =  order_user.dao.fullPaginateBy(page_start/page_step + 1,page_step,"page_start = ? and page_step = ?",o.get("seller_id"), ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE);
-                HashMap count =  new HashMap();
-                count.put("total_count",inviteCodeList.getTotalRow());
+
+
                 resultall.put("credit_id",id);
                 resultall.put("credit_status",status);
                 resultall.put("order",result);
-                resultall.put("page_info",count);
+
                 creditsList.add(resultall);
             }
 
@@ -91,8 +90,11 @@ public class CreditResource extends BuyerResource {
             result2.put("goods_type", goods_type.dao.find(sql2_3,buyer_id));*/
 
             //分页信息
-
+            FullPage<order_user> inviteCodeList  =  order_user.dao.fullPaginateBy(page_start/page_step + 1,page_step,"id = ?",buyer_id, ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE);
+            HashMap count =  new HashMap();
+            resulttall_count.put("total_count",inviteCodeList.getTotalRow());
             resulttall_count.put("credit_list",creditsList);
+
             return resulttall_count;
 
     }
