@@ -29,10 +29,10 @@ public class ApiResource extends Resource {
     //登录
     @POST("/login")
     public WebResult Login(String username, String password, boolean rememberMe) {
-        int code;
+        String code;
         HttpStatus status;
         String message;
-        boolean isBuyer, isSeller;
+        String isBuyer, isSeller;
         Map result;
 
         //调用登录方法
@@ -42,17 +42,17 @@ public class ApiResource extends Resource {
         if (UserInfo != null) {
             //登录成功
             status = HttpStatus.ACCEPTED;
-            code = status.getCode();
+            code = String.valueOf(status.getCode());
             message = "登录成功";
-            isBuyer = UserInfo.get("isbuyer");
-            isSeller = UserInfo.get("isseller");
+            isBuyer = String.valueOf(UserInfo.get("isbuyer"));
+            isSeller = String.valueOf(UserInfo.get("isseller"));
         } else {
             //登录失败
             status = HttpStatus.NON_AUTHORITATIVE_INFORMATION;
-            code = status.getCode();
+            code = String.valueOf(status.getCode());
             message = "用户名或密码错误";
-            isBuyer = false;
-            isSeller = false;
+            isBuyer = "";
+            isSeller = "";
         }
         //将返回结果写入map中返回
         result = Maper.of("code", code, "message", message, "isbuyer", isBuyer, "isseller", isSeller);
