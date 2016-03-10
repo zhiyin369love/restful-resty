@@ -32,25 +32,25 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
- *
- * 查看单个订单详情
+ * 订单
  * author:wss
- * @param
  */
 @API("/order")
 public class OrderResource extends BuyerResource {
-
+    /**
+     * 查看单个订单详情
+     * @param id 订单ID
+     * @return
+     */
     @GET("/:id")
     public HashMap getOrderDetail(long id) {
        HashMap result = new HashMap();
-
         //订单实体查询sql
         String sqlOrderinfo = YamlRead.getSQL("getFieldOrderInfoAll","buyer/order");
         //订单备注列表查询sql
         String sqlOrderremark = YamlRead.getSQL("getFirldOrderRemarkAll","buyer/order");
         //商品实体列表查询sql
-           List<HashMap> resultMap = getOrderHashMaps(id);
-
+        List<HashMap> resultMap = getOrderHashMaps(id);
         //买家信息实体查询sql
         HashMap result_buyer = new HashMap();
         String sqlbuyer_info = YamlRead.getSQL("getFieldBuyerInfoAll","buyer/order");
@@ -102,20 +102,20 @@ public class OrderResource extends BuyerResource {
      * author:wss
      * @param  bank_id 选择的银行ID 选填 当支付方式选择银行汇款时需传此字段
      * @param goods 商品实体 选填 当操作选择再买一次时，传入此array
-     * @param  id 订单编号
+     * @param  order_num 订单编号
      * @param  op 必填 0选择支付方式 1选择银行 2我已付款 3确认收货 4取消订单 5再买一次
      * @param value 选填 操作值（取消订单时，传入订单取消原因）
      *
      */
     @PUT
     @Transaction
-    public WebResult opOrder(Integer bank_id,long id,int op,String value, List<JSONObject> goods){
+    public WebResult opOrder(Integer bank_id,long order_num,int op,String value, List<JSONObject> goods){
             long buyer_id = SessionUtil.getUserId();
             switch (op){
                 case ConstantsUtils.ORDER_OP_PAY_TYPE:
                     if("1".equals(value)){                               // 当支付方式选择银行支付的时候
                         if (bank_id != null){
-                        order_info.dao.update("update order_info set pay_type_id = ?  where num = ? ", op, id);
+                        order_info.dao.update("update order_info set pay_type_id = ?  where num = ? ", op, order_num);
                        }
                     }
                     break;
@@ -125,14 +125,18 @@ public class OrderResource extends BuyerResource {
                     }
                     break;
                 case ConstantsUtils.ORDER_OP_PAY_STATUS: // 2 我已付款
-                    order_info.dao.update("update order_info set pay_status = ?  where num = ? ",ConstantsUtils.ORDER_PAYMENT_STATUS_RECEIVED, id);
+                    order_info.dao.update("update order_info set pay_status = ?  where num = ? ",ConstantsUtils.ORDER_PAYMENT_STATUS_RECEIVED, order_num);
                     break;
                 case  ConstantsUtils.ORDER_OP_PAY_GOODS: // 3 确认收货
-                    order_info.dao.update("update order_info set status = ?  where num = ? ", ConstantsUtils.ORDER_INFO_STATUS_FINISHED,id);
+                    order_info.dao.update("update order_info set status = ?  where num = ? ", ConstantsUtils.ORDER_INFO_STATUS_FINISHED,order_num);
                     break;
                 case  ConstantsUtils.ORDER_OP_PAY_CELL: // 4 取消订单
-                    order_info.dao.update("update order_info set status = ?  where num = ? ", ConstantsUtils.ORDER_INFO_STATUS_CANCEL,id);
-                    new order_remark().set("order_num",id).set("op",op).set("reason",value).set("user_id",buyer_id).save();
+                    order_info o = new order_info();
+                    if(o.get("status")==ConstantsUtils.ORDER_INFO_STATUS_CREATED
+                            || o.get("pay_status")==ConstantsUtils.ORDER_PAYMENT_STATUS_WAITE){
+                        order_info.dao.update("update order_info set status = ?  where num = ? ", ConstantsUtils.ORDER_INFO_STATUS_CANCEL,order_num);
+                        new order_remark().set("order_num",order_num).set("op",op).set("reason",value).set("user_id",buyer_id).save();
+                    }
                     break;
                 case ConstantsUtils.ORDER_OP_BUYER_AGAIN:  //5再买一次  添加一次购物车
                     CartResource  cartResource = new CartResource();
@@ -249,7 +253,8 @@ public class OrderResource extends BuyerResource {
      */
     @POST
     @Transaction
-    public HashMap addOrder(int buyer_receive_id, String cart_list, Long seller_id) {
+    public HashMap addOrder(Long buyer_receive_id, String cart_list, Long seller_id) {
+        System.out.print("进来");
         long buyer_id = SessionUtil.getUserId();
         HashMap result = new HashMap();
         //订单编号组成的规则、年月日时分秒+4位随机数
@@ -257,36 +262,40 @@ public class OrderResource extends BuyerResource {
         Date date = new Date(ltime);
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
         //订单编号
-        //String num = dateFormat.format(date) + "";
-        String num = CodeUtils.code(dateFormat.format(date), ConstantsUtils.ORDER_NUM_TYPE);
+
         //根据购物车ID，从购物车中选取买家购买信息
         String sql3 = YamlRead.getSQL("getFieldCartAll", "buyer/cart");
         List<cart> results = cart.dao.findBy( "id in (" + cart_list +")");
         //商品表中订单总价
 
-        BigDecimal total_price  = new BigDecimal(0);;
+        BigDecimal total_price  = new BigDecimal(0);
+        String num = "";
         //遍历购物车
         if (results != null && results.size() > 0) {
+            num = CodeUtils.code(dateFormat.format(date), ConstantsUtils.ORDER_NUM_TYPE);
             for (cart cart : results) {
                 //商品单价
                 String sqlprice = YamlRead.getSQL("getBuyerPrice", "buyer/order");
                 goods_sku_price results_goods = goods_sku_price.dao.findFirst(sqlprice, cart.get("buyer_id"), cart.get("seller_id"),cart.get("goods_sku_id"),cart.get("goods_sku_id"));
-                long goods_sku_count = cart.get("goods_sku_count");
+                Integer goods_sku_count = cart.get("goods_sku_count");
                 BigDecimal goods_sku_price = results_goods.get("price");
                 BigDecimal single_total_price =  new BigDecimal(goods_sku_count).multiply(goods_sku_price) ;
                 total_price.add(single_total_price);
                 //插入订单商品表和订单用户表
-                new order_goods().set("area_id", cart.get("area_id")).set("goods_num", cart.get("goods_num")).set("sku_id", cart.get("goods_sku_id")).set("order_num", num).set("goods_sku_price", goods_sku_price).set("goods_sku_count", cart.get("goods_sku_count")).set("single_total_price", single_total_price).save();
-               // new order_user().set("area_id", cart.get("area_id")).set("order_num", num).set("buyer_id", buyer_id).set("seller_id", seller_id).save();
-            }
 
-            new order_info().set("area_id", ConstantsUtils.ALL_AREA_ID).set("num", num).set("status", ConstantsUtils.ORDER_INFO_STATUS_CREATED).set("pay_status", ConstantsUtils.ORDER_PAYMENT_STATUS_WAITE).set("total_price", total_price).set("buyer_receive_id", buyer_receive_id).set("created_at", dateFormat.format(date)).set("updated_at", dateFormat.format(date)).set("deleted_at", dateFormat.format(date)).save();
+                new order_goods().set("area_id", cart.get("area_id")).set("goods_num", cart.get("goods_num")).set("sku_id", cart.get("goods_sku_id")).set("order_num", num).set("goods_sku_price", goods_sku_price).set("goods_sku_count", cart.get("goods_sku_count")).set("single_total_price", single_total_price).save();
+
+            }
+            //num = CodeUtils.code(dateFormat.format(date), ConstantsUtils.ORDER_NUM_TYPE);
+            new order_user().set("area_id", ConstantsUtils.ALL_AREA_ID).set("order_num", num).set("buyer_id", buyer_id).set("seller_id", seller_id).save();
+            new order_info().set("area_id", ConstantsUtils.ALL_AREA_ID).set("num", num).set("status", ConstantsUtils.ORDER_INFO_STATUS_CREATED).set("pay_status", ConstantsUtils.ORDER_PAYMENT_STATUS_WAITE).set("total_price", total_price).set("buyer_receive_id", buyer_receive_id).set("pay_type_id",ConstantsUtils.ORDER_PAYMENT_STATUS_WAITE).save();
         }
         HashMap hash = new HashMap();
         //根据订单编号查订单ID
         String order_id = YamlRead.getSQL("getFieldOrderIdAll", "buyer/order");
         //返回订单ID 和 订单编号
-        hash.put("order_id", order_info.dao.find(order_id, num));
+        order_info order_info_list = order_info.dao.findFirst(order_id,num);
+        hash.put("order_id", order_info_list.get("id"));
         hash.put("order_num", num);
         return hash;
     }
