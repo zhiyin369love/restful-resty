@@ -1,6 +1,6 @@
 package com.qianmo.eshop.bean.goods;
 
-import java.util.Date;
+import java.math.BigDecimal;
 
 /**
  * Created by fxg06 on 2016/3/7.
@@ -9,7 +9,7 @@ public class GoodsSku {
     private long sku_id;//商品规格ID
     private String sku_name;//商品规格名称
     private int status;//商品规格上下架状态 1：已上架 0：已下架
-    private double price;//商品规格价格
+    private BigDecimal price;//商品规格价格
     private String release_date;//商品规格上架时间
     private int seller_count;//商品规格已售总数
 
@@ -37,11 +37,11 @@ public class GoodsSku {
         this.status = status;
     }
 
-    public double getPrice() {
+    public BigDecimal getPrice() {
         return price;
     }
 
-    public void setPrice(double price) {
+    public void setPrice(BigDecimal price) {
         this.price = price;
     }
 

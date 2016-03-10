@@ -29,13 +29,14 @@ findGoodsSku:
 
 #获取经销商下的零售商的基本信息和价格信息
 findUserAndPrice:
-  SELECT a.id buyer_id,a.account,a.nickname,CONCAT(a.province_name,a.city_name,a.county_name,a.town_name,a.address) buyer_address,
-    b.id sku_id,b.name sku_name,IFNULL(d.price,b.list_price) price,d.status sku_price_status
+  SELECT a.id buyer_id,a.nickname,
+    CONCAT(a.province_name,a.city_name,a.county_name,a.town_name,a.address) buyer_address,
+    c.sku_id, IFNULL(d.price,c.list_price) price,d.id sku_price_id,d.status sku_price_status
     FROM user_info a
-    INNER JOIN buyer_seller c on a.id = c.buyer_id
-    INNER JOIN goods_sku b on b.seller_id = c.seller_id
-    LEFT JOIN goods_sku_price d on d.sku_id = b.id
-    WHERE b.goods_num = ? AND b.id = ? AND d.status = ?
+    INNER JOIN buyer_seller b ON a.id = b.buyer_id
+    INNER JOIN (select c.id sku_id, c.list_price  from  goods_sku c where c.id = ?) c
+    LEFT JOIN goods_sku_price d on a.id = d.buyer_id AND d.status = ?
+    WHERE b.seller_id = ?
 
 #获取经销商的商品信息
 findGoodsInfo:
@@ -50,4 +51,6 @@ findGoodsInfo:
 findPriceCount:
   SELECT count(id) count FROM goods_sku_price WHERE status = 0 AND sku_id = ? AND seller_id = ?
 
-
+#查询经销商下所有零售商总数
+findAllUserCount:
+  SELECT count(id) count FROM buyer_seller WHERE seller_id = ? AND deleted_at is null

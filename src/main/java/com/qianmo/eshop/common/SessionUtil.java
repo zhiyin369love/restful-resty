@@ -40,4 +40,26 @@ public class SessionUtil {
         Long userID = (Long) SessionUtil.getUserAttribute("id");
        return  userID == null ? 0: userID;
     }
+
+    /**
+     * 获取卖家登录用户最高权限的用户ID
+     * @return
+     */
+    public static long getAdminId(){
+        long pid = 0;
+        try {
+            user_info userInfo = SessionUtil.getUser();
+            if(userInfo!=null){
+                if(Integer.parseInt(userInfo.get("type").toString()) == 1){
+                    pid = userInfo.get("pid");
+                }else{
+                    pid = userInfo.get("id");
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+
+        }
+        return pid;
+    }
 }

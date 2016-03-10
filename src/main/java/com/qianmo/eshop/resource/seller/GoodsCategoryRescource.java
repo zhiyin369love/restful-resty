@@ -1,10 +1,13 @@
 package com.qianmo.eshop.resource.seller;
 
+import cn.dreampie.common.http.result.HttpStatus;
+import cn.dreampie.common.http.result.WebResult;
 import cn.dreampie.route.annotation.API;
 import cn.dreampie.route.annotation.GET;
 import cn.dreampie.security.Subject;
 import com.alibaba.fastjson.JSONObject;
 import com.qianmo.eshop.bean.goods.GoodsCategory;
+import com.qianmo.eshop.common.SessionUtil;
 import com.qianmo.eshop.common.YamlRead;
 import com.qianmo.eshop.model.goods.goods_category;
 import com.qianmo.eshop.model.goods.goods_form;
@@ -18,15 +21,15 @@ import java.util.List;
 /**
  * Created by fxg06 on 2016/3/1.
  */
-@API("/type")
+@API("/category")
 public class GoodsCategoryRescource extends GoodsResource {
     /**
      * 获取商品分类
      * @return
      */
     @GET
-    public List goodsCategory(){
-        return goods_category.dao.getList();
+    public WebResult goodsCategory(){
+        return new WebResult(HttpStatus.OK,goods_category.dao.getList());
     }
     /**
      * 获取商品分类及该商品分类下的商品总数
@@ -34,17 +37,8 @@ public class GoodsCategoryRescource extends GoodsResource {
      * @return
      */
     @GET("/count")
-    public List getList(String goods_name){
-        user_info userInfo = (user_info) Subject.getPrincipal().getModel();
-        long seller_id = 0;
-        //判断登录用户是否为子账号，如果是则获取其父级id
-        if(userInfo!=null){
-            if(Long.parseLong(userInfo.get("pid").toString())==0){
-                seller_id = Long.parseLong(userInfo.get("id").toString());
-            }else{
-                seller_id = Long.parseLong(userInfo.get("pid").toString());
-            }
-        }
+    public WebResult countList(String goods_name){
+        Long seller_id = SessionUtil.getAdminId();
         //获取商品分类
         List<GoodsCategory> list = goods_category.dao.getList();
         String sql = YamlRead.getSQL("findGoodsCount","seller/goods");
@@ -66,15 +60,15 @@ public class GoodsCategoryRescource extends GoodsResource {
                 category.setGoods_count(count);
             }
         }
-        return list;
+        return new WebResult(HttpStatus.OK, list);
     }
     /**
      * 获取商品规格单位信息
      * @return
      */
     @GET("/unit")
-    public List getSkuUnit(){
-        return goods_sku_unit.dao.getList();
+    public WebResult skuUint(){
+        return new WebResult(HttpStatus.OK, goods_sku_unit.dao.getList());
     }
 
     /**
@@ -83,7 +77,8 @@ public class GoodsCategoryRescource extends GoodsResource {
      * @return
      */
     @GET("/form")
-    public List getForm(long category_id){
-        return goods_form.dao.find(YamlRead.getSQL("findGoodsForm","seller/goods"),category_id);
+    public WebResult form(Long category_id){
+        List list = goods_form.dao.find(YamlRead.getSQL("findGoodsForm","seller/goods"),category_id);
+        return new WebResult(HttpStatus.OK, list);
     }
 }
