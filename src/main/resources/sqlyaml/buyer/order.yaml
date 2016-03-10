@@ -54,7 +54,7 @@ getBuyerPrice:
        goods_sku_price a
      WHERE a.buyer_id = ?
        AND a.seller_id = ?
-       AND a.goods_sku_id = ?
+       AND a.sku_id = ?
      UNION
      ALL
      SELECT
