@@ -42,11 +42,14 @@ public class CreditResource extends BuyerResource {
             String sql4 = YamlRead.getSQL("getFirldOrderRemarkAll","buyer/order");
             //商品信息
             HashMap result_goods =  new HashMap();
+           //分页
             List<HashMap> creditsList = new ArrayList<HashMap>();
-            List<credit>  CreditOrderList =  credit.dao.find(sqlcredit,buyer_id);
+            //List<credit>  CreditOrderList =  credit.dao.find(sqlcredit,buyer_id);
+
+            FullPage<credit> creditOrderList  =  credit.dao.fullPaginateBy(page_start/page_step + 1,page_step,sqlcredit,buyer_id);
             List<HashMap> resultMap = new ArrayList<HashMap>();
             HashMap result_buyer = new HashMap();
-            for (credit credit_list : CreditOrderList){
+            for (credit credit_list : creditOrderList.getList()){
                 result.clear();
                 resultall.clear();
                 result_goods.clear();
@@ -90,9 +93,8 @@ public class CreditResource extends BuyerResource {
             result2.put("goods_type", goods_type.dao.find(sql2_3,buyer_id));*/
 
             //分页信息
-            FullPage<order_user> inviteCodeList  =  order_user.dao.fullPaginateBy(page_start/page_step + 1,page_step,"id = ?",buyer_id, ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE);
-            HashMap count =  new HashMap();
-            resulttall_count.put("total_count",inviteCodeList.getTotalRow());
+
+            resulttall_count.put("total_count",creditsList.size());
             resulttall_count.put("credit_list",creditsList);
 
             return resulttall_count;
