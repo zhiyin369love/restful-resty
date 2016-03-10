@@ -49,10 +49,11 @@ public class IndexResource extends SellerResource {
         String phone = user_info.dao.findById(seller_id).get("phone");
         //出售中的商品
         long sellingGoods = getGoodsBySellIdStatus(seller_id, ConstantsUtils.GOODS_SELLING);
+        order_info orderInfo = new order_info();
         //今日订单数
-        long orderNum = order_info.dao.findFirst("select count(*) cn from order_info where seller_id = ?  and status != ? and date(created_at) = date(sysdate())", seller_id, ConstantsUtils.ORDER_INFO_STATUS_CANCEL).<Long>get("cn");
+        long orderNum =  orderInfo.getDayTotalOrder(seller_id);
         //今日交易额
-        double totalPrice = order_info.dao.findFirst("select sum(total_price) cn from order_info where seller_id = ?  and status != ? and date(created_at) = date(sysdate())", seller_id, ConstantsUtils.ORDER_INFO_STATUS_CANCEL).<Long>get("cn");
+        double totalPrice = orderInfo.getDayTotalPrice(seller_id);
         //待发货订单数
         long waitSendOrders = getOrderInfoBySellingStatus(seller_id, ConstantsUtils.ORDER_INFO_STATUS_WAIT_RECEIVE);
         //待收款订单数
