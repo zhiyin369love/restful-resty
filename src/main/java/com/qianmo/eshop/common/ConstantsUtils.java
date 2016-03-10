@@ -103,17 +103,17 @@ public class ConstantsUtils {
 
 	/**************************买家操作订单标识**************************/
 	/**选择支付方式**/
-	public final static Integer ORDER_OP_PAY_TYPE = 0;
+	public final static int ORDER_OP_PAY_TYPE = 0;
 	/**选择银行**/
-	public final static Integer ORDER_OP_BANK = 1;
+	public final static int ORDER_OP_BANK = 1;
 	/**我已付款**/
-	public final static Integer ORDER_OP_PAY_STATUS = 2;
+	public final static int ORDER_OP_PAY_STATUS = 2;
 	/**确认收货**/
-	public final static Integer ORDER_OP_PAY_GOODS = 3;
+	public final static int ORDER_OP_PAY_GOODS = 3;
 	/**取消订单**/
-	public final static Integer ORDER_OP_PAY_CELL = 4;
+	public final static int ORDER_OP_PAY_CELL = 4;
 	/**再买一次**/
-	public final static Integer ORDER_OP_BUYER_AGAIN = 5;
+	public final static int ORDER_OP_BUYER_AGAIN = 5;
 	/**********************************************************/
 
 	/**************************卖家操作订单标识**************************/
