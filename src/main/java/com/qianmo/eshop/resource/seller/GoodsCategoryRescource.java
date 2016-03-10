@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * 商品分类
  * Created by fxg06 on 2016/3/1.
  */
 @API("/category")
@@ -45,8 +46,10 @@ public class GoodsCategoryRescource extends GoodsResource {
         if(list!=null && list.size()>0){
             for(GoodsCategory category:list){
                 long count = 0;
+                //获取商品子分类
                 List<GoodsCategory> childList = (List)category.getGoods_category_list();
                 if(childList!=null && childList.size()>0){
+                    //获取子分类下商品总数
                     for(GoodsCategory childCategory:childList){
                         long childCount = 0;
                         if (goods_name!=null && !"".equals(goods_name)){

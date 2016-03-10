@@ -24,6 +24,7 @@ import java.math.BigDecimal;
 import java.util.*;
 
 /**
+ * 商品信息
  * Created by fxg06 on 2016/3/1.
  */
 @API("/goods")
@@ -40,18 +41,20 @@ public class GoodsResource extends SellerResource {
      * @return
      */
     @GET
-    public WebResult list(String goods_name, Integer goods_status, Integer category_id, Integer sub_category_id, Integer page_start, Integer page_step) {
+    public WebResult list(String goods_name, Integer goods_status, Integer category_id,
+                          Integer sub_category_id, Integer page_start, Integer page_step) {
+        //获取用户最高权限ID
         Long seller_id = SessionUtil.getAdminId();
         /*
         判断是否有分页信息，如果没有，给定默认值
          */
         if (page_start == null) {
-            page_start = ConstantsUtils.DEFAULT_PAGE_START;
+            page_start = ConstantsUtils.DEFAULT_PAGE_START;//默认从第1条开始
         }
         if (page_step == null) {
-            page_step = ConstantsUtils.DEFAULT_PAGE_STEP;
+            page_step = ConstantsUtils.DEFAULT_PAGE_STEP;//默认返回10条
         }
-        HashMap resultMap = new HashMap();
+
         String sql = YamlRead.getSQL("findGoodsInfo", "seller/goods");
         /*
         判断是根据一级分类查商品还是二级分类查商品
@@ -74,10 +77,12 @@ public class GoodsResource extends SellerResource {
             sql = sql + " AND a.name like '%" + goods_name + "%'";
         }
         HashMap<Long, GoodsInfo> map = new HashMap<Long, GoodsInfo>();
-        FullPage<goods_info> list = goods_info.dao.fullPaginate(page_start / page_step + 1, page_step, sql, seller_id);
+        FullPage<goods_info> list = goods_info.dao.fullPaginate(page_start / page_step + 1,
+                page_step, sql, seller_id);
+        //查询结果非空判断
         if (list != null && list.getTotalRow() > 0) {
             for (goods_info goodsInfo : list.getList()) {
-                GoodsInfo goods = map.get(goodsInfo.<Long>get("goods_id"));
+                GoodsInfo goods = map.get(goodsInfo.<Long>get("goods_id")); //
                 if (goods == null) {
                     goods = new GoodsInfo();
                     goods.setGoods_id(goodsInfo.<Long>get("goods_id"));
@@ -89,14 +94,17 @@ public class GoodsResource extends SellerResource {
                     }
                     goods.setProducer(goodsInfo.get("producer").toString());
 
+                    //商品规格信息
                     List<GoodsSku> skuList = new ArrayList<GoodsSku>();
                     GoodsSku goodsSku = new GoodsSku();
                     goodsSku.setSku_id(goodsInfo.<Long>get("sku_id"));
                     goodsSku.setSku_name(goodsInfo.get("sku_name").toString());
                     goodsSku.setStatus(goodsInfo.<Integer>get("status"));
+                    //判断是否有价格信息
                     if (goodsInfo.get("list_price") != null) {
                         goodsSku.setPrice(goodsInfo.<BigDecimal>get("list_price"));
                     }
+                    //判断是否有上架时间信息
                     if (goodsInfo.get("release_date") != null) {
                         goodsSku.setRelease_date(goodsInfo.get("release_date").toString());
                     }
@@ -121,11 +129,13 @@ public class GoodsResource extends SellerResource {
             }
         }
         List<GoodsInfo> goodsInfoList = new ArrayList<GoodsInfo>();
+        //非空判断
         if (map != null && map.size() > 0) {
             for (Long goodsId : map.keySet()) {
                 goodsInfoList.add(map.get(goodsId));
             }
         }
+        HashMap resultMap = new HashMap();
         resultMap.put("goods_list", goodsInfoList);
         resultMap.put("total_count", goodsInfoList.size());
         return new WebResult(HttpStatus.OK, resultMap);
@@ -133,8 +143,7 @@ public class GoodsResource extends SellerResource {
 
     /**
      * 获取商品详情
-     *
-     * @param id
+     * @param id  商品ID
      * @return
      */
     @GET("/:id")
@@ -142,12 +151,11 @@ public class GoodsResource extends SellerResource {
         HashMap resultMap = new HashMap();
         goods_info goodsInfo = goods_info.dao.findFirst(YamlRead.getSQL("findGoods", "seller/goods"), id);
         Long seller_id = SessionUtil.getAdminId();
-        /*
-        判断当前登录用户是否有查看该商品的权限
-         */
+        //判断当前登录用户是否有查看该商品的权限
         if (seller_id == goodsInfo.<Long>get("seller_id")) {
             resultMap.put("goods_info", goodsInfo);
-            List<goods_sku> list = goods_sku.dao.find(YamlRead.getSQL("findGoodsSku", "seller/goods"), goodsInfo.get("goods_num"));
+            List<goods_sku> list = goods_sku.dao.find(YamlRead.getSQL("findGoodsSku", "seller/goods"),
+                    goodsInfo.get("goods_num"));
             resultMap.put("goods_sku_list", list);
         }
         return new WebResult(HttpStatus.OK, resultMap);
@@ -155,17 +163,15 @@ public class GoodsResource extends SellerResource {
 
     /**
      * 添加商品信息
-     *
-     * @param goods
+     * @param goods   商品信息
      * @return
      */
     @POST
     @Transaction
     public WebResult add(goods_info goods) {
+        //获取用户最高权限ID
         Long seller_id = SessionUtil.getAdminId();
-        /*
-        添加商品基本信息
-        */
+        //添加商品基本信息
         goods_info goodsInfo = goods.get("goods_info", goods_info.class);
         //生成商品编号
         String goodsNum = CodeUtils.code(goodsInfo.get("category_id").toString(), ConstantsUtils.GOODS_NUM_TYPE);
@@ -181,6 +187,7 @@ public class GoodsResource extends SellerResource {
          */
         List<JSONObject> list = goods.get("goods_sku_list");
         List<goods_sku> skuList = new ArrayList<goods_sku>();
+        //非空判断
         if (list != null && list.size() > 0) {
             for (JSONObject obj : list) {
                 goods_sku goodsSku = new goods_sku();
@@ -200,15 +207,16 @@ public class GoodsResource extends SellerResource {
 
     /**
      * 编辑商品
-     *
-     * @param goods
-     * @param id
+     * @param goods        商品信息
+     * @param id            商品id
+     * @param delete_pic_url 删除的图片地址
      * @return
      */
     @PUT("/:id")
     @Transaction
     public WebResult edit(goods_info goods, Long id, String delete_pic_url) {
-        long seller_id = SessionUtil.getAdminId();
+        //获取用户最高权限ID
+        Long seller_id = SessionUtil.getAdminId();
         /*
         修改商品基本信息
         */
@@ -279,8 +287,11 @@ public class GoodsResource extends SellerResource {
     @DELETE("/:id")
     @Transaction
     public WebResult delete(Long id, Long goods_sku_id) {
-        long seller_id = SessionUtil.getAdminId();
+        //获取用户最高权限ID
+        Long seller_id = SessionUtil.getAdminId();
+        //获取商品基本信息
         goods_info goods = goods_info.dao.findById(id);
+        //判断该商品是否属于该用户
         if (seller_id == goods.<Long>get("seller_id")) {
             if (goods_sku_id != null) {  //商品规格ID不为空时，只删除商品规格信息
                 //删除商品规格
@@ -300,15 +311,23 @@ public class GoodsResource extends SellerResource {
                 //删除商品规格价格
                 goods_sku_price.dao.deleteBy("goods_num=?", goods.get("num"));
 
-                //删除商品主图
+                /*
+                删除商品主图
+                 */
                 String mainPicUrl = goods.get("main_pic_url");
-                if (mainPicUrl != null && !"".equals(mainPicUrl) && mainPicUrl.indexOf(ConstantsUtils.PIC_DIR) != -1) {
+                //判断图片地址是否正确
+                if (mainPicUrl != null && !"".equals(mainPicUrl)
+                        && mainPicUrl.indexOf(ConstantsUtils.PIC_DIR) != -1) {
                     deleteMainPic(mainPicUrl.substring(mainPicUrl.indexOf(ConstantsUtils.PIC_DIR)));
                 }
-                //删除商品详细图片
+                /*
+                删除商品详细图片
+                 */
                 String[] picUrl = goods.get("pic_url_list").toString().split(",");
+                //非空判断
                 if (picUrl != null && picUrl.length > 0) {
                     for (String pic : picUrl) {
+                        //判断图片地址是否正确
                         if (pic.indexOf(ConstantsUtils.PIC_DIR) != -1) {
                             deleteMainPic(pic.substring(pic.indexOf(ConstantsUtils.PIC_DIR)));
                         }
@@ -343,7 +362,6 @@ public class GoodsResource extends SellerResource {
 
     /**
      * 上传商品主图
-     *
      * @param main_pic 商品主图
      * @return 图片名称
      */
@@ -356,7 +374,6 @@ public class GoodsResource extends SellerResource {
 
     /**
      * 上传商品详情图片
-     *
      * @param picMap 商品详情图片
      * @return 图片名称
      */
@@ -380,9 +397,8 @@ public class GoodsResource extends SellerResource {
 
     /**
      * 商品上下架
-     *
      * @param status      上下架状态 1：上架 0：下架
-     * @param goods_sku_list
+     * @param goods_sku_list   商品规格列表
      * @return
      */
     @PUT("/updown")

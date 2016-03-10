@@ -44,15 +44,16 @@ public class GoodsResource extends BuyerResource {
     @GET
     public WebResult goods(String goods_name, Integer category_id, Integer sub_category_id,
                            Integer page_start, Integer page_step, Integer sort, Integer sort_style, Integer sort_type) {
-        long buyer_id = SessionUtil.getUserId();
+        //获取用户ID
+        Long buyer_id = SessionUtil.getUserId();
         /*
         判断是否有分页信息，如果没有，给定默认值
          */
         if (page_start == null) {
-            page_start = ConstantsUtils.DEFAULT_PAGE_START;
+            page_start = ConstantsUtils.DEFAULT_PAGE_START; //默认从第1条开始
         }
         if (page_step == null) {
-            page_step = ConstantsUtils.DEFAULT_PAGE_STEP;
+            page_step = ConstantsUtils.DEFAULT_PAGE_STEP;  //默认返回10条
         }
 
         String sql = YamlRead.getSQL("findGoodsInfo", "buyer/goods");
@@ -71,14 +72,13 @@ public class GoodsResource extends BuyerResource {
             sql = sql + " AND a.name like '%" + goods_name + "%'";
         }
         if (sort != null) {
+            //是否按新品排序 目前是否为新品都是根据上架时间倒序查询
             if (sort == ConstantsUtils.SORT_NEW) {
                 sql = sql + " ORDER BY b.release_date DESC";
             } else {
                 sql = sql + " ORDER BY b.release_date DESC";
             }
-            /**
-             * 按价格排序
-             */
+            //按价格排序
             if (sort_style != null && sort_style == ConstantsUtils.SORT_PRICE) {
                 sql = sql + ",c.price";
                 if (sort_type != null && sort_type == ConstantsUtils.SORT_ASC) {
@@ -89,22 +89,22 @@ public class GoodsResource extends BuyerResource {
 
             }
         } else {
-            /**
-             * 按价格排序
-             */
+            //按价格排序
             if (sort_style != null && sort_style == ConstantsUtils.SORT_PRICE) {
                 sql = sql + "c.price";
+                //是否升序
                 if (sort_type != null && sort_type == ConstantsUtils.SORT_ASC) {
                     sql = sql + " ASC";//升序
                 } else {
                     sql = sql + " DESC";//降序
                 }
-
             }
         }
         HashMap resultMap = new HashMap();
         HashMap<Long, GoodsInfo> map = new HashMap<Long, GoodsInfo>();
-        FullPage<goods_info> list = goods_info.dao.fullPaginate(page_start / page_step + 1, page_step, sql, buyer_id);
+        FullPage<goods_info> list = goods_info.dao.fullPaginate(page_start / page_step + 1,
+                page_step, sql, buyer_id);
+        //非空判断
         if (list != null && list.getTotalRow() > 0) {
             for (goods_info goodsInfo : list.getList()) {
                 GoodsInfo goods = map.get(Long.parseLong(goodsInfo.get("goods_id").toString()));
@@ -121,7 +121,7 @@ public class GoodsResource extends BuyerResource {
                     goods.setSeller_name(goodsInfo.get("seller_name").toString());
                     goods.setIngredient(goodsInfo.get("ingredient").toString());
 
-
+                    //商品规格信息
                     List<GoodsSku> skuList = new ArrayList<GoodsSku>();
                     GoodsSku goodsSku = new GoodsSku();
                     goodsSku.setSku_id(Long.parseLong(goodsInfo.get("sku_id").toString()));
@@ -132,6 +132,7 @@ public class GoodsResource extends BuyerResource {
                     skuList.add(goodsSku);
                     goods.setSkuList(skuList);
                 } else {
+                    //商品规格信息
                     List<GoodsSku> skuList = (List) goods.getSkuList();
                     GoodsSku goodsSku = new GoodsSku();
                     goodsSku.setSku_id(Long.parseLong(goodsInfo.get("sku_id").toString()));
@@ -146,6 +147,7 @@ public class GoodsResource extends BuyerResource {
             }
         }
         List<GoodsInfo> goodsInfoList = new ArrayList<GoodsInfo>();
+        //非空判断
         if (map != null && map.size() > 0) {
             for (Long goodsId : map.keySet()) {
                 goodsInfoList.add(map.get(goodsId));
