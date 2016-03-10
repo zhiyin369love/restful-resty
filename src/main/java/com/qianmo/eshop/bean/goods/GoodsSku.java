@@ -6,18 +6,18 @@ import java.math.BigDecimal;
  * Created by fxg06 on 2016/3/7.
  */
 public class GoodsSku {
-    private long sku_id;//商品规格ID
+    private Long sku_id;//商品规格ID
     private String sku_name;//商品规格名称
-    private int status;//商品规格上下架状态 1：已上架 0：已下架
+    private Integer status;//商品规格上下架状态 1：已上架 0：已下架
     private BigDecimal price;//商品规格价格
     private String release_date;//商品规格上架时间
-    private int seller_count;//商品规格已售总数
+    private Integer seller_count;//商品规格已售总数
 
-    public long getSku_id() {
+    public Long getSku_id() {
         return sku_id;
     }
 
-    public void setSku_id(long sku_id) {
+    public void setSku_id(Long sku_id) {
         this.sku_id = sku_id;
     }
 
@@ -29,11 +29,11 @@ public class GoodsSku {
         this.sku_name = sku_name;
     }
 
-    public int getStatus() {
+    public Integer getStatus() {
         return status;
     }
 
-    public void setStatus(int status) {
+    public void setStatus(Integer status) {
         this.status = status;
     }
 
@@ -53,11 +53,11 @@ public class GoodsSku {
         this.release_date = release_date;
     }
 
-    public int getSeller_count() {
+    public Integer getSeller_count() {
         return seller_count;
     }
 
-    public void setSeller_count(int seller_count) {
+    public void setSeller_count(Integer seller_count) {
         this.seller_count = seller_count;
     }
 }

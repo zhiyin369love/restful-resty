@@ -16,7 +16,7 @@ findGoodsForm:
 
 #获取商品信息
 findGoods:
-  SELECT a.id goods_id,a.name goods_name,a.num goods_num,a.category_id,a.details,a.form_id,a.generic_name,a.ingredient,
+  SELECT a.id goods_id,a.name goods_name,a.num goods_num,a.category_id,a.details,a.form_id,a.generic_name,a.ingredient,a.seller_id,
     a.license_num,a.main_pic_url,a.pic_url_list,a.producer,a.standard,b.category_name,b.parent_category_name
     FROM goods_info a,
     (SELECT c.name category_name,d.name parent_category_name,c.id FROM goods_category c

@@ -6,11 +6,11 @@ import java.util.Collection;
  * Created by fxg06 on 2016/3/7.
  */
 public class GoodsInfo {
-    private long goods_id;//商品ID
+    private Long goods_id;//商品ID
     private String goods_name;//商品名称
-    private long goods_num;//商品编号
-    private long category_id;//商品分类ID
-    private long form_id;//商品剂型ID
+    private Long goods_num;//商品编号
+    private Long category_id;//商品分类ID
+    private Long form_id;//商品剂型ID
     private String generic_name;//商品通用名称
     private String ingredient;//主要成分
     private String producer;//生产厂家
@@ -19,16 +19,16 @@ public class GoodsInfo {
     private String main_pic_url;//商品主图url
     private String pic_url_list;//商品详情图片url
     private String standard;//商品执行标准
-    private long seller_id;//商品销售厂家ID
+    private Long seller_id;//商品销售厂家ID
     private String seller_name;//商品销售厂家名称
 
     private Collection<GoodsSku> skuList;//商品规格信息
 
-    public long getGoods_id() {
+    public Long getGoods_id() {
         return goods_id;
     }
 
-    public void setGoods_id(long goods_id) {
+    public void setGoods_id(Long goods_id) {
         this.goods_id = goods_id;
     }
 
@@ -40,27 +40,27 @@ public class GoodsInfo {
         this.goods_name = goods_name;
     }
 
-    public long getGoods_num() {
+    public Long getGoods_num() {
         return goods_num;
     }
 
-    public void setGoods_num(long goods_num) {
+    public void setGoods_num(Long goods_num) {
         this.goods_num = goods_num;
     }
 
-    public long getCategory_id() {
+    public Long getCategory_id() {
         return category_id;
     }
 
-    public void setCategory_id(long category_id) {
+    public void setCategory_id(Long category_id) {
         this.category_id = category_id;
     }
 
-    public long getForm_id() {
+    public Long getForm_id() {
         return form_id;
     }
 
-    public void setForm_id(long form_id) {
+    public void setForm_id(Long form_id) {
         this.form_id = form_id;
     }
 
@@ -128,11 +128,11 @@ public class GoodsInfo {
         this.standard = standard;
     }
 
-    public long getSeller_id() {
+    public Long getSeller_id() {
         return seller_id;
     }
 
-    public void setSeller_id(long seller_id) {
+    public void setSeller_id(Long seller_id) {
         this.seller_id = seller_id;
     }
 
