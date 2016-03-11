@@ -11,6 +11,7 @@ import com.qianmo.eshop.model.cart.cart;
 import com.qianmo.eshop.model.goods.goods_info;
 import com.qianmo.eshop.model.goods.goods_sku;
 import com.qianmo.eshop.model.goods.goods_sku_price;
+import com.qianmo.eshop.model.user.user_info;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -75,9 +76,10 @@ public class CartResource extends BuyerResource {
                 //订购数量
                 tempCart.set("goods_sku_count", good.get("goods_sku_count"));
                 //卖家id
-                tempCart.set("seller_id", good.get("seller_id"));
+                long seller_id = (Long)good.get("seller_id");
+                tempCart.set("seller_id", seller_id);
                 //卖家name
-                tempCart.set("seller_name", good.get("seller_name"));
+                tempCart.set("seller_name", user_info.dao.findById(seller_id).get("name"));
                 goods_sku goodsSku = goods_sku.dao.findById(good.get("goods_sku_id"));
                 //商品规格状态
                 tempCart.set("status", goodsSku.get("status"));
@@ -128,7 +130,6 @@ public class CartResource extends BuyerResource {
         HashMap resultMap = new HashMap();
         List<Map> resultCartList = new ArrayList<Map>();
         // try {
-        //group by 有利于组装新的数据结构，如果去掉 order by 下面的整个逻辑都需要变动
         List<cart> cartlist = cart.dao.findBy("buyer_id = ?  order by seller_id,goods_num", buyer_id);
         Map cartResult = new HashMap();
         goods_sku_price goodsSkuPriceModel = new goods_sku_price();
