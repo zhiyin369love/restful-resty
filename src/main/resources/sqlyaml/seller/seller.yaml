@@ -31,3 +31,19 @@ getAccountPermissionById:
   					user_id = ?
   			)
   	)
+
+getRetailerSkuPrice:
+   SELECT b.goods_num,
+          c.name goods_name,
+          c.price,
+          c.sku_id,
+          d.name sku_name,
+          c.type
+     FROM goods_sku_price b,
+          goods_info c,
+          goods_sku d
+    WHERE b.goods_num = c.num
+      and b.sku_id = d.id
+      and b.buyer_id = ?
+      and b.seller_id = ?
+      and b.goods_num = ?

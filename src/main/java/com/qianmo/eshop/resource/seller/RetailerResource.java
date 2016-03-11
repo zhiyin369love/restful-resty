@@ -80,7 +80,7 @@ public class RetailerResource extends ApiResource {
                         }
                     }
                 }
-                if (returnResult.get("msg") == null || (returnResult.get("msg") != null && !"OK".equals(returnResult.get("msg")))) {
+                if (returnResult.get("msg") == null || !"OK".equals(returnResult.get("msg"))) {
                     resultContent += phone + "短信发送失败;";
                 }
             }
@@ -108,7 +108,7 @@ public class RetailerResource extends ApiResource {
     @Transaction
     public WebResult cooperation(Long id, Long op) {
         //try {
-        if ((id == null || id == 0l) || (op == null || op == 0l) || seller_id == 0l) {
+        if ((id == null || id == 0l) || op == null || seller_id == 0l) {
             return new WebResult(HttpStatus.EXPECTATION_FAILED, "输入参数有误");
         }
         buyer_seller buyerSeller = buyer_seller.dao.findFirstBy("buyer_id = ? and seller_id = ?", id, seller_id);
@@ -148,7 +148,7 @@ public class RetailerResource extends ApiResource {
             }
             int pageNumber = page_start / page_step + 1;
             FullPage<invite_verify_code> inviteCodeList = null;
-            String sql = "SELECT * FROM user_info a LEFT JOIN invite_verify_code b\n" +
+            String sql = "SELECT * FROM user_info a LEFT JOIN invite_verify_code b" +
                     "ON a.phone = b.phone " +
                     "WHERE b.phone IS NOT NULL AND b.user_id = ? AND b.type  =? ";
             if (!StringUtils.isEmpty(buyer_name) && !StringUtils.isEmpty(name) && !StringUtils.isEmpty(phone)) {
@@ -215,16 +215,16 @@ public class RetailerResource extends ApiResource {
                 HashMap userTemp = new HashMap();
                 for (invite_verify_code inviteVerifyCodeTemp : inviteVerifyCodes) {
                     userTemp.clear();
-                    user_info userInfoTemp = new user_info();
-                    userTemp.put("is_invited", userInfoTemp.get("is_invited"));
+                    //user_info userInfoTemp = new user_info();
+                    userTemp.put("is_invited", inviteVerifyCodeTemp.get("is_invited"));
                     //地址
-                    userTemp.put("address", userInfoTemp.get("province_name") + userInfoTemp.get("city_name").toString() + userInfoTemp.get("county_name").toString() + userInfoTemp.get("town_name").toString() + userInfoTemp.get("address").toString());
+                    userTemp.put("address", inviteVerifyCodeTemp.get("province_name") + inviteVerifyCodeTemp.get("city_name").toString() + inviteVerifyCodeTemp.get("county_name").toString() + inviteVerifyCodeTemp.get("town_name").toString() + inviteVerifyCodeTemp.get("address").toString());
                     // invite_verify_code verifyCode =  new invite_verify_code().getInviteByBuyerAndSeller(buyerId,seller_id);
                     //是否已邀请
                     userTemp.put("is_invited", ConstantsUtils.INVITE_CODE_STATUS_SUCCESSED);
                     //用户id
-                    userTemp.put("user_id", userInfoTemp.get("id"));
-                    userTemp.put("account", userInfoTemp.get("account"));
+                    userTemp.put("user_id", inviteVerifyCodeTemp.get("id"));
+                    userTemp.put("account", inviteVerifyCodeTemp.get("account"));
                     //phone
                     userTemp.put("phone", inviteVerifyCodeTemp.get("phone"));
                     //邀请码
@@ -300,10 +300,10 @@ public class RetailerResource extends ApiResource {
      */
     @GET("/price/:id")
     public WebResult getRetailerPriceList(Long goods_id, Long goos_sku_id, Long id, Integer page_start, Integer page_step, Integer type) {
-        //TODO id是后来接口中加的，需要确定是什么含义
+
         HashMap resultMap = new HashMap();
         List<goods_sku_price> goodsSkuPrices = new ArrayList<goods_sku_price>();
-        List<HashMap> goodsSkuPriceResultList = new ArrayList<HashMap>();
+        List<goods_sku_price> goodsSkuPriceResultList = new ArrayList<goods_sku_price>();
         Map pageInfo = new HashMap();
         //try {
         if (seller_id != 0l) {
@@ -313,106 +313,38 @@ public class RetailerResource extends ApiResource {
                 page_step = ConstantsUtils.DEFAULT_PAGE_STEP;
             }
             int pageNumber = page_start / page_step + 1;
-            FullPage<goods_sku_price> goodSkuPriceList = null;
-            if (goods_id != null && goods_id != 0 && goos_sku_id != null && goos_sku_id != 0 && type != null && type != 0) {
-                goodSkuPriceList = goods_sku_price.dao.fullPaginateBy(pageNumber, page_step, "seller_id = ? and goods_num = ? and sku_id = ? and type = ?",
-                        seller_id, goods_id, goos_sku_id, ConstantsUtils.GOODS_SKU_PRICE_BUY_ENBLE);
-            } else if (goods_id != null && goods_id != 0 && goos_sku_id != null && goos_sku_id != 0) {
-                goodSkuPriceList = goods_sku_price.dao.fullPaginateBy(pageNumber, page_step, "seller_id = ? and goods_num = ? and sku_id = ? ",
-                        seller_id, goods_id, goos_sku_id);
-            } else if (goos_sku_id != null && goos_sku_id != 0 && type != null && type != 0) {
-                goodSkuPriceList = goods_sku_price.dao.fullPaginateBy(pageNumber, page_step, "seller_id = ? and sku_id = ? and type = ? ",
-                        seller_id, goos_sku_id, ConstantsUtils.GOODS_SKU_PRICE_BUY_ENBLE);
-            } else if (goods_id != null && goods_id != 0 && type != null && type != 0) {
-                goodSkuPriceList = goods_sku_price.dao.fullPaginateBy(pageNumber, page_step, "seller_id = ? and goods_num = ?  and type = ?",
-                        seller_id, goods_id, ConstantsUtils.GOODS_SKU_PRICE_BUY_ENBLE);
-            } else if (goods_id != null && goods_id != 0) {
-                goodSkuPriceList = goods_sku_price.dao.fullPaginateBy(pageNumber, page_step, "seller_id = ? and goods_num = ? ",
-                        seller_id, goods_id);
-            } else if (goos_sku_id != null && goos_sku_id != 0) {
-                goodSkuPriceList = goods_sku_price.dao.fullPaginateBy(pageNumber, page_step, "seller_id = ? and sku_id = ? ",
-                        seller_id, goos_sku_id);
-            } else if (type != null && type != 0) {
-                goodSkuPriceList = goods_sku_price.dao.fullPaginateBy(pageNumber, page_step, "seller_id = ?  and type = ?",
-                        seller_id, ConstantsUtils.GOODS_SKU_PRICE_BUY_ENBLE);
+            FullPage<goods_sku> goodsSkuFullPageList;
+            //如果商品编号不为空的话
+            if (goods_id != null) {
+                goodsSkuFullPageList = goods_sku.dao.fullPaginateBy(pageNumber, page_step, "seller_id = ? and status = ? and goods_num = ?", seller_id, ConstantsUtils.ONE, goods_id);
             } else {
-                goodSkuPriceList = goods_sku_price.dao.fullPaginateBy(pageNumber, page_step, "seller_id = ?  ",
-                        seller_id);
+                goodsSkuFullPageList = goods_sku.dao.fullPaginateBy(pageNumber, page_step, "seller_id = ? and status = ? ", seller_id, ConstantsUtils.ONE);
             }
-            goodsSkuPrices = goodSkuPriceList.getList();
-            pageInfo.put("page_size", page_step);
-            pageInfo.put("total_count", goodSkuPriceList.getTotalRow());
-            pageInfo.put("total_page", goodSkuPriceList.getTotalPage());
-               /* } else {
-                    if(goods_id != null && goods_id != 0 && goos_sku_id != null && goos_sku_id != 0 && type !=  null && type != 0) {
-                        goodsSkuPrices =  goods_sku_price.dao.findBy("seller_id = ? and goods_num = ? and sku_id = ? and type = ?",
-                                id,goods_id,goos_sku_id, ConstantsUtils.GOODS_SKU_PRICE_BUY_ENBLE);
-                    } else if (goods_id != null && goods_id != 0 && goos_sku_id != null &&  goos_sku_id != 0) {
-                        goodsSkuPrices =  goods_sku_price.dao.findBy("seller_id = ? and goods_num = ? and sku_id = ? ",
-                                id,goods_id,goos_sku_id);
-                    } else if (goos_sku_id != null &&  goos_sku_id != 0 && type !=  null && type != 0) {
-                        goodsSkuPrices =  goods_sku_price.dao.findBy("seller_id = ? and sku_id = ? and type = ? ",
-                                id,goos_sku_id, ConstantsUtils.GOODS_SKU_PRICE_BUY_ENBLE);
-                    } else if (goods_id != null && goods_id != 0  && type !=  null && type != 0) {
-                        goodsSkuPrices =  goods_sku_price.dao.findBy("seller_id = ? and goods_num = ?  and type = ?",
-                                id,goods_id,ConstantsUtils.GOODS_SKU_PRICE_BUY_ENBLE);
-                    } else if (goods_id != null && goods_id != 0 ) {
-                        goodsSkuPrices =  goods_sku_price.dao.findBy("seller_id = ? and goods_num = ? ",
-                                id,goods_id);
-                    } else if (goos_sku_id != null &&  goos_sku_id != 0) {
-                        goodsSkuPrices =  goods_sku_price.dao.findBy("seller_id = ? and sku_id = ? ",
-                                id,goos_sku_id);
-                    }  else if (type !=  null && type != 0) {
-                        goodsSkuPrices =  goods_sku_price.dao.findBy("seller_id = ?  and type = ?",
-                                id, ConstantsUtils.GOODS_SKU_PRICE_BUY_ENBLE);
-                    } else {
-                        goodsSkuPrices =  goods_sku_price.dao.findBy("seller_id = ? ",
-                                id);
+            List<goods_sku> goodsSkuList = goodsSkuFullPageList == null ? null : goodsSkuFullPageList.getList();
+            String getRetailerSkuPriceSql = YamlRead.getSQL("getRetailerSkuPrice", "seller/seller");
+            if (goodsSkuList != null && goodsSkuList.size() > 0) {
+                //HashMap result = new HashMap();
+                for (goods_sku goodsSku : goodsSkuList) {
+                    //如果商品型号id不为空
+                    if (goos_sku_id != null) {
+                        getRetailerSkuPriceSql += " and b.sku_id =  " + goos_sku_id;
                     }
-                    pageInfo.put("page_size",null);
-                    pageInfo.put("total_count",goodsSkuPrices==null?0:goodsSkuPrices.size());
-                    pageInfo.put("total_page",null);
-                }*/
-            if (goodsSkuPrices != null && goodsSkuPrices.size() > 0) {
-                HashMap temp = new HashMap();
-                for (goods_sku_price goodsSkuPriceTemp : goodsSkuPrices) {
-                    temp.clear();
-                    //商品id
-                    long goodsNum = goodsSkuPriceTemp.<Long>get("goods_num");
-                    temp.put("goods_id", goodsNum);
-                    //商品名称
-                    temp.put("goods_name", goods_info.dao.findFirstBy("num = ?", goodsNum).get("name"));
-                    //型号名称
-                    long skuId = goodsSkuPriceTemp.<Long>get("sku_id");
-                    temp.put("sku_name", goods_sku.dao.findById(skuId).get("name"));
-                    if (goodsSkuPriceTemp.get("price") != null) {
-                        temp.put("price", goodsSkuPriceTemp.get("price"));
-                    } else {
-                        long skuIdTemp = goodsSkuPriceTemp.<Long>get("sku_id");
-                        goods_sku skuPrice = goods_sku.dao.findFirstBy(" seller_id =? and id = ?", seller_id, skuIdTemp);
-                        if (skuPrice != null && skuPrice.get("list_price") != null) {
-                            temp.put("price", skuPrice.get("list_price"));
-                        } else {
-                            temp.put("price", null);
-                        }
+                    //如果类别不为空
+                    if (type != null) {
+                        getRetailerSkuPriceSql += " and b.type =  " + type;
                     }
-                    temp.put("sku_id", goodsSkuPriceTemp.get("sku_id"));
-                    temp.put("type", goodsSkuPriceTemp.get("type"));
-                    goodsSkuPriceResultList.add(temp);
+                    long goodsNum = goodsSku.get("goods_num");
+                    goods_sku_price goodsSkuPrice = goods_sku_price.dao.findFirst(getRetailerSkuPriceSql, id, seller_id, goodsNum);
+                    goodsSkuPriceResultList.add(goodsSkuPrice);
                 }
             }
-            resultMap.put("buyer_price_list", goodsSkuPriceResultList);
-            resultMap.put("page_info", pageInfo);
-        } else {
-            resultMap.put("buyer_price_list", null);
         }
+        resultMap.put("buyer_price_list", goodsSkuPriceResultList);
+        resultMap.put("total_count", goodsSkuPriceResultList.size());
+        resultMap.put("page_size", page_step);
         return new WebResult(HttpStatus.OK, resultMap);
-       /* } catch (Exception e) {
-            //异常情况，按理说需要记录日志 TODO
-            resultMap.put("buyer_price_list", null);
-            return resultMap;
-        }*/
     }
+
 
 
     /**
