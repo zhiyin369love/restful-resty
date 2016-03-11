@@ -27,7 +27,7 @@ getFieldBuyerReceiveAll:
   where oi.id = ?
 
 getFirldGoodsInfoAll:
-   select gi.details,gi.form_id,gi.generic_name,gi.id,gi.name,gi.ingredient,gi.license_num,gi.main_pic_url,gi.num,gi.pic_url_list,gi.producer,gi.standard
+   select gi.details,gi.form_id,gi.generic_name,gi.id,gi.name,gi.ingredient,gi.license_num,gi.main_pic_url,gi.num,gi.pic_url_list,gi.producer,gi.standard,gi.category_id
      from goods_info gi LEFT JOIN order_goods og on gi.num = og.goods_num LEFT JOIN order_info oi on og.order_num = oi.num where oi.id = ?
 
 getFieldGoodsSkuListAll:
