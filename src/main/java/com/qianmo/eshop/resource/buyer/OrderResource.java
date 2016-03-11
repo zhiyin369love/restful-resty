@@ -87,13 +87,16 @@ public class OrderResource extends BuyerResource {
         List<HashMap> resultMap = new ArrayList<HashMap>();
         for (goods_info goodlist: goods_infoList ){
             resultgoods.clear();
-            resultgoods.put("goods_info", goods_info.dao.find(sqlgoods_info,id));
-            long goodsNum = (Long)((JSONObject)goodlist.get("goods_info")).get("id");
-            long category_id = (Long)((JSONObject)goodlist.get("goods_info")).get("category_id");
+          //  long goodsNum = (Long)((JSONObject)goodlist.get("goods_info")).get("id");
+            long goodsNum = goodlist.get("number");
+           // long category_id = (Long)((JSONObject)goodlist.get("goods_info")).get("category_id");
+            long category_id = goodlist.get("category_id");
             resultgoods.put("goods_sku_list", goods_sku.dao.find(sqlgoodssku,goodsNum));
             resultgoods.put("goods_type", goods_category.dao.find(sqlgoodstype,category_id));
+            resultgoods.put("goods_info", goods_info.dao.findFirst(sqlgoods_info,id));
             resultMap.add(resultgoods);
         }
+
         return resultMap;
     }
 
@@ -150,18 +153,17 @@ public class OrderResource extends BuyerResource {
     /**
      * 获取所有订单信息 --买家订单列表
      *  author:wss
-     *  @param order_num 订单ID
      *  @param order_status 订单状态
      *  @param page_start
      *  @param page_step
      *
      */
     @GET
-    public HashMap getOrderList(Integer order_num,Integer order_status,Integer page_start,Integer page_step) {
+    public HashMap getOrderList(Integer order_status,Integer page_start,Integer page_step) {
         //根据循环获取买家Id
         long buyerId = SessionUtil.getUserId();
         //根据买家id获取订单号列表
-        List<order_user> orderUserList = null;
+        List<order_info> orderUserList = null;
         //如果状态不为空，则需要根据状态去找order list
         if(page_start == null || page_start ==0) {
             page_start = ConstantsUtils.DEFAULT_PAGE_START;
@@ -170,24 +172,26 @@ public class OrderResource extends BuyerResource {
             page_step = ConstantsUtils.DEFAULT_PAGE_STEP;
         }
         int pageNumber = page_start/page_step + 1;
-        Page<order_user> orderUserPage = null;
-        if(order_status != null && order_status != 0) {
-            String getOrderNumByStatusSql = YamlRead.getSQL("getOrderNumByStatus","buyer/order");
-            orderUserPage = order_user.dao.paginate(pageNumber,page_step,getOrderNumByStatusSql,order_status, buyerId);
-            orderUserList = orderUserPage == null? new ArrayList<order_user>(): orderUserPage.getList();
+        Page<order_info> orderUserPage = null;
+        String getOrderNumByStatusSql = YamlRead.getSQL("getOrderNumByStatus","buyer/order");
+        if(order_status != null) {
+            getOrderNumByStatusSql = getOrderNumByStatusSql + "  and a.status = ?";
+            orderUserPage = order_info.dao.paginate(pageNumber,page_step,getOrderNumByStatusSql,buyerId,order_status);
+            orderUserList = orderUserPage == null? new ArrayList<order_info>(): orderUserPage.getList();
         } else {
-            orderUserPage = order_user.dao.paginateBy(pageNumber,page_step,"buyer_id = ?", buyerId);
-            orderUserList = orderUserPage == null? new ArrayList<order_user>(): orderUserPage.getList();
+            orderUserPage = order_info.dao.paginate(pageNumber,page_step,getOrderNumByStatusSql, buyerId);
+            orderUserList = orderUserPage == null? new ArrayList<order_info>(): orderUserPage.getList();
         }
         //订单实体
         HashMap orderMap = new HashMap();
         //返回订单列表
         List<HashMap> resultMapList = new ArrayList<HashMap>();
         if (orderUserList != null && orderUserList.size() > 0) {
-            for(order_user orderUser : orderUserList) {
+            for(order_info orderinfolist : orderUserList) {
                 orderMap.clear();
-                OrderResource resource = new OrderResource();
-                orderMap = resource.getOrderDetail(order_num);
+               // OrderResource resource = new OrderResource();
+               // orderMap = resource.getOrderDetail(order_num);
+                orderMap = getOrderDetail(orderinfolist.<Long>get("id"));
                 resultMapList.add(orderMap);
             }
         }
@@ -287,6 +291,7 @@ public class OrderResource extends BuyerResource {
 
             }
             //num = CodeUtils.code(dateFormat.format(date), ConstantsUtils.ORDER_NUM_TYPE);
+            cart.dao.deleteBy("id in (" + cart_list +")");
             new order_user().set("area_id", ConstantsUtils.ALL_AREA_ID).set("order_num", num).set("buyer_id", buyer_id).set("seller_id", seller_id).save();
             new order_info().set("area_id", ConstantsUtils.ALL_AREA_ID).set("num", num).set("status", ConstantsUtils.ORDER_INFO_STATUS_CREATED).set("pay_status", ConstantsUtils.ORDER_PAYMENT_STATUS_WAITE).set("total_price", total_price).set("buyer_receive_id", buyer_receive_id).set("pay_type_id",ConstantsUtils.ORDER_PAYMENT_STATUS_WAITE).save();
         }

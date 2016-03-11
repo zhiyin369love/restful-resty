@@ -17,7 +17,7 @@ getFieldBuyerReceiveAll:
   where oi.id = ?
 
 getFirldGoodsInfoAll:
-  select gi.details,gi.form_id,gi.generic_name,gi.id as goods_id,gi.name as goods_name,gi.ingredient,gi.license_num,gi.main_pic_url,gi.num as number,gi.pic_url_list,gi.producer,gi.standard
+  select gi.details,gi.form_id,gi.generic_name,gi.id as goods_id,gi.name as goods_name,gi.ingredient,gi.license_num,gi.main_pic_url,gi.num as number,gi.category_id,gi.pic_url_list,gi.producer,gi.standard
        from goods_info gi LEFT JOIN order_goods og on gi.num = og.goods_num LEFT JOIN order_info oi on og.order_num = oi.num where oi.id = ?
 
 getFieldGoodsSkuAll:
@@ -40,14 +40,9 @@ getSellPayList:
   SELECT id pay_id,NAME pay_name,seller_id,details,STATUS FROM seller_pay
 
 getOrderNumByStatus:
-  SELECT
-  	a.*
-  FROM
-  	order_info a
-  LEFT JOIN order_user b ON a.num = b.order_num
-  WHERE
-    a.num IS NOT NULL
-  AND b.buyer_id = ?
+  select a.id,a.area_id,a.num,a.status,a.pay_status,a.pay_type_id,a.total_price,a.buyer_receive_id,a.created_at,a.updated_at,a.deleted_at from order_info a
+      LEFT JOIN order_user b ON a.num = b.order_num
+     where a.num is not null and b.buyer_id = ?
 
 getBuyerPrice:
    SELECT

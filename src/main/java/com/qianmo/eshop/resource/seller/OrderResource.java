@@ -26,6 +26,7 @@ import com.qianmo.eshop.model.order.order_user;
 import com.qianmo.eshop.resource.z_common.ApiResource;
 import org.apache.poi.ss.formula.functions.T;
 
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -81,7 +82,7 @@ public class OrderResource extends SellerResource {
     //卖家操作订单
     @PUT("/:id")
     public WebResult opOrder(Integer id, int op, String remark){
-        try {
+
             if (op == ConstantsUtils.SELLER_ORDER_OP_PAY_TYPE){
                 //收到货款
                 order_info.dao.update("update order_info set pay_status = ?  where num = ? ", ConstantsUtils.ORDER_PAYMENT_STATUS_RECEIVED, id);
@@ -105,13 +106,8 @@ public class OrderResource extends SellerResource {
             }else {
                 //当卖家不同意买家赊账时订单取消 op==5时
                 order_info.dao.update("update order_info set status = ? where id = ? ",ConstantsUtils.ORDER_INFO_STATUS_CANCEL,id);    //注：除了要删除订单主表之外，可能还要删除其他关联表，“待开发”
-                return new WebResult(HttpStatus.OK, "删除订单成功");
             }
             return new WebResult(HttpStatus.OK, "操作订单成功");
-        } catch (Exception e) {
-            //异常情况，按理说需要记录日志，也可考虑做统一的日志拦截 TODO
-            return new WebResult(HttpStatus.EXPECTATION_FAILED, "操作订单失败");
-        }
     }
 
     /**
@@ -184,9 +180,10 @@ public class OrderResource extends SellerResource {
                 resultMapList.add(orderMap);
                // resulfinal.put("order_total", count2);  //4
             }
-            int orderNum = order_info.dao.findFirst("select count(*) cn from order_info where seller_id = ?  and status != ? and date(created_at) = date(sysdate())", seller_id, ConstantsUtils.ORDER_INFO_STATUS_CANCEL).<Integer>get("cn");
+            long orderNum = order_info.dao.findFirst("select count(*) cn from order_info where seller_id = ?  and status != ? and date(created_at) = date(sysdate())", seller_id, ConstantsUtils.ORDER_INFO_STATUS_CANCEL).<Integer>get("cn");
             //今日交易额
-            double totalPrice = order_info.dao.findFirst("select sum(total_price) cn from order_info where seller_id = ?  and status != ? and date(created_at) = date(sysdate())", seller_id, ConstantsUtils.ORDER_INFO_STATUS_CANCEL).<Integer>get("cn");
+            BigDecimal totalPrice = new BigDecimal(order_info.dao.findFirst("select sum(total_price) cn from order_info where seller_id = ?  and status != ? and date(created_at) = date(sysdate())", seller_id, ConstantsUtils.ORDER_INFO_STATUS_CANCEL).<Integer>get("cn"));
+            //double totalPrice = order_info.dao.findFirst("select sum(total_price) cn from order_info where seller_id = ?  and status != ? and date(created_at) = date(sysdate())", seller_id, ConstantsUtils.ORDER_INFO_STATUS_CANCEL).<Integer>get("cn");
             resulfinal.put("count", orderNum);
             resulfinal.put("total_price", totalPrice);
             resulfinal.put("order_list",resultMapList);
@@ -209,11 +206,12 @@ public class OrderResource extends SellerResource {
             List<HashMap> resultMap = new ArrayList<HashMap>();
             for (goods_info goodlist: goods_infoList ){
                 resultGoods.clear();
-                resultGoods.put("goods_info", goods_info.dao.find(sqlGoodInfo,id));
-                long goodsNum = (Long)((JSONObject)goodlist.get("goods_info")).get("id");
-                long category_id = (Long)((JSONObject)goodlist.get("goods_info")).get("category_id");
+               // goods_info goods_info_list = goods_info.dao.findFirst(sqlGoodInfo,id);
+                long goodsNum = goodlist.get("num");
+                long category_id = goodlist.get("category_id");
                 resultGoods.put("goods_sku_list", goods_sku.dao.find(sqlGoodsSku,goodsNum));
                 resultGoods.put("goods_type", goods_category.dao.find(sqlGoodType,category_id));
+                resultGoods.put("goods_info", goods_info.dao.findFirst(sqlGoodInfo,id));
                 resultMap.add(resultGoods);
             }
             return resultMap;
