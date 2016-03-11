@@ -40,8 +40,14 @@ getSellPayList:
   SELECT id pay_id,NAME pay_name,seller_id,details,STATUS FROM seller_pay
 
 getOrderNumByStatus:
-  SELECT a.* FROM order_user a LEFT JOIN order_info b ON a.order_num = b.num
-      WHERE b.num IS NOT NULL AND b.status = ? AND a.buyer_id = ?
+  SELECT
+  	a.*
+  FROM
+  	order_info a
+  LEFT JOIN order_user b ON a.num = b.order_num
+  WHERE
+    a.num IS NOT NULL
+  AND b.buyer_id = ?
 
 getBuyerPrice:
    SELECT
