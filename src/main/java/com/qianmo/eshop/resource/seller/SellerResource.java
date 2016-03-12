@@ -16,19 +16,15 @@ import java.util.HashMap;
 @API("/seller")
 public class SellerResource extends ApiResource {
 
-  //获取当前登录卖家用户信息
-  @GET
-  public user_info Get() {
-    Principal<user_info> principal = Subject.getPrincipal();
-    if (principal != null)
-      return principal.getModel();
-    else
-      return null;
-  }
+    //获取当前登录卖家用户信息
+    @GET
+    public user_info get() {
+        return user_info.dao.getUserInfo();
+    }
 
-  @PUT("/:id")
-  public HashMap Edit(long id, user_info user_info) {
-    HashMap result = user_info.dao.Edit(id,user_info);
-    return result;
-  }
+    @PUT("/:id")
+    public HashMap edit(long id, user_info user_info) {
+        HashMap result = user_info.dao.Edit(id, user_info);
+        return result;
+    }
 }

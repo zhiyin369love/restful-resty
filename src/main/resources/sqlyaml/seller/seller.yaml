@@ -6,44 +6,52 @@ getFieldActivityAll:
 
 getTotalPriceBySellerIdStatus:
   select  IF (SUM(a.total_price) IS NULL,0,SUM(a.total_price)) total from  order_info a left join  credit b on a.num = b.order_num
-                            where  b.order_num is not null
-                              and b.seller_id = ?
-                              and b.status = ?
+  where  b.order_num is not null
+  and b.seller_id = ?
+  and b.status = ?
 
 getAccountPermissionById:
   SELECT
-  	method,id permission_id,name permission_name,pid,url
+  method,id permission_id,name permission_name,pid,url
   FROM
-  	sec_permission
+  sec_permission
   WHERE
-  	id IN (
-  		SELECT
-  			permission_id
-  		FROM
-  			sec_role_permission
-  		WHERE
-  			role_id = (
-  				SELECT
-  					role_id
-  				FROM
-  					sec_user_role
-  				WHERE
-  					user_id = ?
-  			)
-  	)
+  id IN (
+  SELECT
+  permission_id
+  FROM
+  sec_role_permission
+  WHERE
+  role_id = (
+  SELECT
+  role_id
+  FROM
+  sec_user_role
+  WHERE
+  user_id = ?
+  )
+  )
 
 getRetailerSkuPrice:
-   SELECT b.goods_num,
-          c.name goods_name,
-          c.price,
-          c.sku_id,
-          d.name sku_name,
-          c.type
-     FROM goods_sku_price b,
-          goods_info c,
-          goods_sku d
-    WHERE b.goods_num = c.num
-      and b.sku_id = d.id
-      and b.buyer_id = ?
-      and b.seller_id = ?
-      and b.goods_num = ?
+  SELECT b.goods_num,
+  c.name goods_name,
+  c.price,
+  c.sku_id,
+  d.name sku_name,
+  c.type
+  FROM goods_sku_price b,
+  goods_info c,
+  goods_sku d
+  WHERE b.goods_num = c.num
+  and b.sku_id = d.id
+  and b.buyer_id = ?
+  and b.seller_id = ?
+  and b.goods_num = ?
+
+getAccountList:
+  SELECT
+  a.created_at,a.name,a.id user_id,b.id role_id,c.name role_name
+  FROM user_info a
+  LEFT OUTER JOIN sec_user_role b ON a.id = b.user_id
+  LEFT OUTER JOIN sec_role c ON b.role_id = c.id
+  WHERE a.type = 1 and a.pid = ?
