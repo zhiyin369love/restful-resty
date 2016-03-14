@@ -24,27 +24,37 @@ getFileCreditOrderUserAll:
 getFieldBuyerReceiveAll:
   select bra.address as receive_address,bra.name as receive_name,bra.phone as receive_phone from buyer_receive_address bra LEFT JOIN order_info oi on bra.id = oi.buyer_receive_id where oi.id = ?
 
-
+getFieldOrderNumAll:
+  select num from order_info where id = ?
 getFirldGoodsInfoAll:
-   select gi.details,gi.form_id,gi.generic_name,gi.id,gi.name,gi.ingredient,gi.license_num,gi.main_pic_url,gi.num,gi.pic_url_list,gi.producer,gi.standard,gi.category_id
+   select gi.details,gi.form_id,gi.generic_name,gi.id as goods_id,gi.name as goods_name,gi.ingredient,gi.license_num,gi.main_pic_url,gi.num as number,gi.pic_url_list,gi.producer,gi.standard,gi.category_id
      from goods_info gi LEFT JOIN order_goods og on gi.num = og.goods_num LEFT JOIN order_info oi on og.order_num = oi.num where oi.id = ?
 
 getFieldGoodsSkuListAll:
-     select gs.amount,gsp.price,gsp.sku_id,gs.`name`
+     select gs.amount,gsp.price,gsp.sku_id,gs.name
          from goods_sku_price gsp LEFT JOIN  goods_sku gs on gsp.goods_num = gs.goods_num LEFT JOIN goods_info gi on gs.goods_num = gi.id LEFT JOIN order_goods og on gi.num = og.goods_num LEFT JOIN order_info oi on og.order_num = oi.num where oi.id = ?
 getFieldGoodsTypeALL:
-     select gi.name as type_name,gi.category_id as type_id from goods_info gi LEFT JOIN order_goods og on gi.num = og.goods_num LEFT JOIN order_info oi on og.order_num = oi.num where oi.id = ?
+     select gc.name as type_name,gc.id as type_id
+       from goods_category gc  where gc.id = ?
 getFieldGoodsSkuAll:
-     select og.goods_sku_count as count,og.goods_sku_price as price,og.single_total_price,og.sku_id,gs.name as sku_name from order_goods og LEFT JOIN goods_sku gs on og.sku_id = gs.id where og.goods_num = ?
+     SELECT
+     	og.goods_sku_count AS count,
+     	og.goods_sku_price AS price,
+     	og.single_total_price,
+     	og.sku_id,
+     	gs. NAME AS sku_name
+     FROM
+     	order_goods og
+     INNER JOIN goods_sku gs ON og.sku_id = gs.id
+     WHERE
+     	og.goods_num = ?
+     AND og.order_num = ?
 getFirldOrderRemarkAll:
    select order_remark.created_at, order_remark.details,order_remark.op,order_remark.order_num,order_remark.reason,order_remark.user_id
    from order_remark
    LEFT JOIN order_info on order_remark.order_num = order_info.num where order_info.id = ?
-
 getFieldSellerBankAll:
    select sb.account_address,sb.account_name,sb.account_num,sb.name from seller_bank sb where sb.seller_id = ?
-
-
 getFirldOrderUserAll:
    select ou.id,ou.area_id,ou.order_num,ou.buyer_id,ou.seller_id,ou.created_at,ou.updated_at,ou.deleted_at from order_user ou
    where  ou.seller_id = ?
