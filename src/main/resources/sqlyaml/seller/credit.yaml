@@ -5,8 +5,7 @@ getFieldActivityAll:
   where a.fieldid = ?
 
 getFieldBuyerInfoAll:
-     select distinct c.buyer_id, c.id,c.area_id,c.order_num,c.status,c.seller_id,c.created_at,c.deleted_at from credit c
-      where c.seller_id = ?
+     select distinct c.buyer_id from credit c where c.seller_id = ?
 getFirldOrderUserCreditAll:
   select id,area_id,order_num,buyer_id,seller_id,created_at,updated_at,deleted_at from order_user where buyer_id = ?
 
@@ -15,19 +14,20 @@ getFirldSellerCreditAll:
        where  c.seller_id = ?
 
 getFirldCountOrderUserAll:
-     select SUM(oi.num) as num  from order_info oi LEFT JOIN order_user ou on oi.num = ou.order_num where ou.buyer_id = ? and oi.pay_type_id = 3 and ou.seller = ?
+     select count(oi.num) as num  from order_info oi LEFT JOIN order_user ou on oi.num = ou.order_num where ou.buyer_id = ? and oi.pay_type_id = 3 and ou.seller_id = ?
 
 getFirldCountPriceOrderInfoAll:
-   select SUM(oi.total_price) as total_price  from order_info oi LEFT JOIN order_user ou on oi.num = ou.order_num where ou.buyer_id = ? and oi.pay_type_id = 3 and ou.seller = ?
+   select SUM(oi.total_price) as total_price  from order_info oi LEFT JOIN order_user ou on oi.num = ou.order_num where ou.buyer_id = ? and oi.pay_type_id = 3 and ou.seller_id = ?
 
 getFieldOrderInfoAll:
    select oi.created_at,oi.id,oi.num,oi.status,oi.pay_status,oi.pay_type_id,oi.total_price,ou.seller_id,ui.name
     from  order_info oi left join credit c on oi.num = c.order_num left join order_user ou  on c.order_num = ou.order_num  left join user_info ui on ui.id = ou.seller_id
     where c.seller_id = ?
-
+getFirldCreditAll:
+    select c.id,c.status from credit c where c.seller_id = ?
 getFieldUserInfoAll:
    select name from user_info where id = ?
 getFirldOrderRemarkAll:
-select order_remark.created_at, order_remark.details,order_remark.op,order_remark.order_num,order_remark.reason,order_remark.user_id
-   from order_remark
-   LEFT JOIN order_info  on  order_remark.order_num = order_info.num LEFT JOIN credit c on order_info.num = c.order_num where c.seller_id = ?
+  select a.created_at,a.details,a.op,a.order_num,a.reason,a.user_id
+   from order_remark a
+   LEFT JOIN order_info b on  a.order_num = b.num LEFT JOIN credit c on b.num = c.order_num where c.seller_id = ?
