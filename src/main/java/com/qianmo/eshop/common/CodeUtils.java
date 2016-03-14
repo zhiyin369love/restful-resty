@@ -32,7 +32,6 @@ public class CodeUtils {
         code = Long.parseLong(model.get("code").toString()) + 1;
         if ((type == ConstantsUtils.GOODS_NUM_TYPE && code > 999999999999l)
                 || (type == ConstantsUtils.ORDER_NUM_TYPE && code > 9999)) {
-
             code = 0;
         }
         code = Long.parseLong(df.format(code));
