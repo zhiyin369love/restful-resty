@@ -6,17 +6,22 @@ import cn.dreampie.common.util.Maper;
 import cn.dreampie.orm.transaction.Transaction;
 import cn.dreampie.route.annotation.*;
 import cn.dreampie.route.core.Resource;
+import cn.dreampie.security.DefaultPasswordService;
 import cn.dreampie.security.Principal;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.qianmo.eshop.common.*;
 import com.qianmo.eshop.model.goods.goods_info;
 import com.qianmo.eshop.model.user.invite_verify_code;
+import com.qianmo.eshop.model.user.sms_template;
 import com.qianmo.eshop.model.user.user_info;
 import cn.dreampie.security.Subject;
 
+import java.io.IOException;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -28,47 +33,47 @@ public class ApiResource extends Resource {
 
     //登录
     @POST("/login")
-    public WebResult Login(String username, String password, boolean rememberMe) {
-        String code;
+    public Map login(String username, String pwd, boolean remember_me) {
+        int code;
         HttpStatus status;
         String message;
-        String isBuyer, isSeller;
+        boolean isBuyer, isSeller;
         Map result;
 
         //调用登录方法
-        Subject.login(username, password, rememberMe);
+        Subject.login(username, pwd, remember_me);
         //获取缓存是否有用户信息来判断是否登录成功
         user_info UserInfo = (user_info) Subject.getPrincipal().getModel();
         if (UserInfo != null) {
             //登录成功
-            status = HttpStatus.ACCEPTED;
-            code = String.valueOf(status.getCode());
+            status = HttpStatus.OK;
+            code = status.getCode();
             message = "登录成功";
-            isBuyer = String.valueOf(UserInfo.get("isbuyer"));
-            isSeller = String.valueOf(UserInfo.get("isseller"));
+            isBuyer = UserInfo.get("isbuyer");
+            isSeller = UserInfo.get("isseller");
         } else {
             //登录失败
             status = HttpStatus.NON_AUTHORITATIVE_INFORMATION;
-            code = String.valueOf(status.getCode());
+            code = status.getCode();
             message = "用户名或密码错误";
-            isBuyer = "";
-            isSeller = "";
+            isBuyer = false;
+            isSeller = false;
         }
         //将返回结果写入map中返回
         result = Maper.of("code", code, "message", message, "isbuyer", isBuyer, "isseller", isSeller);
-        return new WebResult(status, result);
+        return result;
     }
 
     //注销
     @DELETE("/logout")
-    public boolean Logout() {
+    public boolean logOut() {
         Subject.logout();
         return true;
     }
 
     //修改密码
-    @POST("/updatepwd/:id")
-    public WebResult UpdatePwd(long id, String confirm_pwd, String new_pwd, String old_pwd) {
+    @POST("/update_pwd/:id")
+    public WebResult updatePwd(long id, String confirm_pwd, String new_pwd, String old_pwd) {
 
         if (user_info.dao.UpdatePwd(id, confirm_pwd, new_pwd, old_pwd)) {
             return new WebResult(HttpStatus.OK, Maper.of("code", HttpStatus.OK, "message", "修改成功"));
@@ -78,24 +83,24 @@ public class ApiResource extends Resource {
     }
 
     //重置密码
-    @POST("/resetpwd/:id")
-    public WebResult ResetPwd(long id, String confirm_pwd, String pwd, String token) {
+    @POST("/reset_pwd/:id")
+    public WebResult resetPwd(long id, String confirm_pwd, String pwd, String token) {
 
         if (user_info.dao.ResetPwd(id, confirm_pwd, pwd, token)) {
-            return new WebResult(HttpStatus.OK, Maper.of("code", HttpStatus.OK, "message", "修改成功"));
+            return new WebResult<Map<String, Object>>(HttpStatus.OK, Maper.<String, Object>of("code", HttpStatus.OK, "message", "修改成功"));
         } else {
-            return new WebResult(HttpStatus.BAD_REQUEST, Maper.of("code", HttpStatus.BAD_REQUEST, "message", "修改失败"));
+            return new WebResult<Map<String, Object>>(HttpStatus.BAD_REQUEST, Maper.<String, Object>of("code", HttpStatus.BAD_REQUEST, "message", "修改失败"));
         }
     }
 
     //检查验证码是否正确(重置密码,注册使用)
-    @POST("/checkcode")
-    public WebResult CheckCode(String code, String phone) {
+    @POST("/check_code")
+    public WebResult checkCode(String code, String phone) {
         String token = user_info.dao.CheckCode(code, phone);
         if (token != null) {
-            return new WebResult(HttpStatus.OK, Maper.of("code", HttpStatus.OK, "message", "验证成功", "token", token));
+            return new WebResult<Map<String, Object>>(HttpStatus.OK, Maper.<String, Object>of("code", HttpStatus.OK, "message", "验证成功", "token", token));
         } else {
-            return new WebResult(HttpStatus.BAD_REQUEST, Maper.of("code", HttpStatus.BAD_REQUEST, "message", "修改失败"));
+            return new WebResult<Map<String, Object>>(HttpStatus.BAD_REQUEST, Maper.<String, Object>of("code", HttpStatus.BAD_REQUEST, "message", "验证失败"));
         }
     }
 
@@ -105,32 +110,69 @@ public class ApiResource extends Resource {
      * @param phone 手机号
      * @param op    操作
      */
-    @PUT("/send/code")
-    public WebResult SendCode(String phone, String op) {
-        try {
-            String content = PropertyUtil.getProperty("sms.content");
-            String code;
-            String resultContent = "";
-            JSONObject returnResult;
-            if (phone != null) {
-                code = CommonUtils.getRandNum(ConstantsUtils.SIX);
-                Date ExpireTime = new Date(System.currentTimeMillis() + 15*60*1000); //十五分钟
-                returnResult = (JSONObject) JSON.parse(SmsApi.sendSms(SmsApi.APIKEY, content + code, phone));
-                invite_verify_code.dao.set("area_id", ConstantsUtils.ALL_AREA_ID).set("code", code).set("type", op)
-                        .set("expire_time", DateUtils.getDateString(ExpireTime, DateUtils.format_yyyyMMddHHmmss)).set("phone", phone).save();
-                if (returnResult.get("msg") == null || (returnResult.get("msg") != null && !"OK".equals(returnResult.get("msg")))) {
-                    resultContent += phone + "短信发送失败;";
-                }
-                if (!"".equals(resultContent)) {
-                    return new WebResult(HttpStatus.OK, resultContent);
-                } else {
-                    return new WebResult(HttpStatus.OK, "发送验证码成功");
-                }
-            } else {
-                return new WebResult(HttpStatus.EXPECTATION_FAILED, "输入参数有误");
+    @POST("/send/code")
+    public WebResult sendCode(String phone, String op) throws IOException {
+        String content;
+        if (op.equals(ConstantsUtils.INVITE_VERIFY_CODE_TYPE_REGISTER)) {
+            content = sms_template.dao.findById(ConstantsUtils.INVITE_VERIFY_CODE_TYPE_REGISTER).get("content");
+        } else content = sms_template.dao.findById(ConstantsUtils.INVITE_VERIFY_CODE_TYPE_RESET).get("content");
+        String code;
+        String resultContent = "";
+        JSONObject returnResult;
+        if (phone != null) {
+            code = CommonUtils.getRandNum(ConstantsUtils.SIX);
+            Date ExpireTime = new Date(System.currentTimeMillis() + 15 * 60 * 1000); //十五分钟
+            returnResult = (JSONObject) JSON.parse(SmsApi.sendSms(SmsApi.APIKEY, content.replace("?", code), phone));
+            invite_verify_code.dao.set("area_id", ConstantsUtils.ALL_AREA_ID).set("code", code).set("type", op)
+                    .set("expire_time", DateUtils.getDateString(ExpireTime, DateUtils.format_yyyyMMddHHmmss)).set("phone", phone).save();
+            if (returnResult.get("msg") == null || (returnResult.get("msg") != null && !"OK".equals(returnResult.get("msg")))) {
+                resultContent += phone + "短信发送失败;";
             }
-        } catch (Exception e) {
-            return new WebResult(HttpStatus.EXPECTATION_FAILED, "异常错误");
+            if (!"".equals(resultContent)) {
+                return new WebResult(HttpStatus.OK, resultContent);
+            } else {
+                return new WebResult(HttpStatus.OK, "发送验证码成功");
+            }
+        } else {
+            return new WebResult(HttpStatus.INTERNAL_SERVER_ERROR, "输入参数有误");
         }
+
+    }
+
+    /**
+     * 买家注册
+     *
+     * @param username    手机号，即用户账号
+     * @param code        手机验证码
+     * @param confirm_pwd 二次密码确认
+     * @param new_pwd     新密码
+     * @return
+     */
+    @POST("/register")
+    public WebResult add(String username, String code, String confirm_pwd, String new_pwd) {
+        Map<String, Object> result;
+        //result 用来保存返回结果 code,message
+        result = CommonUtils.AddreturnCodeMessage(false);
+        //判断用户是否已经注册
+        if (user_info.dao.findBy("username = ? ", username).size() == 0) {
+            //判断两次输入的密码是否一致
+            if (confirm_pwd.equals(new_pwd)) {
+                //判断验证码输入的是否正确 type = 1代表买家注册时发送的验证码
+                if (invite_verify_code.dao.findBy("phone = ? and code = ? and type = 1", username, code).size() > 0) {
+                    user_info saveUserInfo = new user_info().set("username", username)
+                            .set("password", DefaultPasswordService.instance().crypto(new_pwd))
+                            .set("salt", "1234567890")
+                            .set("area_id", ConstantsUtils.ALL_AREA_ID)
+                            .set("type", 0)
+                            .set("pid", 0)
+                            .set("isbuyer", 0);
+                    if (saveUserInfo.save()) {
+                        //result写入注册成功信息
+                        result = CommonUtils.AddreturnCodeMessage(true);
+                    }
+                }
+            }
+        }
+        return new WebResult<Map<String, Object>>(HttpStatus.CREATED, result);
     }
 }

@@ -19,6 +19,7 @@ import com.qianmo.eshop.resource.z_common.ApiResource;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -37,36 +38,36 @@ public class IndexResource extends ApiResource {
      *
      * @param bind_code 绑定码
      */
-    @POST("/bind")
-    public WebResult addBuyerSeller(int bind_code) {
-    /*try {*/
-        //通过验证码找卖家id
-        invite_verify_code code = getInviteByVerifyCode(bind_code);
-        if (code != null && buyer_id != 0) {
-            Long seller_Id = code.<Long>get("user_id");
-            //查看是否已经绑定过
-            buyer_seller buyerSeller = buyer_seller.dao.findFirstBy("buyer_id = ? and seller_id = ? ", buyer_id, seller_Id);
-            if (buyerSeller == null) {
-                //如果没有绑定，则将买家卖家绑定起来
-                buyer_seller.dao.set("area_id", ConstantsUtils.ALL_AREA_ID).set("buyer_id", buyer_id).set("seller_id", seller_Id).set("status", ConstantsUtils.BUYER_SELLER_STATUS_BIDING).save();
-                code.set("status", ConstantsUtils.INVITE_CODE_STATUS_SUCCESSED).update();
-                user_info.dao.findById(buyer_id).set("isbuyer",ConstantsUtils.YES).update();
-                //return new WebResult(HttpStatus.CREATED, "绑定成功");
-            } else {
-                buyerSeller.set("status",ConstantsUtils.BUYER_SELLER_STATUS_BIDING).update();
-                //如果已经绑定过，提示已经绑定过
-            }
-            //code.set("status",ConstantsUtils.INVITE_CODE_STATUS_SUCCESSED).update();
-            return new WebResult(HttpStatus.CREATED, "绑定成功");
-        } else {
-            //如果找不到，提示验证码错误
-            return new WebResult(HttpStatus.BAD_REQUEST, "验证码错误");
-        }
-    /*} catch (Exception e) {
-        //异常情况，按理说需要记录日志 TODO
-        return new WebResult(HttpStatus.BAD_REQUEST, "验证码错误");
-    }*/
-    }
+//    @POST("/bind")
+//    public WebResult addBuyerSeller(int bind_code) {
+//    /*try {*/
+//        //通过验证码找卖家id
+//        invite_verify_code code = getInviteByVerifyCode(bind_code);
+//        if (code != null && buyer_id != 0) {
+//            Long seller_Id = code.<Long>get("user_id");
+//            //查看是否已经绑定过
+//            buyer_seller buyerSeller = buyer_seller.dao.findFirstBy("buyer_id = ? and seller_id = ? ", buyer_id, seller_Id);
+//            if (buyerSeller == null) {
+//                //如果没有绑定，则将买家卖家绑定起来
+//                buyer_seller.dao.set("area_id", ConstantsUtils.ALL_AREA_ID).set("buyer_id", buyer_id).set("seller_id", seller_Id).set("status", ConstantsUtils.BUYER_SELLER_STATUS_BIDING).save();
+//                code.set("status", ConstantsUtils.INVITE_CODE_STATUS_SUCCESSED).save();
+//                user_info.dao.findById(buyer_id).set("isbuyer",ConstantsUtils.YES).update();
+//                //return new WebResult(HttpStatus.CREATED, "绑定成功");
+//            } else {
+//                buyerSeller.set("status",ConstantsUtils.BUYER_SELLER_STATUS_BIDING).update();
+//                //如果已经绑定过，提示已经绑定过
+//            }
+//            //code.set("status",ConstantsUtils.INVITE_CODE_STATUS_SUCCESSED).update();
+//            return new WebResult(HttpStatus.CREATED, "绑定成功");
+//        } else {
+//            //如果找不到，提示验证码错误
+//            return new WebResult(HttpStatus.BAD_REQUEST, "验证码错误");
+//        }
+//    /*} catch (Exception e) {
+//        //异常情况，按理说需要记录日志 TODO
+//        return new WebResult(HttpStatus.BAD_REQUEST, "验证码错误");
+//    }*/
+//    }
 
 
     /**
@@ -79,7 +80,7 @@ public class IndexResource extends ApiResource {
         HashMap resultMap = new HashMap();
         //try {
         //通过验证码找卖家id
-        invite_verify_code code = getInviteByVerifyCode(bind_code);
+        invite_verify_code code = buyer_seller.dao.getInviteByVerifyCode(bind_code);
         if (code != null) {
             Long seller_Id = code.<Long>get("user_id");
            /* String getUserInfoSql = YamlRead.getSQL("findUserInfoById","buyer/order");
@@ -87,6 +88,8 @@ public class IndexResource extends ApiResource {
             user_info sellInfo = userTemp == null ? new user_info() : userTemp;*/
             user_info userInfo = new user_info();
             user_info sellInfo = userInfo.getUserInfoById(seller_Id);
+            //sellInfo.remove("permissions");
+            //sellInfo.remove("seller_id");
 /*            JSONObject jsonObject = new JSONObject();
             jsonObject.put("address_full", sellInfo.get("province_name") == null ? "" : sellInfo.get("province_name").toString() + sellInfo.get("city_name") == null ? "" : sellInfo.get("city_name").toString() + sellInfo.get("county_name") == null ? "" : sellInfo.get("county_name").toString() + sellInfo.get("town_name") == null ? "" : sellInfo.get("town_name").toString() + sellInfo.get("address") == null ? "" : sellInfo.get("address").toString());
             jsonObject.put("seller_id", sellInfo.get("id"));*/
@@ -95,7 +98,7 @@ public class IndexResource extends ApiResource {
             //如果找不到，返回空
             resultMap.put("seller_info", null);
         }
-        return new WebResult(HttpStatus.OK, resultMap);
+        return new WebResult<Map<String,Object>>(HttpStatus.OK, (Map<String, Object>) resultMap);
         /*} catch (Exception e) {
             //异常情况，按理说需要记录日志 TODO
             resultMap.put("seller_info", null);
@@ -160,7 +163,5 @@ public class IndexResource extends ApiResource {
         }*/
     }
 
-    public invite_verify_code getInviteByVerifyCode(int bindCode) {
-        return new invite_verify_code().getInviteByCode(bindCode, ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE);
-    }
+
 }

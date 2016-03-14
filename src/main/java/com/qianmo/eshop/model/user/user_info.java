@@ -2,9 +2,13 @@ package com.qianmo.eshop.model.user;
 
 import cn.dreampie.orm.Model;
 import cn.dreampie.orm.annotation.Table;
+import cn.dreampie.security.DefaultPasswordService;
+import cn.dreampie.security.Principal;
+import cn.dreampie.security.Subject;
 import com.alibaba.fastjson.annotation.JSONField;
 import com.qianmo.eshop.common.CommonUtils;
 import com.qianmo.eshop.common.ConstantsUtils;
+import com.qianmo.eshop.common.SessionUtil;
 import com.qianmo.eshop.common.YamlRead;
 
 import java.util.HashMap;
@@ -21,11 +25,9 @@ public class user_info extends Model<user_info> {
 
     public boolean save() {
         boolean result;
-        if (this.getRole() == null) {
-            throw new IllegalArgumentException("必须设置角色");
-        }
         if (super.save()) {
-            sec_user_role ur = new sec_user_role().set("user_id", this.get("id")).set("role_id", this.getRole().get("id"));
+            String roleId = sec_user_role.dao.findFirstBy("name = ?","买家").get("id");
+            sec_user_role ur = new sec_user_role().set("user_id", this.get("id")).set("role_id", roleId);
             result = ur.save();
         } else {
             result = false;
@@ -33,20 +35,24 @@ public class user_info extends Model<user_info> {
         return result;
     }
 
-    public sec_role getRole() {
-        sec_role role;
+    public sec_user_role getRole() {
+        sec_user_role role;
         if (this.get("role") == null && this.get("id") != null) {
             String sql = "SELECT role.id,role.name FROM sec_role role,sec_user_role user_role WHERE role.id=user_role.role_id AND user_role.user_id=?";
-            role = sec_role.dao.findFirst(sql, this.get("id"));
+            role = sec_user_role.dao.findFirst(sql, this.get("id"));
             this.put("role", role);
-        } else {
+        }else {
             role = this.get("role");
         }
         return role;
     }
 
     public List<sec_permission> getPermissions() {
-        Long role_id = getRole().<Long>get("id");
+        Long role_id;
+        if(getRole() == null){
+            role_id = null;
+        }
+        else role_id = getRole().<Long>get("id");
         List<sec_permission> permissions;
         if (this.get("permissions") == null && role_id != null) {
             permissions = sec_permission.dao.findByRole(role_id);
@@ -57,7 +63,7 @@ public class user_info extends Model<user_info> {
         return permissions;
     }
 
-    @JSONField(serialize = false)
+    @JSONField(serialize = true)
     public Set<String> getPermissionValues() {
         List<sec_permission> permissions = getPermissions();
         Set<String> permissionValues = null;
@@ -71,7 +77,7 @@ public class user_info extends Model<user_info> {
     }
 
 
-    @JSONField(serialize = false)
+    @JSONField(serialize = true)
     public Set<Long> getPermissionIds() {
         List<sec_permission> permissions = getPermissions();
         Set<Long> permissionIds = null;
@@ -84,6 +90,18 @@ public class user_info extends Model<user_info> {
         return permissionIds;
     }
 
+
+    public user_info getUserInfo(){
+        Principal<user_info> principal = Subject.getPrincipal();
+        if (principal != null){
+            user_info model = principal.getModel();
+            model.remove("password");
+            model.remove("salt");
+            return model;
+        }
+        else
+            return null;
+    }
 
     //修改密码
     public boolean UpdatePwd(long id, String confirm_pwd, String new_pwd, String old_pwd) {
@@ -100,7 +118,7 @@ public class user_info extends Model<user_info> {
                 //判断用户填写的旧密码是否正确
                 if (UserInfo.get("password").toString().equals(old_pwd)) {
                     //正确则更新密码
-                    UserInfo.set("password", new_pwd).save();
+                    UserInfo.set("password", DefaultPasswordService.instance().crypto(new_pwd,"123456890")).save();
                 } else {
                     return false;
                 }
@@ -127,7 +145,7 @@ public class user_info extends Model<user_info> {
                 //判断用户的token是否正确
                 if (invite_verify_code.dao.findBy("token = ?",token).size() > 0) {
                     //正确则更新密码
-                    UserInfo.set("password", pwd).save();
+                    UserInfo.set("password", DefaultPasswordService.instance().crypto(pwd,"123456890")).save();
                 } else {
                     return false;
                 }
