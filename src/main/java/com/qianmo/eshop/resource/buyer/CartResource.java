@@ -1,7 +1,6 @@
 package com.qianmo.eshop.resource.buyer;
 
-import cn.dreampie.common.http.result.HttpStatus;
-import cn.dreampie.common.http.result.WebResult;
+
 import cn.dreampie.orm.transaction.Transaction;
 import cn.dreampie.route.annotation.*;
 import com.alibaba.fastjson.JSONObject;
@@ -38,14 +37,14 @@ public class CartResource extends BuyerResource {
      */
     @DELETE
     @Transaction
-    public WebResult deleteCartGoods(long goods_id, int goods_sku_id) {
+    public Map deleteCartGoods(long goods_id, int goods_sku_id) {
         // try {
         if (buyer_id != 0 && goods_id != 0 && goods_sku_id != 0) {
             //TODO 是否物理删除，如果是逻辑删除，目前没有字段可以区分
             cart.dao.deleteBy("buyer_id = ?  and goods_num = ? and goods_sku_id = ?", buyer_id, goods_id, goods_sku_id);
-            return new WebResult(HttpStatus.CREATED, "删除购物车商品成功");
+            return setResult("删除购物车商品成功");
         } else {
-            return new WebResult(HttpStatus.BAD_REQUEST, "输入参数有误");
+            return setResult("输入参数有误");
         }
    /* } catch (Exception e) {
         //异常情况，按理说需要记录日志 TODO
@@ -61,7 +60,7 @@ public class CartResource extends BuyerResource {
      */
     @POST
     @Transaction
-    public WebResult addCartGoods(List<JSONObject> goods) {
+    public Map addCartGoods(List<JSONObject> goods) {
         //try
         List<cart> carts = new ArrayList<cart>();
         if (goods != null && goods.size() > 0) {
@@ -89,9 +88,9 @@ public class CartResource extends BuyerResource {
                 carts.add(tempCart);
             }
             cart.dao.save(carts);
-            return new WebResult(HttpStatus.CREATED, "添加商品到购物车成功");
+            return setResult("添加商品到购物车成功");
         } else {
-            return new WebResult(HttpStatus.BAD_REQUEST, "输入参数有误");
+            return setResult("输入参数有误");
         }
 /*    } catch (Exception e) {
       //异常情况，按理说需要记录日志，也可考虑做统一的日志拦截 TODO
@@ -107,13 +106,13 @@ public class CartResource extends BuyerResource {
      */
     @PUT
     @Transaction
-    public WebResult updateCartGoods(long cart_id, int count) {
+    public Map updateCartGoods(long cart_id, int count) {
         // try {
         if (buyer_id != 0 && cart_id != 0 && count != 0) {
             cart.dao.update("update cart set goods_sku_count = ?  where id = ? and buyer_id = ?", count, cart_id, buyer_id);
-            return new WebResult(HttpStatus.CREATED, "编辑购物车成功");
+            return setResult("编辑购物车成功");
         } else {
-            return new WebResult(HttpStatus.BAD_REQUEST, "输入参数有误");
+            return setResult("输入参数有误");
         }
     /*} catch (Exception e) {
       //异常情况，按理说需要记录日志，也可考虑做统一的日志拦截 TODO
@@ -126,10 +125,10 @@ public class CartResource extends BuyerResource {
      * 获取用户购物车信息列表
      */
     @GET
-    public WebResult getCartList() {
+    public Map getCartList() {
         HashMap resultMap = new HashMap();
         List<Map> resultCartList = new ArrayList<Map>();
-        // try {
+        // try
         List<cart> cartlist = cart.dao.findBy("buyer_id = ?  order by seller_id,goods_num", buyer_id);
         Map cartResult = new HashMap();
         goods_sku_price goodsSkuPriceModel = new goods_sku_price();
@@ -181,7 +180,7 @@ public class CartResource extends BuyerResource {
         } /*else {
           return resultMap;
       }*/
-        return new WebResult(HttpStatus.OK, resultMap);
+        return resultMap;
 
    /* } catch (Exception e) {
       //异常情况，按理说需要记录日志 TODO
@@ -231,11 +230,18 @@ public class CartResource extends BuyerResource {
         jsonObject.put("sku_name", goodssku.get("name"));
         goods_sku_price goodsSkuPrice = goods_sku_price.dao.findFirstBy(" sku_id = ? and buyer_id = ?", goodsSkuId, buyer_id);
         //商品下架或者不可购买，都是属于下架状态
-        if (goodssku.<Long>get("status") == 0 || (goodsSkuPrice != null && goodsSkuPrice.<Long>get("status") == 0)) {
-            jsonObject.put("status", 0);
+        if (goodssku.<Integer>get("status") == ConstantsUtils.GOODS_SKU_PRICE_BUY_DISABLE || (goodsSkuPrice != null && goodsSkuPrice.<Integer>get("status") == ConstantsUtils.GOODS_SKU_PRICE_BUY_DISABLE)) {
+            jsonObject.put("status", ConstantsUtils.GOODS_SKU_PRICE_BUY_DISABLE);
         } else {
-            jsonObject.put("status", 1);
+            jsonObject.put("status", ConstantsUtils.GOODS_SKU_PRICE_BUY_ENBLE);
         }
         return jsonObject;
+    }
+
+    private Map setResult(String message) {
+        Map resultMap = new HashMap();
+        resultMap.put("code",ConstantsUtils.HTTP_STATUS_OK_200);
+        resultMap.put("message",message);
+        return resultMap;
     }
 }

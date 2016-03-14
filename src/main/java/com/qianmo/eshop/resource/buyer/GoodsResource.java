@@ -1,7 +1,5 @@
 package com.qianmo.eshop.resource.buyer;
 
-import cn.dreampie.common.http.result.HttpStatus;
-import cn.dreampie.common.http.result.WebResult;
 import cn.dreampie.orm.page.FullPage;
 import cn.dreampie.route.annotation.API;
 import cn.dreampie.route.annotation.GET;
@@ -24,6 +22,9 @@ import java.util.List;
  */
 @API("/goods")
 public class GoodsResource extends BuyerResource {
+    //获取买家ID
+    private Long buyer_id = SessionUtil.getUserId();
+
     /**
      * 获取商品列表
      *
@@ -38,13 +39,12 @@ public class GoodsResource extends BuyerResource {
      * @return
      */
     @GET
-    public WebResult goods(String goods_name, Integer category_id, Integer sub_category_id,
-                           Integer page_start, Integer page_step, Integer sort, Integer sort_style, Integer sort_type) {
+    public HashMap goods(String goods_name, Integer category_id, Integer sub_category_id,
+                         Integer page_start, Integer page_step, Integer sort, Integer sort_style, Integer sort_type) {
+        HashMap resultMap = new HashMap();
         if (category_id == null) {
-            return new WebResult(HttpStatus.INTERNAL_SERVER_ERROR, "查询不到商品信息");
+            return resultMap;
         }
-        //获取用户ID
-        Long buyer_id = SessionUtil.getUserId();
         /*
         判断是否有分页信息，如果没有，给定默认值
          */
@@ -99,7 +99,7 @@ public class GoodsResource extends BuyerResource {
                 }
             }
         }
-        HashMap resultMap = new HashMap();
+
         HashMap<Long, GoodsInfo> map = new HashMap<Long, GoodsInfo>();
         FullPage<goods_info> list = goods_info.dao.fullPaginate(page_start / page_step + 1,
                 page_step, sql, buyer_id);
@@ -154,7 +154,7 @@ public class GoodsResource extends BuyerResource {
         }
         resultMap.put("goods_list", goodsInfoList);
         resultMap.put("total_count", goodsInfoList.size());
-        return new WebResult(HttpStatus.OK, resultMap);
+        return resultMap;
     }
 
     /**
@@ -163,8 +163,8 @@ public class GoodsResource extends BuyerResource {
      * @return
      */
     @GET("/category")
-    public WebResult goodsCategory() {
-        return new WebResult(HttpStatus.OK, goods_category.dao.getList());
+    public List goodsCategory() {
+        return goods_category.dao.getList();
     }
 
     /**
@@ -174,16 +174,15 @@ public class GoodsResource extends BuyerResource {
      * @return
      */
     @GET("/:id")
-    public WebResult goods(Long id) {
-        if (id == null) {
-            return new WebResult(HttpStatus.INTERNAL_SERVER_ERROR, "查询不到商品信息");
-        }
-        Long buyer_id = SessionUtil.getUserId();
+    public HashMap goods(Long id) {
         HashMap resultMap = new HashMap();
+        if (id == null) {
+            return resultMap;
+        }
         goods_info goodsInfo = goods_info.dao.findFirst(YamlRead.getSQL("findGoods", "buyer/goods"), id);
         resultMap.put("goods_info", goodsInfo);
         List<goods_sku> list = goods_sku.dao.find(YamlRead.getSQL("findGoodsSku", "buyer/goods"), goodsInfo.get("goods_num"), buyer_id);
         resultMap.put("goods_sku_list", list);
-        return new WebResult(HttpStatus.OK, resultMap);
+        return resultMap;
     }
 }

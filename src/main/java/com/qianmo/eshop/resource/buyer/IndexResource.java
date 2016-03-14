@@ -1,14 +1,10 @@
 package com.qianmo.eshop.resource.buyer;
 
-import cn.dreampie.common.http.result.HttpStatus;
-import cn.dreampie.common.http.result.WebResult;
+
 import cn.dreampie.route.annotation.API;
 import cn.dreampie.route.annotation.GET;
-import cn.dreampie.route.annotation.POST;
-import com.alibaba.fastjson.JSONObject;
 import com.qianmo.eshop.common.ConstantsUtils;
 import com.qianmo.eshop.common.SessionUtil;
-import com.qianmo.eshop.common.YamlRead;
 import com.qianmo.eshop.model.buyer.buyer_seller;
 import com.qianmo.eshop.model.cart.cart;
 import com.qianmo.eshop.model.order.order_info;
@@ -76,7 +72,7 @@ public class IndexResource extends ApiResource {
      * @param bind_code 绑定码
      */
     @GET("/seller")
-    public WebResult getSellerInfoByVerifyCode(int bind_code) {
+    public Map getSellerInfoByVerifyCode(int bind_code) {
         HashMap resultMap = new HashMap();
         //try {
         //通过验证码找卖家id
@@ -98,7 +94,7 @@ public class IndexResource extends ApiResource {
             //如果找不到，返回空
             resultMap.put("seller_info", null);
         }
-        return new WebResult<Map<String,Object>>(HttpStatus.OK, (Map<String, Object>) resultMap);
+        return resultMap;
         /*} catch (Exception e) {
             //异常情况，按理说需要记录日志 TODO
             resultMap.put("seller_info", null);
@@ -111,7 +107,7 @@ public class IndexResource extends ApiResource {
      * 获取首页汇总信息
      */
     @GET("/total")
-    public WebResult getIndexSummary() {
+    public Map getIndexSummary() {
         HashMap resultMap = new HashMap();
         HashMap total = new HashMap();
         //try {
@@ -153,7 +149,7 @@ public class IndexResource extends ApiResource {
             resultMap.put("total", total);
             //  return resultMap;
         } //else {
-        return new WebResult(HttpStatus.OK, resultMap);
+        return resultMap;
         //}
 
         /*} catch (Exception e) {
@@ -162,6 +158,4 @@ public class IndexResource extends ApiResource {
             return resultMap;
         }*/
     }
-
-
 }

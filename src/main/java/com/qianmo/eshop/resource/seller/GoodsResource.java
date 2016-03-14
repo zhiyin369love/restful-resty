@@ -1,8 +1,6 @@
 package com.qianmo.eshop.resource.seller;
 
 import cn.dreampie.common.http.UploadedFile;
-import cn.dreampie.common.http.result.HttpStatus;
-import cn.dreampie.common.http.result.WebResult;
 import cn.dreampie.orm.page.FullPage;
 import cn.dreampie.orm.transaction.Transaction;
 import cn.dreampie.route.annotation.*;
@@ -10,10 +8,7 @@ import cn.dreampie.route.core.multipart.FILE;
 import com.alibaba.fastjson.JSONObject;
 import com.qianmo.eshop.bean.goods.GoodsInfo;
 import com.qianmo.eshop.bean.goods.GoodsSku;
-import com.qianmo.eshop.common.CodeUtils;
-import com.qianmo.eshop.common.ConstantsUtils;
-import com.qianmo.eshop.common.SessionUtil;
-import com.qianmo.eshop.common.YamlRead;
+import com.qianmo.eshop.common.*;
 import com.qianmo.eshop.model.goods.goods_info;
 import com.qianmo.eshop.model.goods.goods_sku;
 import com.qianmo.eshop.model.goods.goods_sku_price;
@@ -28,6 +23,9 @@ import java.util.*;
  */
 @API("/goods")
 public class GoodsResource extends SellerResource {
+    //获取用户最高权限ID
+    private Long seller_id = SessionUtil.getAdminId();
+
     /**
      * 获取商品列表
      *
@@ -40,12 +38,11 @@ public class GoodsResource extends SellerResource {
      * @return
      */
     @GET
-    public WebResult list(String goods_name, Integer goods_status, Integer category_id,
-                          Integer sub_category_id, Integer page_start, Integer page_step) {
-        //获取用户最高权限ID
-        Long seller_id = SessionUtil.getAdminId();
+    public HashMap list(String goods_name, Integer goods_status, Integer category_id,
+                        Integer sub_category_id, Integer page_start, Integer page_step) {
+        HashMap resultMap = new HashMap();
         if (category_id == null) {
-            return new WebResult(HttpStatus.INTERNAL_SERVER_ERROR, "查询不到商品信息");
+            return resultMap;
         }
         /*
         判断是否有分页信息，如果没有，给定默认值
@@ -56,7 +53,6 @@ public class GoodsResource extends SellerResource {
         if (page_step == null) {
             page_step = ConstantsUtils.DEFAULT_PAGE_STEP;//默认返回10条
         }
-
         String sql = YamlRead.getSQL("findGoodsInfo", "seller/goods");
         /*
         判断是根据一级分类查商品还是二级分类查商品
@@ -95,7 +91,6 @@ public class GoodsResource extends SellerResource {
                         goods.setMain_pic_url(goodsInfo.get("main_pic_url").toString());
                     }
                     goods.setProducer(goodsInfo.get("producer").toString());
-
                     //商品规格信息
                     List<GoodsSku> skuList = new ArrayList<GoodsSku>();
                     GoodsSku goodsSku = new GoodsSku();
@@ -137,10 +132,9 @@ public class GoodsResource extends SellerResource {
                 goodsInfoList.add(map.get(goodsId));
             }
         }
-        HashMap resultMap = new HashMap();
         resultMap.put("goods_list", goodsInfoList);
         resultMap.put("total_count", goodsInfoList.size());
-        return new WebResult(HttpStatus.OK, resultMap);
+        return resultMap;
     }
 
     /**
@@ -150,13 +144,13 @@ public class GoodsResource extends SellerResource {
      * @return
      */
     @GET("/:id")
-    public WebResult get(Long id) {
+    public HashMap get(Long id) {
+        HashMap resultMap = new HashMap();
         if (id == null) {
-            return new WebResult(HttpStatus.INTERNAL_SERVER_ERROR, "查询不到商品信息");
+            return resultMap;
         }
         goods_info goodsInfo = goods_info.dao.findFirst(YamlRead.getSQL("findGoods", "seller/goods"), id);
-        Long seller_id = SessionUtil.getAdminId();
-        HashMap resultMap = new HashMap();
+
         //判断当前登录用户是否有查看该商品的权限
         if (seller_id == goodsInfo.<Long>get("seller_id")) {
             resultMap.put("goods_info", goodsInfo);
@@ -164,7 +158,7 @@ public class GoodsResource extends SellerResource {
                     goodsInfo.get("goods_num"));
             resultMap.put("goods_sku_list", list);
         }
-        return new WebResult(HttpStatus.OK, resultMap);
+        return resultMap;
     }
 
     /**
@@ -175,9 +169,7 @@ public class GoodsResource extends SellerResource {
      */
     @POST
     @Transaction
-    public WebResult add(goods_info goods) {
-        //获取用户最高权限ID
-        Long seller_id = SessionUtil.getAdminId();
+    public HashMap add(goods_info goods) {
         //添加商品基本信息
         goods_info goodsInfo = goods.get("goods_info", goods_info.class);
         //生成商品编号
@@ -209,7 +201,7 @@ public class GoodsResource extends SellerResource {
             }
         }
         goods_sku.dao.save(skuList);
-        return new WebResult(HttpStatus.CREATED, "添加商品成功");
+        return CommonUtils.getCodeMessage(true, "添加商品成功");
     }
 
     /**
@@ -222,9 +214,7 @@ public class GoodsResource extends SellerResource {
      */
     @PUT("/:id")
     @Transaction
-    public WebResult edit(goods_info goods, Long id, String delete_pic_url) {
-        //获取用户最高权限ID
-        Long seller_id = SessionUtil.getAdminId();
+    public HashMap edit(goods_info goods, Long id, String delete_pic_url) {
         /*
         修改商品基本信息
         */
@@ -278,9 +268,9 @@ public class GoodsResource extends SellerResource {
                     }
                 }
             }
-            return new WebResult(HttpStatus.CREATED, "修改商品成功");
+            return CommonUtils.getCodeMessage(true, "修改商品成功");
         } else {
-            return new WebResult(HttpStatus.INTERNAL_SERVER_ERROR, "修改商品失败");
+            return CommonUtils.getCodeMessage(false, "修改商品失败");
         }
 
     }
@@ -294,9 +284,7 @@ public class GoodsResource extends SellerResource {
      */
     @DELETE("/:id")
     @Transaction
-    public WebResult delete(Long id, Long goods_sku_id) {
-        //获取用户最高权限ID
-        Long seller_id = SessionUtil.getAdminId();
+    public HashMap delete(Long id, Long goods_sku_id) {
         //获取商品基本信息
         goods_info goods = goods_info.dao.findById(id);
         //判断该商品是否属于该用户
@@ -342,12 +330,10 @@ public class GoodsResource extends SellerResource {
                     }
                 }
             }
-            return new WebResult(HttpStatus.CREATED, "删除商品成功");
+            return CommonUtils.getCodeMessage(true, "删除商品成功");
         } else {
-            return new WebResult(HttpStatus.INTERNAL_SERVER_ERROR, "删除商品失败");
+            return CommonUtils.getCodeMessage(false, "删除商品失败");
         }
-
-
     }
 
     /**
@@ -376,9 +362,9 @@ public class GoodsResource extends SellerResource {
      */
     @POST("/upload/main")
     @FILE(dir = ConstantsUtils.GOODS_MAIN_PIC, overwrite = true, allows = {"image/png", "image/jpg", "image/gif", "image/bmp"})
-    public WebResult mainPic(UploadedFile main_pic) {
+    public String mainPic(UploadedFile main_pic) {
         String mainPicUrl = this.getRequest().getBaseUri() + ConstantsUtils.GOODS_MAIN_PIC + main_pic.getFileName();
-        return new WebResult(HttpStatus.OK, mainPicUrl);
+        return mainPicUrl;
     }
 
     /**
@@ -389,7 +375,7 @@ public class GoodsResource extends SellerResource {
      */
     @POST("/upload/detail")
     @FILE(dir = ConstantsUtils.GOODS_DETAIL_PIC, overwrite = true, allows = {"image/png", "image/jpg", "image/gif", "image/bmp"})
-    public WebResult detailPic(Map<String, UploadedFile> picMap) {
+    public String detailPic(Map<String, UploadedFile> picMap) {
         String baseUri = this.getRequest().getBaseUri() + ConstantsUtils.GOODS_DETAIL_PIC;
         String fileUrl = "";
         if (picMap != null && picMap.size() > 0) {
@@ -402,7 +388,7 @@ public class GoodsResource extends SellerResource {
                 }
             }
         }
-        return new WebResult(HttpStatus.OK, fileUrl);
+        return fileUrl;
     }
 
     /**
@@ -413,24 +399,24 @@ public class GoodsResource extends SellerResource {
      * @return
      */
     @PUT("/updown")
-    public WebResult updown(Integer status, List<JSONObject> goods_sku_list) {
+    public HashMap updown(Integer status, List<JSONObject> goods_sku_list) {
         for (JSONObject obj : goods_sku_list) {
             /*
             当商品规格id不为空时，表示只修改单个商品规格的上下架信息
             否则表示修改一个或多个商品的商品规格上下架信息
              */
             if (obj.get("sku_id") != null) {
-                goods_sku.dao.updateColsBy("status,release_date", "id=? AND deleted_at is null",
-                        status, new Date(), obj.get("sku_id"));
+                goods_sku.dao.updateColsBy("status,release_date", "id=? AND seller_id=? AND deleted_at is null",
+                        status, new Date(), obj.get("sku_id"), seller_id);
             } else {
-                goods_sku.dao.updateColsBy("status,release_date", "goods_num=? AND deleted_at is null",
-                        status, new Date(), obj.get("goods_num"));
+                goods_sku.dao.updateColsBy("status,release_date", "goods_num=? AND seller_id=? AND deleted_at is null",
+                        status, new Date(), obj.get("goods_num"), seller_id);
             }
         }
         if (status == ConstantsUtils.RELEASE_STATUS_ON) {
-            return new WebResult(HttpStatus.CREATED, "商品上架成功");
+            return CommonUtils.getCodeMessage(true, "商品上架成功");
         } else {
-            return new WebResult(HttpStatus.CREATED, "商品下架成功");
+            return CommonUtils.getCodeMessage(true, "商品下架成功");
         }
     }
 

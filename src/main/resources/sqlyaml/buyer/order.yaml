@@ -19,8 +19,18 @@ getFirldGoodsInfoAll:
        from goods_info gi LEFT JOIN order_goods og on gi.num = og.goods_num LEFT JOIN order_info oi on og.order_num = oi.num where oi.id = ?
 
 getFieldGoodsSkuAll:
-    select og.goods_sku_count as count,og.goods_sku_price as price,og.single_total_price,og.sku_id,gs.name as sku_name from order_goods og LEFT JOIN goods_sku gs on og.sku_id = gs.id where og.goods_num = ?
-
+    SELECT
+         	og.goods_sku_count AS count,
+         	og.goods_sku_price AS price,
+         	og.single_total_price,
+         	og.sku_id,
+         	gs.name AS sku_name
+         FROM
+         	order_goods og
+         INNER JOIN goods_sku gs ON og.sku_id = gs.id
+         WHERE
+         	og.goods_num = ?
+         AND og.order_num = ?
 getFirldOrderUserCreditAll:
    select order_num from order_user where buyer_id = ?
 

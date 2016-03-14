@@ -1,7 +1,5 @@
 package com.qianmo.eshop.resource.seller;
 
-import cn.dreampie.common.http.result.HttpStatus;
-import cn.dreampie.common.http.result.WebResult;
 import cn.dreampie.orm.page.FullPage;
 import cn.dreampie.orm.transaction.Transaction;
 import cn.dreampie.route.annotation.API;
@@ -12,11 +10,9 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.qianmo.eshop.common.*;
 import com.qianmo.eshop.model.buyer.buyer_seller;
-import com.qianmo.eshop.model.goods.goods_info;
 import com.qianmo.eshop.model.goods.goods_sku;
 import com.qianmo.eshop.model.goods.goods_sku_price;
 import com.qianmo.eshop.model.user.invite_verify_code;
-import com.qianmo.eshop.model.user.user_info;
 import com.qianmo.eshop.resource.z_common.ApiResource;
 
 import java.io.IOException;
@@ -38,9 +34,10 @@ public class RetailerResource extends ApiResource {
      */
     @PUT("/sendcode")
     @Transaction
-    public WebResult addSendCode(List<JSONObject> accounts) {
+    public Map addSendCode(List<JSONObject> accounts) {
         //try {
         //从property文件中获取属性
+        Map result = new HashMap();
         String content = PropertyUtil.getProperty("sms.content");
         String phone = "";
         String remark = "";
@@ -49,7 +46,8 @@ public class RetailerResource extends ApiResource {
         JSONObject returnResult = new JSONObject();
         Date afterOneDay = new Date(System.currentTimeMillis() + 24 * 60 * 60 * 1000);
         if (seller_id == 0l) {
-            return new WebResult(HttpStatus.EXPECTATION_FAILED, "输入参数有误");
+            result = setResult("输入参数有误");
+            return result;
         }
         if (accounts != null && accounts.size() > 0) {
             for (JSONObject userInfo : accounts) {
@@ -69,7 +67,8 @@ public class RetailerResource extends ApiResource {
                 } else {
                     //如果邀请码在一天有效期内，暂时就不给发
                     if (DateUtils.formatDate(verifyCode.<String>get("expire_time"), DateUtils.format_yyyyMMddHHmmss).getTime() < System.currentTimeMillis()) {
-                        return new WebResult(HttpStatus.OK, "邀请码在一天有效期内暂时不发送");
+                        setResult("邀请码在一天有效期内暂时不发送");
+                        return result;
                     } else {
                         //如果在一天有效期外，那么就需要发送，并且update  invite_verify_code这张表
                         verifyCode.set("code", code).set("expire_time", DateUtils.getDateString(afterOneDay, DateUtils.format_yyyyMMddHHmmss)).update();
@@ -85,17 +84,15 @@ public class RetailerResource extends ApiResource {
                 }
             }
             if (!"".equals(resultContent)) {
-                return new WebResult(HttpStatus.EXPECTATION_FAILED, resultContent);
+                result = setResult(resultContent);
+                //return result;
             } else {
-                return new WebResult(HttpStatus.CREATED, "发送验证码成功");
+                result = setResult("短信发送成功");
             }
         } else {
-            return new WebResult(HttpStatus.BAD_REQUEST, "输入参数有误");
+            result = setResult("输入参数有误");
         }
-      /*  } catch (Exception e) {
-            //异常情况，按理说需要记录日志 TODO
-            return new WebResult(HttpStatus.EXPECTATION_FAILED, "异常错误");
-        }*/
+        return result;
     }
 
     /**
@@ -106,10 +103,10 @@ public class RetailerResource extends ApiResource {
      */
     @PUT("/:id")
     @Transaction
-    public WebResult cooperation(Long id, Long op) {
+    public Map cooperation(Long id, Long op) {
         //try {
         if ((id == null || id == 0l) || op == null || seller_id == 0l) {
-            return new WebResult(HttpStatus.EXPECTATION_FAILED, "输入参数有误");
+            return setResult("输入参数有误");
         }
         buyer_seller buyerSeller = buyer_seller.dao.findFirstBy("buyer_id = ? and seller_id = ?", id, seller_id);
         if (buyerSeller == null) {
@@ -117,7 +114,7 @@ public class RetailerResource extends ApiResource {
         } else {
             buyerSeller.set("status", op).update();
         }
-        return new WebResult(HttpStatus.CREATED, "操作成功");
+        return setResult("输入参数有误");
        /* } catch (Exception e) {
             return new WebResult(HttpStatus.EXPECTATION_FAILED, "异常错误");
         }*/
@@ -134,8 +131,8 @@ public class RetailerResource extends ApiResource {
      * @param phone      手机号
      */
     @GET
-    public WebResult getRetailerList(String buyer_name, String name, Integer page_start, Integer page_step, String phone) {
-        HashMap resultMap = new HashMap();
+    public HashMap getRetailerList(String buyer_name, String name, Integer page_start, Integer page_step, String phone) {
+        HashMap<String,Object> resultMap = new HashMap<String,Object>();
         List<invite_verify_code> inviteVerifyCodes = new ArrayList<invite_verify_code>();
         List<HashMap> buyerSellerResultList = new ArrayList<HashMap>();
         Map pageInfo = new HashMap();
@@ -148,99 +145,28 @@ public class RetailerResource extends ApiResource {
             }
             int pageNumber = page_start / page_step + 1;
             FullPage<invite_verify_code> inviteCodeList = null;
-            String sql = "SELECT * FROM user_info a LEFT JOIN invite_verify_code b" +
-                    "ON a.phone = b.phone " +
-                    "WHERE b.phone IS NOT NULL AND b.user_id = ? AND b.type  =? ";
-            if (!StringUtils.isEmpty(buyer_name) && !StringUtils.isEmpty(name) && !StringUtils.isEmpty(phone)) {
-                sql += " and a.nickname like ? and a.name like ? and a.phone like ?";
-                inviteCodeList = invite_verify_code.dao.fullPaginate(pageNumber, page_step, sql, seller_id, ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE, "%" + buyer_name + "%", "%" + name + "%", "%" + phone + "%");
-            } else if (!StringUtils.isEmpty(buyer_name) && !StringUtils.isEmpty(name)) {
-                sql += " and a.nickname like ? and a.name like ? ";
-                inviteCodeList = invite_verify_code.dao.fullPaginate(pageNumber, page_step, sql, seller_id, ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE, "%" + buyer_name + "%", "%" + name + "%");
-            } else if (!StringUtils.isEmpty(buyer_name) && !StringUtils.isEmpty(phone)) {
-                sql += " and a.nickname like ? and a.phone like ? ";
-                inviteCodeList = invite_verify_code.dao.fullPaginate(pageNumber, page_step, sql, seller_id, ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE, "%" + buyer_name + "%", "%" + phone + "%");
-            } else if (!StringUtils.isEmpty(name) && !StringUtils.isEmpty(phone)) {
-                sql += " and a.name like ? and a.phone like ? ";
-                inviteCodeList = invite_verify_code.dao.fullPaginate(pageNumber, page_step, sql, seller_id, ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE, "%" + phone + "%", "%" + phone + "%");
-            } else if (!StringUtils.isEmpty(buyer_name)) {
-                sql += " and a.nickname like ?  ";
-                inviteCodeList = invite_verify_code.dao.fullPaginate(pageNumber, page_step, sql, seller_id, ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE, "%" + buyer_name + "%");
-            } else if (!StringUtils.isEmpty(name)) {
-                sql += " and a.name like ?  ";
-                inviteCodeList = invite_verify_code.dao.fullPaginate(pageNumber, page_step, sql, seller_id, ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE, "%" + name + "%");
-            } else if (!StringUtils.isEmpty(phone)) {
-                sql += " and a.phone like ?  ";
-                inviteCodeList = invite_verify_code.dao.fullPaginate(pageNumber, page_step, sql, seller_id, ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE, "%" + phone + "%");
-            } else {
-                inviteCodeList = invite_verify_code.dao.fullPaginate(pageNumber, page_step, sql, seller_id, ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE);
+            String sql = YamlRead.getSQL("getMyRetailer","seller/seller");
+            if(!StringUtils.isEmpty(buyer_name)) {
+                sql += " and a.nickname like '%" + buyer_name + "%'";
             }
+            if(!StringUtils.isEmpty(name)) {
+                sql += " and a.name like '%" + name + "%'";
+            }
+            if(!StringUtils.isEmpty(phone)) {
+                sql += " and a.phone like '%" + phone + "%'";
+            }
+            inviteCodeList = invite_verify_code.dao.fullPaginate(pageNumber, page_step, sql, seller_id, seller_id, ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE);
             inviteVerifyCodes = inviteCodeList.getList();
-            pageInfo.put("page_size", page_step);
-            pageInfo.put("total_count", inviteCodeList.getTotalRow());
-            pageInfo.put("total_page", inviteCodeList.getTotalPage());
-               /* } else {
-                    String sql = "SELECT * FROM user_info a LEFT JOIN invite_verify_code b\n" +
-                            "ON a.phone = b.phone " +
-                            "WHERE b.phone IS NOT NULL AND b.user_id = ? AND b.type  =? ";
-                    if(!StringUtils.isEmpty(buyer_name) && !StringUtils.isEmpty(name) && !StringUtils.isEmpty(phone)) {
-                        sql += " and a.nickname = ? and a.name = ? and a.phone = ?";
-                        inviteVerifyCodes = invite_verify_code.dao.find(sql,seller_id,ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE,buyer_name,name,phone);
-                    } else if (!StringUtils.isEmpty(buyer_name) && !StringUtils.isEmpty(name) ){
-                        sql += " and a.nickname = ? and a.name = ? ";
-                        inviteVerifyCodes = invite_verify_code.dao.find(sql,seller_id,ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE,buyer_name,name);
-                    } else if (!StringUtils.isEmpty(buyer_name) && !StringUtils.isEmpty(phone)) {
-                        sql += " and a.nickname = ? and a.phone = ? ";
-                        inviteVerifyCodes = invite_verify_code.dao.find(sql,seller_id,ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE,buyer_name,phone);
-                    } else if (!StringUtils.isEmpty(name) && !StringUtils.isEmpty(phone)) {
-                        sql += " and a.name = ? and a.phone = ? ";
-                        inviteVerifyCodes = invite_verify_code.dao.find(sql,seller_id,ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE,name,phone);
-                    } else if(!StringUtils.isEmpty(buyer_name)) {
-                        sql += " and a.nickname = ?  ";
-                        inviteVerifyCodes = invite_verify_code.dao.find(sql,seller_id,ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE,buyer_name);
-                    } else if (!StringUtils.isEmpty(name) ) {
-                        sql += " and a.name = ?  ";
-                        inviteVerifyCodes = invite_verify_code.dao.find(sql,seller_id,ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE,name);
-                    } else if (!StringUtils.isEmpty(phone)) {
-                        sql += " and a.phone = ?  ";
-                        inviteVerifyCodes = invite_verify_code.dao.find(sql,seller_id,ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE,phone);
-                    } else {
-                        inviteVerifyCodes = invite_verify_code.dao.find(sql,seller_id,ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE);
-                    }
-                    pageInfo.put("page_size",null);
-                    pageInfo.put("total_count",inviteVerifyCodes==null?0:inviteVerifyCodes.size());
-                    pageInfo.put("total_page",null);
-                }*/
-            if (inviteVerifyCodes != null && inviteVerifyCodes.size() > 0) {
-                HashMap userTemp = new HashMap();
-                for (invite_verify_code inviteVerifyCodeTemp : inviteVerifyCodes) {
-                    userTemp.clear();
-                    //user_info userInfoTemp = new user_info();
-                    userTemp.put("is_invited", inviteVerifyCodeTemp.get("is_invited"));
-                    //地址
-                    userTemp.put("address", inviteVerifyCodeTemp.get("province_name") + inviteVerifyCodeTemp.get("city_name").toString() + inviteVerifyCodeTemp.get("county_name").toString() + inviteVerifyCodeTemp.get("town_name").toString() + inviteVerifyCodeTemp.get("address").toString());
-                    // invite_verify_code verifyCode =  new invite_verify_code().getInviteByBuyerAndSeller(buyerId,seller_id);
-                    //是否已邀请
-                    userTemp.put("is_invited", ConstantsUtils.INVITE_CODE_STATUS_SUCCESSED);
-                    //用户id
-                    userTemp.put("user_id", inviteVerifyCodeTemp.get("id"));
-                    userTemp.put("account", inviteVerifyCodeTemp.get("account"));
-                    //phone
-                    userTemp.put("phone", inviteVerifyCodeTemp.get("phone"));
-                    //邀请码
-                    userTemp.put("invited_code", inviteVerifyCodeTemp.get("code"));
-                    //备注
-                    userTemp.put("remark", inviteVerifyCodeTemp.get("remark"));
-                    buyerSellerResultList.add(userTemp);
-                }
-            }
-            resultMap.put("buyer_list", buyerSellerResultList);
-            resultMap.put("page_info", pageInfo);
+            resultMap.put("page_size", page_step);
+            resultMap.put("total_count", inviteCodeList.getTotalRow());
+            resultMap.put("total_page", inviteCodeList.getTotalPage());
+            resultMap.put("buyer_list", inviteVerifyCodes);
+            /*resultMap.put("page_info", pageInfo);*/
         } else {
             resultMap.put("buyer_list", null);
         }
         // return resultMap;
-        return new WebResult(HttpStatus.OK, resultMap);
+        return resultMap;
 
 /*        } catch (Exception e) {
             //异常情况，按理说需要记录日志 TODO
@@ -257,8 +183,8 @@ public class RetailerResource extends ApiResource {
      */
     @PUT("/price/batch")
     @Transaction
-    public WebResult updateRetailerPrice(List<JSONObject> store_price_list) {
-        HashMap resultMap = new HashMap();
+    public Map updateRetailerPrice(List<JSONObject> store_price_list) {
+        Map resultMap = new HashMap();
         String content = "";
         int i = 0;
         //try {
@@ -273,14 +199,13 @@ public class RetailerResource extends ApiResource {
                 }
             }
             if (!"".equals(content)) {
-                resultMap.put("code", -1);
-                resultMap.put("message", content);
+                resultMap = setResult(content);
             } else {
                 resultMap.put("code", 0);
-                resultMap.put("message", "批量修改价格成功");
+                resultMap = setResult("批量修改价格成功");
             }
         }
-        return new WebResult(HttpStatus.OK, resultMap);
+        return resultMap;
         /*} catch (Exception e) {
             //异常情况，按理说需要记录日志 TODO
             return resultMap;
@@ -299,7 +224,7 @@ public class RetailerResource extends ApiResource {
      * @param type        是否购买
      */
     @GET("/price/:id")
-    public WebResult getRetailerPriceList(Long goods_id, Long goos_sku_id, Long id, Integer page_start, Integer page_step, Integer type) {
+    public Map getRetailerPriceList(Long goods_id, Long goos_sku_id, Long id, Integer page_start, Integer page_step, Integer type) {
 
         HashMap resultMap = new HashMap();
         List<goods_sku_price> goodsSkuPrices = new ArrayList<goods_sku_price>();
@@ -342,7 +267,7 @@ public class RetailerResource extends ApiResource {
         resultMap.put("buyer_price_list", goodsSkuPriceResultList);
         resultMap.put("total_count", goodsSkuPriceResultList.size());
         resultMap.put("page_size", page_step);
-        return new WebResult(HttpStatus.OK, resultMap);
+        return resultMap;
     }
 
 
@@ -355,15 +280,15 @@ public class RetailerResource extends ApiResource {
      * @param goods_name 商品名称
      */
     @GET("/buy_count")
-    public WebResult getRetailerList(Long buyer_id, Long goods_num, String goods_name) {
-        HashMap resultMap = new HashMap();
+    public Map getRetailerList(Long buyer_id, Long goods_num, String goods_name) {
+        Map resultMap = new HashMap();
         //可购买总数
         long couldBuy = 0l;
         //不可购买总数
         long couldNotBuy = 0l;
         //try {
-        String sql = "SELECT COUNT(*) cn, 0 FROM goods_sku_price a LEFT JOIN goods_info b" +
-                "ON a.goods_num = b.num  where a.buyer_id = ? and b.seller_id = ? and a.status = ? ";
+        String sql = "SELECT COUNT(*) cn FROM goods_sku_price a LEFT JOIN goods_info b " +
+                "  ON a.goods_num = b.num  where a.buyer_id = ? and b.seller_id = ? and a.status = ? ";
         if (goods_num != null && goods_num != 0 && !StringUtils.isEmpty(goods_name)) {
             sql += " and a.goods_num like ? and b.name like ? ";
             couldBuy = getCountByGoods(sql, buyer_id, seller_id, ConstantsUtils.GOODS_SKU_PRICE_BUY_ENBLE, "%" + goods_num + "%", "%" + goods_name + "%");
@@ -383,7 +308,7 @@ public class RetailerResource extends ApiResource {
         resultMap.put("couldBuy", couldBuy);
         resultMap.put("couldNotBuy", couldNotBuy);
         // return resultMap;
-        return new WebResult(HttpStatus.OK, resultMap);
+        return resultMap;
        /* } catch (Exception e) {
             return resultMap;
         }*/
@@ -392,6 +317,13 @@ public class RetailerResource extends ApiResource {
 
     public long getCountByGoods(String sql, Object... objects) {
         return goods_sku_price.dao.findFirst(sql, objects).<Long>get("cn");
+    }
+
+    private Map setResult(String message) {
+        Map resultMap = new HashMap();
+        resultMap.put("code",ConstantsUtils.HTTP_STATUS_OK_200);
+        resultMap.put("message",message);
+        return resultMap;
     }
 
 }

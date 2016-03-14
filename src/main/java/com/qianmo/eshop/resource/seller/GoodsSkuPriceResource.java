@@ -1,22 +1,19 @@
 package com.qianmo.eshop.resource.seller;
 
-import cn.dreampie.common.http.result.HttpStatus;
-import cn.dreampie.common.http.result.WebResult;
 import cn.dreampie.orm.page.FullPage;
 import cn.dreampie.orm.transaction.Transaction;
 import cn.dreampie.route.annotation.API;
 import cn.dreampie.route.annotation.GET;
 import cn.dreampie.route.annotation.POST;
 import cn.dreampie.route.annotation.PUT;
-import cn.dreampie.security.Subject;
 import com.alibaba.fastjson.JSONObject;
+import com.qianmo.eshop.common.CommonUtils;
 import com.qianmo.eshop.common.ConstantsUtils;
 import com.qianmo.eshop.common.SessionUtil;
 import com.qianmo.eshop.common.YamlRead;
 import com.qianmo.eshop.model.buyer.buyer_seller;
 import com.qianmo.eshop.model.goods.goods_sku;
 import com.qianmo.eshop.model.goods.goods_sku_price;
-import com.qianmo.eshop.model.user.user_info;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -29,8 +26,12 @@ import java.util.List;
  */
 @API("/price")
 public class GoodsSkuPriceResource extends GoodsResource {
+    //获取用户最高权限ID
+    private Long seller_id = SessionUtil.getAdminId();
+
     /**
      * 获取商品价格
+     *
      * @param sku_id           商品规格ID
      * @param sku_price_status 商品规格状态 0：已下架 1：已上架
      * @param name             零售商公司名称或者账号
@@ -39,9 +40,7 @@ public class GoodsSkuPriceResource extends GoodsResource {
      * @return
      */
     @GET
-    public WebResult price(Long sku_id, Integer sku_price_status, String name, Integer page_start, Integer page_step) {
-        //获取用户最高权限ID
-        Long seller_id = SessionUtil.getAdminId();
+    public HashMap price(Long sku_id, Integer sku_price_status, String name, Integer page_start, Integer page_step) {
         /*
         判断是否有分页信息，如果没有，给定默认值
          */
@@ -60,20 +59,19 @@ public class GoodsSkuPriceResource extends GoodsResource {
         HashMap resultMap = new HashMap();
         resultMap.put("goods_price", userList.getList());
         resultMap.put("total_count", userList.getTotalRow());
-        return new WebResult(HttpStatus.OK, resultMap);
+        return resultMap;
     }
 
     /**
      * 批量修改商品价格
+     *
      * @param goods_price_list 商品价格列表
      * @param goods_num        商品编号
      * @return
      */
     @POST("/batch")
     @Transaction
-    public WebResult edit(List<JSONObject> goods_price_list, Long goods_num) {
-        //获取用户最高权限ID
-        Long seller_id = SessionUtil.getAdminId();
+    public HashMap edit(List<JSONObject> goods_price_list, Long goods_num) {
         //判断参数列表是否为空
         if (goods_price_list != null && goods_price_list.size() > 0) {
             for (JSONObject obj : goods_price_list) {
@@ -93,8 +91,10 @@ public class GoodsSkuPriceResource extends GoodsResource {
                     sku_price.save();
                 }
             }
+            return CommonUtils.getCodeMessage(true, "修改商品价格成功");
+        } else {
+            return CommonUtils.getCodeMessage(false, "修改商品价格失败");
         }
-        return new WebResult(HttpStatus.CREATED, "修改商品价格成功");
     }
 
     /**
@@ -104,8 +104,7 @@ public class GoodsSkuPriceResource extends GoodsResource {
      * @return
      */
     @GET("/count")
-    public WebResult count(Long sku_id) {
-        Long seller_id = SessionUtil.getAdminId();
+    public List count(Long sku_id) {
         List list = new ArrayList();
         //查询经销商下所有零售商总数
         long userCount = buyer_seller.dao.queryFirst(YamlRead.getSQL("findAllUserCount", "seller/goods"), seller_id);
@@ -126,7 +125,7 @@ public class GoodsSkuPriceResource extends GoodsResource {
         buyMap.put("count", userCount - count);
         list.add(buyMap);
 
-        return new WebResult(HttpStatus.OK, list);
+        return list;
     }
 
     /**
@@ -137,14 +136,16 @@ public class GoodsSkuPriceResource extends GoodsResource {
      * @return
      */
     @PUT
-    public WebResult edit(Long sku_id, BigDecimal price) {
+    public HashMap edit(Long sku_id, BigDecimal price) {
         //查询商品规格信息
         goods_sku sku = goods_sku.dao.findById(sku_id);
         //判断商品规格是否为空，不为空时修改价格
         if (sku != null) {
             sku.set("list_price", price);
             sku.update();
+            return CommonUtils.getCodeMessage(true, "修改商品默认价格成功");
+        } else {
+            return CommonUtils.getCodeMessage(false, "修改商品默认价格失败");
         }
-        return new WebResult(HttpStatus.CREATED, "价格设置成功");
     }
 }

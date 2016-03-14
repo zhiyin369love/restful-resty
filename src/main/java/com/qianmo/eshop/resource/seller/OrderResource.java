@@ -32,54 +32,55 @@ import java.util.*;
 
 /**
  * 买家获取单个订单详情   和   操作订单
- * author:wss
- * 传入参数：
+ * @author :wss
  */
 
 @API("/order")
 public class OrderResource extends SellerResource {
-    //单个订单详情
+    /**
+     * 查看单个订单详情
+     * @param id 订单ID
+     * @return
+     */
     @GET("/:id")
     public HashMap getOrderDetail(Long id) {
         HashMap result = new HashMap();
-        try {
+
             //订单实体查询sql
-            String sql3 = YamlRead.getSQL("getFieldOrderInfoAll", "seller/order");
+            String sqlOrderInfo = YamlRead.getSQL("getFieldOrderInfoAll", "seller/order");
             //订单备注列表查询sql
-            String sql4 = YamlRead.getSQL("getFirldOrderRemarkAll", "seller/order");
+            String sqlOrderRemark = YamlRead.getSQL("getFirldOrderRemarkAll", "seller/order");
             //商品实体列表查询sql
             List<HashMap> resultMap = getOrderHashMaps(id);
 
             //买家信息实体查询sql
-            HashMap result3 = new HashMap();
-            String sql1_1 = YamlRead.getSQL("getFieldBuyerInfoAll", "seller/order");
+            HashMap resultBuyerAll = new HashMap();
+            String sqlBuyerInfo = YamlRead.getSQL("getFieldBuyerInfoAll", "seller/order");
             //买家收货人实体
-            String sql1_2 = YamlRead.getSQL("getFieldBuyerReceiveAll", "seller/order");
-            order_user o = order_user.dao.findFirst(sql1_1, id);
-            /*if (order_user.dao.find(sql1_1, id) != null && order_user.dao.find(sql1_1, id).size() > 0) {
-                o = order_user.dao.find(sql1_1, id).get(0);
-            }*/
-            result3.put("buyer_id", o.get("buyer_id"));
-            result3.put("buyer_name", o.get("name"));
-            result3.put("buyer_receive", buyer_receive_address.dao.find(sql1_2, id));
-
+            String sqlBuyerReceive = YamlRead.getSQL("getFieldBuyerReceiveAll", "seller/order");
+            order_user o = new order_user();
+           List<order_user>  order_user_list = order_user.dao.find(sqlBuyerInfo, id);
+            if (order_user_list != null && order_user_list.size() > 0) {
+                o = order_user.dao.find(sqlBuyerInfo, id).get(0);
+            }
+            resultBuyerAll.put("buyer_id", o.get("buyer_id"));
+            resultBuyerAll.put("buyer_name", o.get("name"));
+            resultBuyerAll.put("buyer_receive", buyer_receive_address.dao.find(sqlBuyerReceive, id));
             //返回json
-            result.put("buyer_info", result3);
+            result.put("buyer_info", resultBuyerAll);
             result.put("goods_list", resultMap);
-            result.put("order_info", order_info.dao.find(sql3, id));
-            result.put("order_remark_list", order_remark.dao.find(sql4, id));
+            result.put("order_info", order_info.dao.find(sqlOrderInfo, id));
+            result.put("order_remark_list", order_remark.dao.find(sqlOrderRemark, id));
             return result;
-        } catch (Exception e) {
-            //异常情况，方便记录日志 TODO
-            result.put("buyer_info", null);
-            result.put("goods_list", null);
-            result.put("order_info", null);
-            result.put("order_remark_list", null);
-            return result;
-        }
-    }
 
-    //卖家操作订单
+    }
+    /**
+     *
+     * @param id 订单ID
+     * @param op 操作状态
+     * @param remark 备注
+     * @return
+     */
     @PUT("/:id")
     public WebResult opOrder(Integer id, int op, String remark){
 
@@ -110,9 +111,16 @@ public class OrderResource extends SellerResource {
             return new WebResult(HttpStatus.OK, "操作订单成功");
     }
 
+
     /**
-     *
-     *获取订单列表
+     * 获取订单列表
+     * @param buyer_name_num 零售商名称或订单号
+     * @param data_end 结束时间
+     * @param data_start 开始时间
+     * @param order_status 订单状态
+     * @param page_start 第几条开始
+     * @param page_step 返回多少条
+     * @return
      */
     @GET
     public HashMap getOrderList(String buyer_name_num,String data_end,String data_start,Integer order_status,Integer page_start,Integer page_step) {
@@ -198,18 +206,21 @@ public class OrderResource extends SellerResource {
             String sqlGoodInfo = YamlRead.getSQL("getFirldGoodsInfoAll","seller/order");
             //商品规格列表
             String sqlGoodsSku = YamlRead.getSQL("getFieldGoodsSkuAll","seller/order");
+            //订单编号
+            order_info num = order_info.dao.findFirst("select num from order_info where id = ? ",id);
             //商品分类
             String sqlGoodType = YamlRead.getSQL("getFieldGoodsTypeALL","seller/order");
-            Map goodsResult = new HashMap();
 
+            Map goodsResult = new HashMap();
             List<goods_info>  goods_infoList =  goods_info.dao.find(sqlGoodInfo,id);
             List<HashMap> resultMap = new ArrayList<HashMap>();
             for (goods_info goodlist: goods_infoList ){
                 resultGoods.clear();
                // goods_info goods_info_list = goods_info.dao.findFirst(sqlGoodInfo,id);
-                long goodsNum = goodlist.get("num");
+                long goodsNum = goodlist.get("number");
+                long orderNum = num.get("num");
                 long category_id = goodlist.get("category_id");
-                resultGoods.put("goods_sku_list", goods_sku.dao.find(sqlGoodsSku,goodsNum));
+                resultGoods.put("goods_sku_list", goods_sku.dao.find(sqlGoodsSku,goodsNum,orderNum));
                 resultGoods.put("goods_type", goods_category.dao.find(sqlGoodType,category_id));
                 resultGoods.put("goods_info", goods_info.dao.findFirst(sqlGoodInfo,id));
                 resultMap.add(resultGoods);

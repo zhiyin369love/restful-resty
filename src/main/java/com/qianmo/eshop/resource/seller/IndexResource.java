@@ -1,8 +1,7 @@
 package com.qianmo.eshop.resource.seller;
 
 
-import cn.dreampie.common.http.result.HttpStatus;
-import cn.dreampie.common.http.result.WebResult;
+
 import cn.dreampie.route.annotation.API;
 import cn.dreampie.route.annotation.GET;
 import com.qianmo.eshop.common.ConstantsUtils;
@@ -15,6 +14,7 @@ import com.qianmo.eshop.model.user.user_info;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
+import java.util.Map;
 
 
 /**
@@ -31,13 +31,12 @@ public class IndexResource extends SellerResource {
      * 获取首页汇总信息
      */
     @GET
-    public WebResult getIndexSummary() {
+    public Map getIndexSummary() {
         HashMap resultMap = new HashMap();
         HashMap total = new HashMap();
         //try {
         if (seller_id == 0) {
-            resultMap.put("total", null);
-            return new WebResult(HttpStatus.BAD_REQUEST, resultMap);
+            return setResult("输入参数有误");
         }
         //零售商数量
         long cartNum = cart.dao.findFirst("select count(*) cn from buyer_seller where seller_id = ?", seller_id).<Long>get("cn");
@@ -81,7 +80,7 @@ public class IndexResource extends SellerResource {
         //待出售商品
         total.put("waiting_goods_count", waitSellGoods);
         resultMap.put("total", total);
-        return new WebResult(HttpStatus.OK, resultMap);
+        return resultMap;
 /*    } catch (Exception e) {
       //异常情况，按理说需要记录日志 TODO
       resultMap.put("total",null);
@@ -95,6 +94,13 @@ public class IndexResource extends SellerResource {
 
     private Long getGoodsBySellIdStatus(long seller_id, int status) {
         return goods_sku.dao.findFirst("select count(*) cn from goods_sku where seller_id = ? and status = ?", seller_id, status).<Long>get("cn");
+    }
+
+    private Map setResult(String message) {
+        Map resultMap = new HashMap();
+        resultMap.put("code",ConstantsUtils.HTTP_STATUS_OK_200);
+        resultMap.put("message",message);
+        return resultMap;
     }
 
 }
