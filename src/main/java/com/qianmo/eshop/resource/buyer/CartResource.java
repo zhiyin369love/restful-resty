@@ -129,7 +129,7 @@ public class CartResource extends BuyerResource {
     public WebResult getCartList() {
         HashMap resultMap = new HashMap();
         List<Map> resultCartList = new ArrayList<Map>();
-        // try {
+        // try
         List<cart> cartlist = cart.dao.findBy("buyer_id = ?  order by seller_id,goods_num", buyer_id);
         Map cartResult = new HashMap();
         goods_sku_price goodsSkuPriceModel = new goods_sku_price();
@@ -231,10 +231,10 @@ public class CartResource extends BuyerResource {
         jsonObject.put("sku_name", goodssku.get("name"));
         goods_sku_price goodsSkuPrice = goods_sku_price.dao.findFirstBy(" sku_id = ? and buyer_id = ?", goodsSkuId, buyer_id);
         //商品下架或者不可购买，都是属于下架状态
-        if (goodssku.<Long>get("status") == 0 || (goodsSkuPrice != null && goodsSkuPrice.<Long>get("status") == 0)) {
-            jsonObject.put("status", 0);
+        if (goodssku.<Integer>get("status") == ConstantsUtils.GOODS_SKU_PRICE_BUY_DISABLE || (goodsSkuPrice != null && goodsSkuPrice.<Integer>get("status") == ConstantsUtils.GOODS_SKU_PRICE_BUY_DISABLE)) {
+            jsonObject.put("status", ConstantsUtils.GOODS_SKU_PRICE_BUY_DISABLE);
         } else {
-            jsonObject.put("status", 1);
+            jsonObject.put("status", ConstantsUtils.GOODS_SKU_PRICE_BUY_ENBLE);
         }
         return jsonObject;
     }

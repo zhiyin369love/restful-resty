@@ -34,19 +34,19 @@ getAccountPermissionById:
 
 getRetailerSkuPrice:
   SELECT b.goods_num,
-  c.name goods_name,
-  c.price,
-  c.sku_id,
-  d.name sku_name,
-  c.type
-  FROM goods_sku_price b,
-  goods_info c,
-  goods_sku d
-  WHERE b.goods_num = c.num
-  and b.sku_id = d.id
-  and b.buyer_id = ?
-  and b.seller_id = ?
-  and b.goods_num = ?
+         c.name goods_name,
+         c.price,
+         c.sku_id,
+         d.name sku_name,
+         c.type
+   FROM  goods_sku_price b,
+         goods_info c,
+         goods_sku d
+  WHERE  b.goods_num = c.num
+         and b.sku_id = d.id
+         and b.buyer_id = ?
+         and b.seller_id = ?
+         and b.goods_num = ?
 
 getAccountList:
   SELECT
@@ -55,3 +55,44 @@ getAccountList:
   LEFT OUTER JOIN sec_user_role b ON a.id = b.user_id
   LEFT OUTER JOIN sec_role c ON b.role_id = c.id
   WHERE a.type = 1 and a.pid = ?
+
+getMyRetailer:
+   select * from (
+      SELECT
+             a.province_name || a.city_name || a.county_name || a.town_name || a.address address,
+             1 is_invited,
+             a.name,
+             a.nickname,
+             a.username phone,
+             a.remark,
+             a.id user_id,
+             NULL invite_code
+      FROM
+             user_info a  LEFT JOIN
+             buyer_seller b
+       ON    a.id = b.buyer_id
+      WHERE
+             b.seller_id = ?
+      UNION
+    SELECT
+             NULL,
+             0 is_invited,
+             NULL,
+             NULL,
+             d.phone phone,
+             d.remark,
+             NULL user_id,
+             d.code invite_code
+     FROM
+             invite_verify_code d
+     WHERE
+             d.user_id = ?
+             AND d.type = ?
+             AND NOT EXISTS
+                   (  SELECT
+                           1
+                             FROM
+                                  user_info c
+                            WHERE d.phone = c.username )) a
+                            where 1 = 1
+
