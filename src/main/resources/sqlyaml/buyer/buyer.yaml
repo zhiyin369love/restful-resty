@@ -5,6 +5,6 @@ getFieldActivityAll:
   where a.fieldid = ?
 
 getSellerIdByVerifyCode:
-  select   a.user_id
+  select   a.user_id,a.id,a.status
      from  invite_verify_code a
      where a.code = ?  and  a.type = ?

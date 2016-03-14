@@ -19,7 +19,7 @@ import java.util.Set;
 /**
  * Created by ccq on 16-2-20.
  */
-@Table(name = "user_info", cached = true)
+@Table(name = "user_info", generatedKey = "id", cached = true)
 public class user_info extends Model<user_info> {
     public final static user_info dao = new user_info();
 

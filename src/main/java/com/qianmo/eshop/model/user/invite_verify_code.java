@@ -17,7 +17,7 @@ public class invite_verify_code extends Model<invite_verify_code> {
     public invite_verify_code getInviteByCode(int verifyCode, int type) {
         String sql  = "";
         sql = YamlRead.getSQL("getSellerIdByVerifyCode","buyer/buyer");
-        return invite_verify_code.dao.findFirst(sql, verifyCode, type);
+        return invite_verify_code.dao.unCache().findFirst(sql, verifyCode, type);
     }
 
     /**
