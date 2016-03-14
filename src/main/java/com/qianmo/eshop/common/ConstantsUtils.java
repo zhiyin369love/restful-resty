@@ -197,5 +197,11 @@ public class ConstantsUtils {
 	public final static String PAY_TYPE_NAME_CREDIT = "记账";
 	public final static String PAY_TYPE_NAME_OFFLINE = "货到付款";
 	/**********************************************************/
+	/**************************HTTP STATUS**************************/
+	/**http的状态**/
+	public final static Integer HTTP_STATUS_OK_200 = 200;
+	public final static Integer HTTP_STATUS_OK_201 = 201;
+	/**********************************************************/
+
 
 }

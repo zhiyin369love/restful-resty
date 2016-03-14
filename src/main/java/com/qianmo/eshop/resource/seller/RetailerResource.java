@@ -18,6 +18,7 @@ import com.qianmo.eshop.model.goods.goods_sku_price;
 import com.qianmo.eshop.model.user.invite_verify_code;
 import com.qianmo.eshop.model.user.user_info;
 import com.qianmo.eshop.resource.z_common.ApiResource;
+import com.sun.org.apache.xml.internal.security.encryption.CipherData;
 
 import java.io.IOException;
 import java.util.*;
@@ -38,9 +39,10 @@ public class RetailerResource extends ApiResource {
      */
     @PUT("/sendcode")
     @Transaction
-    public WebResult addSendCode(List<JSONObject> accounts) {
+    public Map addSendCode(List<JSONObject> accounts) {
         //try {
         //从property文件中获取属性
+        Map result = new HashMap();
         String content = PropertyUtil.getProperty("sms.content");
         String phone = "";
         String remark = "";
@@ -49,7 +51,8 @@ public class RetailerResource extends ApiResource {
         JSONObject returnResult = new JSONObject();
         Date afterOneDay = new Date(System.currentTimeMillis() + 24 * 60 * 60 * 1000);
         if (seller_id == 0l) {
-            return new WebResult(HttpStatus.EXPECTATION_FAILED, "输入参数有误");
+            result = setResult("输入参数有误");
+            return result;
         }
         if (accounts != null && accounts.size() > 0) {
             for (JSONObject userInfo : accounts) {
@@ -69,7 +72,8 @@ public class RetailerResource extends ApiResource {
                 } else {
                     //如果邀请码在一天有效期内，暂时就不给发
                     if (DateUtils.formatDate(verifyCode.<String>get("expire_time"), DateUtils.format_yyyyMMddHHmmss).getTime() < System.currentTimeMillis()) {
-                        return new WebResult(HttpStatus.OK, "邀请码在一天有效期内暂时不发送");
+                        setResult("邀请码在一天有效期内暂时不发送");
+                        return result;
                     } else {
                         //如果在一天有效期外，那么就需要发送，并且update  invite_verify_code这张表
                         verifyCode.set("code", code).set("expire_time", DateUtils.getDateString(afterOneDay, DateUtils.format_yyyyMMddHHmmss)).update();
@@ -85,17 +89,15 @@ public class RetailerResource extends ApiResource {
                 }
             }
             if (!"".equals(resultContent)) {
-                return new WebResult(HttpStatus.EXPECTATION_FAILED, resultContent);
+                result = setResult(resultContent);
+                //return result;
             } else {
-                return new WebResult(HttpStatus.CREATED, "发送验证码成功");
+                result = setResult("短信发送成功");
             }
         } else {
-            return new WebResult(HttpStatus.BAD_REQUEST, "输入参数有误");
+            result = setResult("输入参数有误");
         }
-      /*  } catch (Exception e) {
-            //异常情况，按理说需要记录日志 TODO
-            return new WebResult(HttpStatus.EXPECTATION_FAILED, "异常错误");
-        }*/
+        return result;
     }
 
     /**
@@ -106,10 +108,10 @@ public class RetailerResource extends ApiResource {
      */
     @PUT("/:id")
     @Transaction
-    public WebResult cooperation(Long id, Long op) {
+    public Map cooperation(Long id, Long op) {
         //try {
         if ((id == null || id == 0l) || op == null || seller_id == 0l) {
-            return new WebResult(HttpStatus.EXPECTATION_FAILED, "输入参数有误");
+            return setResult("输入参数有误");
         }
         buyer_seller buyerSeller = buyer_seller.dao.findFirstBy("buyer_id = ? and seller_id = ?", id, seller_id);
         if (buyerSeller == null) {
@@ -117,7 +119,7 @@ public class RetailerResource extends ApiResource {
         } else {
             buyerSeller.set("status", op).update();
         }
-        return new WebResult(HttpStatus.CREATED, "操作成功");
+        return setResult("输入参数有误");
        /* } catch (Exception e) {
             return new WebResult(HttpStatus.EXPECTATION_FAILED, "异常错误");
         }*/
@@ -134,8 +136,8 @@ public class RetailerResource extends ApiResource {
      * @param phone      手机号
      */
     @GET
-    public WebResult getRetailerList(String buyer_name, String name, Integer page_start, Integer page_step, String phone) {
-        HashMap resultMap = new HashMap();
+    public HashMap getRetailerList(String buyer_name, String name, Integer page_start, Integer page_step, String phone) {
+        HashMap<String,Object> resultMap = new HashMap<String,Object>();
         List<invite_verify_code> inviteVerifyCodes = new ArrayList<invite_verify_code>();
         List<HashMap> buyerSellerResultList = new ArrayList<HashMap>();
         Map pageInfo = new HashMap();
@@ -169,7 +171,7 @@ public class RetailerResource extends ApiResource {
             resultMap.put("buyer_list", null);
         }
         // return resultMap;
-        return new WebResult(HttpStatus.OK, resultMap);
+        return resultMap;
 
 /*        } catch (Exception e) {
             //异常情况，按理说需要记录日志 TODO
@@ -186,8 +188,8 @@ public class RetailerResource extends ApiResource {
      */
     @PUT("/price/batch")
     @Transaction
-    public WebResult updateRetailerPrice(List<JSONObject> store_price_list) {
-        HashMap resultMap = new HashMap();
+    public Map updateRetailerPrice(List<JSONObject> store_price_list) {
+        Map resultMap = new HashMap();
         String content = "";
         int i = 0;
         //try {
@@ -202,14 +204,13 @@ public class RetailerResource extends ApiResource {
                 }
             }
             if (!"".equals(content)) {
-                resultMap.put("code", -1);
-                resultMap.put("message", content);
+                resultMap = setResult(content);
             } else {
                 resultMap.put("code", 0);
-                resultMap.put("message", "批量修改价格成功");
+                resultMap = setResult("批量修改价格成功");
             }
         }
-        return new WebResult(HttpStatus.OK, resultMap);
+        return resultMap;
         /*} catch (Exception e) {
             //异常情况，按理说需要记录日志 TODO
             return resultMap;
@@ -228,7 +229,7 @@ public class RetailerResource extends ApiResource {
      * @param type        是否购买
      */
     @GET("/price/:id")
-    public WebResult getRetailerPriceList(Long goods_id, Long goos_sku_id, Long id, Integer page_start, Integer page_step, Integer type) {
+    public Map getRetailerPriceList(Long goods_id, Long goos_sku_id, Long id, Integer page_start, Integer page_step, Integer type) {
 
         HashMap resultMap = new HashMap();
         List<goods_sku_price> goodsSkuPrices = new ArrayList<goods_sku_price>();
@@ -271,7 +272,7 @@ public class RetailerResource extends ApiResource {
         resultMap.put("buyer_price_list", goodsSkuPriceResultList);
         resultMap.put("total_count", goodsSkuPriceResultList.size());
         resultMap.put("page_size", page_step);
-        return new WebResult(HttpStatus.OK, resultMap);
+        return resultMap;
     }
 
 
@@ -284,8 +285,8 @@ public class RetailerResource extends ApiResource {
      * @param goods_name 商品名称
      */
     @GET("/buy_count")
-    public WebResult getRetailerList(Long buyer_id, Long goods_num, String goods_name) {
-        HashMap resultMap = new HashMap();
+    public Map getRetailerList(Long buyer_id, Long goods_num, String goods_name) {
+        Map resultMap = new HashMap();
         //可购买总数
         long couldBuy = 0l;
         //不可购买总数
@@ -312,7 +313,7 @@ public class RetailerResource extends ApiResource {
         resultMap.put("couldBuy", couldBuy);
         resultMap.put("couldNotBuy", couldNotBuy);
         // return resultMap;
-        return new WebResult(HttpStatus.OK, resultMap);
+        return resultMap;
        /* } catch (Exception e) {
             return resultMap;
         }*/
@@ -321,6 +322,13 @@ public class RetailerResource extends ApiResource {
 
     public long getCountByGoods(String sql, Object... objects) {
         return goods_sku_price.dao.findFirst(sql, objects).<Long>get("cn");
+    }
+
+    private Map setResult(String message) {
+        Map resultMap = new HashMap();
+        resultMap.put("code",ConstantsUtils.HTTP_STATUS_OK_200);
+        resultMap.put("message",message);
+        return resultMap;
     }
 
 }

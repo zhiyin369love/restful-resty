@@ -76,7 +76,7 @@ public class IndexResource extends ApiResource {
      * @param bind_code 绑定码
      */
     @GET("/seller")
-    public WebResult getSellerInfoByVerifyCode(int bind_code) {
+    public Map getSellerInfoByVerifyCode(int bind_code) {
         HashMap resultMap = new HashMap();
         //try {
         //通过验证码找卖家id
@@ -98,7 +98,7 @@ public class IndexResource extends ApiResource {
             //如果找不到，返回空
             resultMap.put("seller_info", null);
         }
-        return new WebResult<Map<String,Object>>(HttpStatus.OK, (Map<String, Object>) resultMap);
+        return resultMap;
         /*} catch (Exception e) {
             //异常情况，按理说需要记录日志 TODO
             resultMap.put("seller_info", null);
@@ -111,7 +111,7 @@ public class IndexResource extends ApiResource {
      * 获取首页汇总信息
      */
     @GET("/total")
-    public WebResult getIndexSummary() {
+    public Map getIndexSummary() {
         HashMap resultMap = new HashMap();
         HashMap total = new HashMap();
         //try {
@@ -153,7 +153,7 @@ public class IndexResource extends ApiResource {
             resultMap.put("total", total);
             //  return resultMap;
         } //else {
-        return new WebResult(HttpStatus.OK, resultMap);
+        return resultMap;
         //}
 
         /*} catch (Exception e) {
@@ -162,6 +162,4 @@ public class IndexResource extends ApiResource {
             return resultMap;
         }*/
     }
-
-
 }
