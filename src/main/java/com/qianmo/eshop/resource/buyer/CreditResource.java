@@ -68,8 +68,10 @@ public class CreditResource extends BuyerResource {
                 long id = credit_list.get("id");
                 int status = credit_list.get("status");
                 long credit_id_list = credit_list.<Long>get("order_num");
+                order_info orderInfoId = order_info.dao.findFirst("select id from order_info where num = ?",credit_id_list);
+                long orderId = orderInfoId.get("id");
                 OrderResource resource = new OrderResource();
-                List<HashMap> resultMap2 = resource.getOrderHashMaps(credit_id_list);
+                List<HashMap> resultMap2 = resource.getOrderHashMaps(orderId);
                 //用户信息
                 String sqlbuyerinfo = YamlRead.getSQL("getFieldBuyerInfoAll","buyer/order");
                 String sqlbuyerreceive = YamlRead.getSQL("getFieldBuyerReceiveAll","buyer/order");
