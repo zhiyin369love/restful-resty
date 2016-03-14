@@ -72,10 +72,10 @@ public class ApiResource extends Resource {
     }
 
     //修改密码
-    @POST("/update_pwd/:id")
-    public WebResult updatePwd(long id, String confirm_pwd, String new_pwd, String old_pwd) {
-
-        if (user_info.dao.UpdatePwd(id, confirm_pwd, new_pwd, old_pwd)) {
+    @POST("/update_pwd")
+    public WebResult updatePwd(String confirm_pwd, String new_pwd, String old_pwd) {
+        Long id = SessionUtil.getUserId();
+        if (user_info.dao.updatePwd(id, confirm_pwd, new_pwd, old_pwd)) {
             return new WebResult(HttpStatus.OK, Maper.of("code", HttpStatus.OK, "message", "修改成功"));
         } else {
             return new WebResult(HttpStatus.BAD_REQUEST, Maper.of("code", HttpStatus.BAD_REQUEST, "message", "修改失败"));
@@ -83,10 +83,10 @@ public class ApiResource extends Resource {
     }
 
     //重置密码
-    @POST("/reset_pwd/:id")
-    public WebResult resetPwd(long id, String confirm_pwd, String pwd, String token) {
-
-        if (user_info.dao.ResetPwd(id, confirm_pwd, pwd, token)) {
+    @POST("/reset_pwd")
+    public WebResult resetPwd(String confirm_pwd, String pwd, String token) {
+        Long id = SessionUtil.getUserId();
+        if (user_info.dao.resetPwd(id, confirm_pwd, pwd, token)) {
             return new WebResult<Map<String, Object>>(HttpStatus.OK, Maper.<String, Object>of("code", HttpStatus.OK, "message", "修改成功"));
         } else {
             return new WebResult<Map<String, Object>>(HttpStatus.BAD_REQUEST, Maper.<String, Object>of("code", HttpStatus.BAD_REQUEST, "message", "修改失败"));
@@ -96,7 +96,7 @@ public class ApiResource extends Resource {
     //检查验证码是否正确(重置密码,注册使用)
     @POST("/check_code")
     public WebResult checkCode(String code, String phone) {
-        String token = user_info.dao.CheckCode(code, phone);
+        String token = user_info.dao.checkCode(code, phone);
         if (token != null) {
             return new WebResult<Map<String, Object>>(HttpStatus.OK, Maper.<String, Object>of("code", HttpStatus.OK, "message", "验证成功", "token", token));
         } else {

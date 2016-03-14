@@ -3,6 +3,7 @@ package com.qianmo.eshop.resource.seller;
 
 import cn.dreampie.route.annotation.*;
 import com.qianmo.eshop.common.CommonUtils;
+import com.qianmo.eshop.common.ConstantsUtils;
 import com.qianmo.eshop.common.SessionUtil;
 import com.qianmo.eshop.common.YamlRead;
 import com.qianmo.eshop.model.seller.seller_bank;
@@ -25,7 +26,7 @@ public class PayResource extends SellerResource {
      * @return
      */
     @GET
-    public HashMap Details() {
+    public HashMap details() {
         HashMap result = new HashMap();
         //从session中取出seller_id
         Long seller_id = SessionUtil.getAdminId();
@@ -46,7 +47,7 @@ public class PayResource extends SellerResource {
      * @return
      */
     @PUT("/:id")
-    public HashMap Edit(long id,seller_pay seller_pay) {
+    public HashMap edit(long id,seller_pay seller_pay) {
         HashMap result;
         seller_pay SellerPay = seller_pay.dao.findById(id);
         result = CommonUtils.EditreturnCodeMessage(false);
@@ -76,25 +77,49 @@ public class PayResource extends SellerResource {
         return result;
     }
 
+
     /**
      * 编辑银行汇款的银行信息
-     *
-     * @param seller_bank 待编辑的银行信息实体
+     * @param id          银行信息ID
+     * @param pay_bank 待编辑的银行信息实体
      * @return
      */
     @PUT("/bank/:id")
-    public HashMap Edit(long id, seller_bank seller_bank) {
+    public HashMap editBank(long id, seller_bank pay_bank) {
         HashMap result;
         seller_bank SellerBank = seller_bank.dao.findById(id);
         result = CommonUtils.EditreturnCodeMessage(false);
         if (SellerBank != null) {
-            seller_bank.set("id", id);
-            if (seller_bank.update()) {
+            pay_bank.set("id", id);
+            if (pay_bank.update()) {
                 result = CommonUtils.EditreturnCodeMessage(true);
             }
         }
         return result;
     }
+
+
+    /**
+     * 添加银行汇款的银行信息
+     *
+     * @param pay_bank 待添加的银行信息实体
+     * @return
+     */
+    @POST("/bank")
+    public HashMap addBank(seller_bank pay_bank) {
+        HashMap result;
+        result = CommonUtils.AddreturnCodeMessage(false);
+        if (pay_bank != null) {
+            pay_bank.set("area_id", ConstantsUtils.ALL_AREA_ID);
+            pay_bank.set("seller_id", SessionUtil.getAdminId());
+            pay_bank.set("name",pay_bank.get("bank_name"));
+            if (pay_bank.save()) {
+                result = CommonUtils.AddreturnCodeMessage(true);
+            }
+        }
+        return result;
+    }
+
 
     /**
      * 删除银行汇款的银行信息
@@ -103,7 +128,7 @@ public class PayResource extends SellerResource {
      * @return
      */
     @DELETE("/bank/:id")
-    public HashMap Delete(long id) {
+    public HashMap delete(long id) {
         HashMap result = new HashMap();
         result = CommonUtils.DelreturnCodeMessage(false);
         if (seller_bank.dao.deleteById(id)) {

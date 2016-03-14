@@ -24,7 +24,7 @@ public class SellerResource extends ApiResource {
 
     @PUT("/:id")
     public HashMap edit(long id, user_info user_info) {
-        HashMap result = user_info.dao.Edit(id, user_info);
+        HashMap result = user_info.dao.edit(id, user_info);
         return result;
     }
 }

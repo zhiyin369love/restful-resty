@@ -92,9 +92,8 @@ public class user_info extends Model<user_info> {
 
 
     public user_info getUserInfo(){
-        Principal<user_info> principal = Subject.getPrincipal();
-        if (principal != null){
-            user_info model = principal.getModel();
+        user_info model = user_info.dao.findById(SessionUtil.getUserId());
+        if (model != null){
             model.remove("password");
             model.remove("salt");
             return model;
@@ -104,7 +103,7 @@ public class user_info extends Model<user_info> {
     }
 
     //修改密码
-    public boolean UpdatePwd(long id, String confirm_pwd, String new_pwd, String old_pwd) {
+    public boolean updatePwd(long id, String confirm_pwd, String new_pwd, String old_pwd) {
         try {
             //判断新旧密码是否一致
             if (confirm_pwd != new_pwd) {
@@ -131,7 +130,7 @@ public class user_info extends Model<user_info> {
     }
 
     //重置密码
-    public boolean ResetPwd(long id, String confirm_pwd, String pwd, String token) {
+    public boolean resetPwd(long id, String confirm_pwd, String pwd, String token) {
         try {
             //判断新旧密码是否一致
             if (confirm_pwd != pwd) {
@@ -158,7 +157,7 @@ public class user_info extends Model<user_info> {
     }
 
     //检查验证码是否正确
-    public String CheckCode(String code, String phone) {
+    public String checkCode(String code, String phone) {
         long id;
         String randCode = null;
         try {
@@ -174,7 +173,7 @@ public class user_info extends Model<user_info> {
         return randCode;
     }
 
-    public HashMap Edit(long id,user_info model){
+    public HashMap edit(long id,user_info model){
         HashMap result = new HashMap();
         user_info UserInfo = user_info.dao.findById(id);
         result = CommonUtils.EditreturnCodeMessage(false);

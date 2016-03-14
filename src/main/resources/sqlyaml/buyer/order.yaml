@@ -1,82 +1,85 @@
 getFieldOrderIdAll:
-   select id from order_info where num = ?
+  select id from order_info where num = ?
+
 getFieldOrderInfoAll:
   select oi.created_at as created_at,oi.id as order_id ,oi.num as order_num ,oi.status as order_status,oi.pay_status as pay_status,oi.pay_type_id as pay_type,oi.total_price as total_price, ou.seller_id as seller_id,ui.name as seller_name
-    from order_info oi left join order_user ou on oi.num = ou.order_num left join user_info ui on ui.id = ou.seller_id
-    where  oi.id = ?
+  from order_info oi left join order_user ou on oi.num = ou.order_num left join user_info ui on ui.id = ou.seller_id
+  where  oi.id = ?
 
 getFieldBuyerInfoAll:
-   select ou.buyer_id,ui.name
-    from user_info ui left join order_user ou on ui.id = ou.buyer_id
-     left join order_info oi on  ou.order_num = oi.num
-      where oi.num is not null and  oi.id = ?
+  select ou.buyer_id,ui.name
+  from user_info ui left join order_user ou on ui.id = ou.buyer_id
+  left join order_info oi on  ou.order_num = oi.num
+  where oi.num is not null and  oi.id = ?
 
 getFieldBuyerReceiveAll:
   select bra.address as receive_address,bra.name as receive_name,bra.phone as receive_phone from buyer_receive_address bra LEFT JOIN order_info oi on bra.id = oi.buyer_receive_id where oi.id = ?
 
 getFirldGoodsInfoAll:
   select gi.details,gi.form_id,gi.generic_name,gi.id as goods_id,gi.name as goods_name,gi.ingredient,gi.license_num,gi.main_pic_url,gi.num as number,gi.category_id,gi.pic_url_list,gi.producer,gi.standard
-       from goods_info gi LEFT JOIN order_goods og on gi.num = og.goods_num LEFT JOIN order_info oi on og.order_num = oi.num where oi.id = ?
+  from goods_info gi LEFT JOIN order_goods og on gi.num = og.goods_num LEFT JOIN order_info oi on og.order_num = oi.num where oi.id = ?
 
 getFieldGoodsSkuAll:
-    SELECT
-         	og.goods_sku_count AS count,
-         	og.goods_sku_price AS price,
-         	og.single_total_price,
-         	og.sku_id,
-         	gs.name AS sku_name
-         FROM
-         	order_goods og
-         INNER JOIN goods_sku gs ON og.sku_id = gs.id
-         WHERE
-         	og.goods_num = ?
-         AND og.order_num = ?
+  SELECT
+  og.goods_sku_count AS count,
+  og.goods_sku_price AS price,
+  og.single_total_price,
+  og.sku_id,
+  gs.name AS sku_name
+  FROM
+  order_goods og
+  INNER JOIN goods_sku gs ON og.sku_id = gs.id
+  WHERE
+  og.goods_num = ?
+  AND og.order_num = ?
+
 getFirldOrderUserCreditAll:
-   select order_num from order_user where buyer_id = ?
+  select order_num from order_user where buyer_id = ?
 
 getFieldGoodsTypeALL:
-    select gc.id as type_id ,gc.name as type_name from goods_category gc where gc.id = ?
+  select gc.id as type_id ,gc.name as type_name from goods_category gc where gc.id = ?
+
 getFirldOrderRemarkAll:
-   select order_remark.created_at, order_remark.details,order_remark.op,order_remark.order_num,order_remark.reason,order_remark.user_id
-   from order_remark
-   LEFT JOIN order_info on order_remark.order_num = order_info.num where order_info.id = ?
+  select order_remark.created_at, order_remark.details,order_remark.op,order_remark.order_num,order_remark.reason,order_remark.user_id
+  from order_remark
+  LEFT JOIN order_info on order_remark.order_num = order_info.num where order_info.id = ?
 
 getFieldSellerBankAll:
-   select sb.account_address,sb.account_name,sb.account_num,sb.name from seller_bank sb where sb.seller_id = ?
+  select sb.account_address,sb.account_name,sb.account_num,sb.name from seller_bank sb where sb.seller_id = ?
 
 getSellPayList:
   SELECT id pay_id,NAME pay_name,seller_id,details,STATUS FROM seller_pay
 
 getOrderNumByStatus:
   select a.id,a.area_id,a.num,a.status,a.pay_status,a.pay_type_id,a.total_price,a.buyer_receive_id,a.created_at,a.updated_at,a.deleted_at from order_info a
-      LEFT JOIN order_user b ON a.num = b.order_num
-     where a.num is not null and b.buyer_id = ?
+  LEFT JOIN order_user b ON a.num = b.order_num
+  where a.num is not null and b.buyer_id = ?
 
 getBuyerPrice:
-   SELECT
-     IFNULL(price, list_price) price
-   FROM
-     (SELECT
-       price,
-       NULL list_price
-     FROM
-       goods_sku_price a
-     WHERE a.buyer_id = ?
-       AND a.seller_id = ?
-       AND a.sku_id = ?
-     UNION
-     ALL
-     SELECT
-       NULL price,
-       b.list_price
-     FROM
-       goods_sku b
-     WHERE b.id = ?) a
+  SELECT
+  IFNULL(price, list_price) price
+  FROM
+  (SELECT
+  price,
+  NULL list_price
+  FROM
+  goods_sku_price a
+  WHERE a.buyer_id = ?
+  AND a.seller_id = ?
+  AND a.sku_id = ?
+  UNION
+  ALL
+  SELECT
+  NULL price,
+  b.list_price
+  FROM
+  goods_sku b
+  WHERE b.id = ?) a
 
 findUserInfoById:
-     SELECT CONCAT(a.province_name,a.city_name,a.county_name,a.town_name,a.address) address_full,name,nickname,phone
-      from  user_info a
-      where id = ?
+  SELECT CONCAT(a.province_name,a.city_name,a.county_name,a.town_name,a.address) address_full,name,nickname,phone
+  from  user_info a
+  where id = ?
 
 
 
