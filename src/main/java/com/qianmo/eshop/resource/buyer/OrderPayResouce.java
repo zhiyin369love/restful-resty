@@ -26,7 +26,7 @@ public class OrderPayResouce extends BuyerResource {
     public List<HashMap> getList(Long id,Long seller_id){
        //long seller_id = SessionUtil.getUserId();
         HashMap result = new HashMap();
-        try {
+
             //获取支付方式sql
             String getPaySql = YamlRead.getSQL("getSellPayList","buyer/order");
             //获取支付银行列表sql
@@ -76,10 +76,7 @@ public class OrderPayResouce extends BuyerResource {
 
             result.put("seller_pay",result2);*/
             return resultMapList;
-        }catch (Exception e) {
-            //异常情况，方便记录日志 TODO
-            return null;
-        }
+
     }
 
 }
