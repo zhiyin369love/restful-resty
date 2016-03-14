@@ -49,7 +49,7 @@ public class IndexResource extends ApiResource {
             if (buyerSeller == null) {
                 //如果没有绑定，则将买家卖家绑定起来
                 buyer_seller.dao.set("area_id", ConstantsUtils.ALL_AREA_ID).set("buyer_id", buyer_id).set("seller_id", seller_Id).set("status", ConstantsUtils.BUYER_SELLER_STATUS_BIDING).save();
-                code.set("status", ConstantsUtils.INVITE_CODE_STATUS_SUCCESSED).save();
+                code.set("status", ConstantsUtils.INVITE_CODE_STATUS_SUCCESSED).update();
                 user_info.dao.findById(buyer_id).set("isbuyer",ConstantsUtils.YES).update();
                 //return new WebResult(HttpStatus.CREATED, "绑定成功");
             } else {
