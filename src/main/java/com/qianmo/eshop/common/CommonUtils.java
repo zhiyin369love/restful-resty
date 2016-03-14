@@ -151,10 +151,9 @@ public final class CommonUtils {
 
     public static HashMap EditreturnCodeMessage(boolean istrue){
         HashMap result = new HashMap();
-        int code = HttpStatus.INTERNAL_SERVER_ERROR.getCode();
+        int code = HttpStatus.OK.getCode();
         String message = "编辑失败";
         if(istrue){
-            code = HttpStatus.CREATED.getCode();
             message = "编辑成功";
         }
         result.put("code",code);
@@ -164,10 +163,9 @@ public final class CommonUtils {
 
     public static HashMap AddreturnCodeMessage(boolean istrue){
         HashMap result = new HashMap();
-        int code = HttpStatus.INTERNAL_SERVER_ERROR.getCode();
+        int code = HttpStatus.OK.getCode();
         String message = "添加失败";
         if(istrue){
-            code = HttpStatus.CREATED.getCode();
             message = "添加成功";
         }
         result.put("code",code);
@@ -177,10 +175,9 @@ public final class CommonUtils {
 
     public static HashMap DelreturnCodeMessage(boolean istrue){
         HashMap result = new HashMap();
-        int code = HttpStatus.INTERNAL_SERVER_ERROR.getCode();
+        int code = HttpStatus.OK.getCode();
         String message = "删除失败";
         if(istrue){
-            code = HttpStatus.CREATED.getCode();
             message = "删除成功";
         }
         result.put("code",code);
