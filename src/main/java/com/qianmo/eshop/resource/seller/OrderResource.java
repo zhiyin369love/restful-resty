@@ -75,10 +75,11 @@ public class OrderResource extends SellerResource {
 
     }
     /**
-     * 卖家操作订单
+     *
      * @param id 订单ID
      * @param op 操作状态
      * @param remark 备注
+     * @return
      */
     @PUT("/:id")
     public WebResult opOrder(Integer id, int op, String remark){
@@ -116,10 +117,10 @@ public class OrderResource extends SellerResource {
      * @param buyer_name_num 零售商名称或订单号
      * @param data_end 结束时间
      * @param data_start 开始时间
-     * @param order_status  订单状态
-     * @param page_start  第几条开始
-     * @param page_step  返回多少条
-     *
+     * @param order_status 订单状态
+     * @param page_start 第几条开始
+     * @param page_step 返回多少条
+     * @return
      */
     @GET
     public HashMap getOrderList(String buyer_name_num,String data_end,String data_start,Integer order_status,Integer page_start,Integer page_step) {
@@ -206,8 +207,7 @@ public class OrderResource extends SellerResource {
             //商品规格列表
             String sqlGoodsSku = YamlRead.getSQL("getFieldGoodsSkuAll","seller/order");
             //订单编号
-            String sqlOrderNum = YamlRead.getSQL("getFieldOrderNumAll","seller/order");
-            goods_info oi = goods_info.dao.findFirst(sqlOrderNum,id);
+            order_info num = order_info.dao.findFirst("select num from order_info where id = ? ",id);
             //商品分类
             String sqlGoodType = YamlRead.getSQL("getFieldGoodsTypeALL","seller/order");
 
@@ -218,7 +218,7 @@ public class OrderResource extends SellerResource {
                 resultGoods.clear();
                // goods_info goods_info_list = goods_info.dao.findFirst(sqlGoodInfo,id);
                 long goodsNum = goodlist.get("number");
-                long orderNum = oi.get("num");
+                long orderNum = num.get("num");
                 long category_id = goodlist.get("category_id");
                 resultGoods.put("goods_sku_list", goods_sku.dao.find(sqlGoodsSku,goodsNum,orderNum));
                 resultGoods.put("goods_type", goods_category.dao.find(sqlGoodType,category_id));
