@@ -1,9 +1,9 @@
 getFieldOrderIdAll:
    select id from order_info where num = ?
 getFieldOrderInfoAll:
-  select oi.created_at,oi.id,oi.num,oi.status,oi.pay_status,oi.pay_type_id,oi.total_price,ou.seller_id,ui.name
+  select oi.created_at,oi.id order_id,oi.num order_num,oi.status order_status,oi.pay_status,oi.pay_type_id pay_type,oi.total_price,ou.seller_id,ui.name seller_name
     from order_info oi left join order_user ou on oi.num = ou.order_num left join user_info ui on ui.id = ou.seller_id
-    where  oi.id = ?
+    where oi.id = ?
 
 getFieldBuyerInfoAll:
    SELECT
@@ -37,17 +37,10 @@ getFieldGoodsTypeALL:
      select gc.name as type_name,gc.id as type_id
        from goods_category gc  where gc.id = ?
 getFieldGoodsSkuAll:
-     SELECT
-     	og.goods_sku_count AS count,
-     	og.goods_sku_price AS price,
-     	og.single_total_price,
-     	og.sku_id,
-     	gs. NAME AS sku_name
-     FROM
-     	order_goods og
+     SELECT og.goods_sku_count count,og.goods_sku_price  price,og.single_total_price,og.sku_id,gs.name sku_name
+     FROM order_goods og
      INNER JOIN goods_sku gs ON og.sku_id = gs.id
-     WHERE
-     	og.goods_num = ?
+     WHERE og.goods_num = ?
      AND og.order_num = ?
 getFirldOrderRemarkAll:
    select order_remark.created_at, order_remark.details,order_remark.op,order_remark.order_num,order_remark.reason,order_remark.user_id
