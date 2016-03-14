@@ -1,8 +1,7 @@
 package com.qianmo.eshop.resource.seller;
 
 
-import cn.dreampie.common.http.result.HttpStatus;
-import cn.dreampie.common.http.result.WebResult;
+
 import cn.dreampie.route.annotation.API;
 import cn.dreampie.route.annotation.GET;
 import com.qianmo.eshop.common.ConstantsUtils;

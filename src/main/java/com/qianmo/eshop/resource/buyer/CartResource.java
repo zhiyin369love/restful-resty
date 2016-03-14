@@ -1,7 +1,6 @@
 package com.qianmo.eshop.resource.buyer;
 
-import cn.dreampie.common.http.result.HttpStatus;
-import cn.dreampie.common.http.result.WebResult;
+
 import cn.dreampie.orm.transaction.Transaction;
 import cn.dreampie.route.annotation.*;
 import com.alibaba.fastjson.JSONObject;

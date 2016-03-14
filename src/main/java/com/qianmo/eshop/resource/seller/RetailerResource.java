@@ -1,7 +1,5 @@
 package com.qianmo.eshop.resource.seller;
 
-import cn.dreampie.common.http.result.HttpStatus;
-import cn.dreampie.common.http.result.WebResult;
 import cn.dreampie.orm.page.FullPage;
 import cn.dreampie.orm.transaction.Transaction;
 import cn.dreampie.route.annotation.API;
@@ -12,13 +10,10 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.qianmo.eshop.common.*;
 import com.qianmo.eshop.model.buyer.buyer_seller;
-import com.qianmo.eshop.model.goods.goods_info;
 import com.qianmo.eshop.model.goods.goods_sku;
 import com.qianmo.eshop.model.goods.goods_sku_price;
 import com.qianmo.eshop.model.user.invite_verify_code;
-import com.qianmo.eshop.model.user.user_info;
 import com.qianmo.eshop.resource.z_common.ApiResource;
-import com.sun.org.apache.xml.internal.security.encryption.CipherData;
 
 import java.io.IOException;
 import java.util.*;

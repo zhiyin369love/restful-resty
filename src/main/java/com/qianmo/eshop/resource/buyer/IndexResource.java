@@ -1,14 +1,10 @@
 package com.qianmo.eshop.resource.buyer;
 
-import cn.dreampie.common.http.result.HttpStatus;
-import cn.dreampie.common.http.result.WebResult;
+
 import cn.dreampie.route.annotation.API;
 import cn.dreampie.route.annotation.GET;
-import cn.dreampie.route.annotation.POST;
-import com.alibaba.fastjson.JSONObject;
 import com.qianmo.eshop.common.ConstantsUtils;
 import com.qianmo.eshop.common.SessionUtil;
-import com.qianmo.eshop.common.YamlRead;
 import com.qianmo.eshop.model.buyer.buyer_seller;
 import com.qianmo.eshop.model.cart.cart;
 import com.qianmo.eshop.model.order.order_info;
