@@ -71,7 +71,7 @@ public class CreditResource extends BuyerResource {
                 order_info orderInfoId = order_info.dao.findFirst("select id from order_info where num = ?",credit_id_list);
                 long orderId = orderInfoId.get("id");
                 OrderResource resource = new OrderResource();
-                List<HashMap> resultMap2 = resource.getOrderHashMaps(orderId);
+                List<HashMap> resultMapGood = resource.getOrderHashMaps(orderId);
                 //用户信息
                 String sqlbuyerinfo = YamlRead.getSQL("getFieldBuyerInfoAll","buyer/order");
                 String sqlbuyerreceive = YamlRead.getSQL("getFieldBuyerReceiveAll","buyer/order");
@@ -85,7 +85,7 @@ public class CreditResource extends BuyerResource {
                 result_buyer.put("buyer_receive", buyer_receive_address.dao.find(sqlbuyerreceive,buyer_id));
                 //一个买家对应对个订单实体
                 result.put("buyer_info",result_buyer);
-                result.put("goods_list",resultMap2);
+                result.put("goods_list",resultMapGood);
                 result.put("order_info", order_info.dao.find(sqlCredit,buyer_id));
                 result.put("order_remark_list", order_remark.dao.find(sqlOrderRemark,buyer_id));
                 result_goods.put("order",result);
