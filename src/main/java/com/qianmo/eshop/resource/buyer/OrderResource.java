@@ -81,6 +81,9 @@ public class OrderResource extends BuyerResource {
         String sqlgoodssku = YamlRead.getSQL("getFieldGoodsSkuAll","buyer/order");
         //商品分类
         String sqlgoodstype = YamlRead.getSQL("getFieldGoodsTypeALL","buyer/order");
+        //订单编号
+        String sqlOrderNum = YamlRead.getSQL("getFieldOrderNumAll","seller/order");
+        goods_info oi = goods_info.dao.findFirst(sqlOrderNum,id);
         Map goodsResult = new HashMap();
 
         List<goods_info>  goods_infoList =  goods_info.dao.find(sqlgoods_info,id);
@@ -89,9 +92,9 @@ public class OrderResource extends BuyerResource {
             resultgoods.clear();
           //  long goodsNum = (Long)((JSONObject)goodlist.get("goods_info")).get("id");
             long goodsNum = goodlist.get("number");
-           // long category_id = (Long)((JSONObject)goodlist.get("goods_info")).get("category_id");
+            long orderNum = oi.get("num");
             long category_id = goodlist.get("category_id");
-            resultgoods.put("goods_sku_list", goods_sku.dao.find(sqlgoodssku,goodsNum));
+            resultgoods.put("goods_sku_list", goods_sku.dao.find(sqlgoodssku,goodsNum,orderNum));
             resultgoods.put("goods_type", goods_category.dao.find(sqlgoodstype,category_id));
             resultgoods.put("goods_info", goods_info.dao.findFirst(sqlgoods_info,id));
             resultMap.add(resultgoods);
