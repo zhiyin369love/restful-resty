@@ -1,7 +1,5 @@
 package com.qianmo.eshop.resource.buyer;
 
-import cn.dreampie.common.http.result.HttpStatus;
-import cn.dreampie.orm.transaction.Transaction;
 import cn.dreampie.route.annotation.*;
 import cn.dreampie.security.Subject;
 import com.qianmo.eshop.common.CommonUtils;

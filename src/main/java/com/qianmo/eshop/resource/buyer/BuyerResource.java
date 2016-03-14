@@ -2,16 +2,12 @@ package com.qianmo.eshop.resource.buyer;
 
 import cn.dreampie.orm.transaction.Transaction;
 import cn.dreampie.route.annotation.*;
-import cn.dreampie.security.Principal;
-import cn.dreampie.security.Subject;
 import com.qianmo.eshop.common.CommonUtils;
 import com.qianmo.eshop.common.SessionUtil;
 import com.qianmo.eshop.model.buyer.buyer_seller;
-import com.qianmo.eshop.model.user.invite_verify_code;
 import com.qianmo.eshop.model.user.user_info;
 import com.qianmo.eshop.resource.z_common.ApiResource;
 
-import java.util.HashMap;
 import java.util.Map;
 
 /**
