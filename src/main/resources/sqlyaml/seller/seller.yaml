@@ -61,3 +61,44 @@ getPayList:
 
 getBankList:
   select account_name,account_num,account_address,name bank_name, id bank_id from seller_bank where seller_id = ?
+
+getMyRetailer:
+   select * from (
+      SELECT
+             a.province_name || a.city_name || a.county_name || a.town_name || a.address address,
+             1 is_invited,
+             a.name,
+             a.nickname,
+             a.username phone,
+             a.remark,
+             a.id user_id,
+             NULL invite_code
+      FROM
+             user_info a  LEFT JOIN
+             buyer_seller b
+       ON    a.id = b.buyer_id
+      WHERE
+             b.seller_id = ?
+      UNION
+    SELECT
+             NULL,
+             0 is_invited,
+             NULL,
+             NULL,
+             d.phone phone,
+             d.remark,
+             NULL user_id,
+             d.code invite_code
+     FROM
+             invite_verify_code d
+     WHERE
+             d.user_id = ?
+             AND d.type = ?
+             AND NOT EXISTS
+                   (  SELECT
+                           1
+                             FROM
+                                  user_info c
+                            WHERE d.phone = c.username )) a
+                            where 1 = 1
+
