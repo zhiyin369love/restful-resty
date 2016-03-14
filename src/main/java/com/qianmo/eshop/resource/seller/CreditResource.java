@@ -30,10 +30,19 @@ import java.util.List;
 import com.qianmo.eshop.resource.buyer.OrderResource;
 
 /**
- * Created by Administrator on 2016/3/3 0003.
+ * 赊账 和 销账
+ * @author wss
  */
 @API("/credit")
 public class CreditResource extends SellerResource {
+    /**
+     *
+     * @param page_start
+     * @param page_step
+     * @param show_type
+     * @param status
+     * @return
+     */
     @GET
     public HashMap getCredit(int page_start, int page_step, int show_type, Integer status) {
         long seller_id = SessionUtil.getUserId();
@@ -148,7 +157,11 @@ public class CreditResource extends SellerResource {
         return all;
     }
 
-    //销账
+    /**
+     * 销账
+     * @param credits
+     * @return
+     */
     @PUT
     public WebResult opOrder(List<credit> credits) {
 
