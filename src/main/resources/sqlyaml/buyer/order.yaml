@@ -24,7 +24,7 @@ getFieldGoodsSkuAll:
          	og.goods_sku_price AS price,
          	og.single_total_price,
          	og.sku_id,
-         	gs. NAME AS sku_name
+         	gs.name AS sku_name
          FROM
          	order_goods og
          INNER JOIN goods_sku gs ON og.sku_id = gs.id
