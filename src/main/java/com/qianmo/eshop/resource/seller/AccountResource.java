@@ -69,7 +69,7 @@ public class AccountResource extends SellerResource {
      */
     @PUT("/:id")
     public HashMap Edit(long id, user_info user_info) {
-        HashMap result = user_info.dao.Edit(id, user_info);
+        HashMap result = user_info.dao.edit(id, user_info);
         return result;
     }
 
