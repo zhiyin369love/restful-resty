@@ -200,7 +200,6 @@ public class RetailerResource extends ApiResource {
             if (!"".equals(content)) {
                 resultMap = setResult(content);
             } else {
-                resultMap.put("code", 0);
                 resultMap = setResult("批量修改价格成功");
             }
         }
