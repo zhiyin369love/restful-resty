@@ -111,7 +111,7 @@ public class OrderResource extends BuyerResource {
      * @param  order_num 订单编号
      * @param  op 必填 0选择支付方式 1选择银行 2我已付款 3确认收货 4取消订单 5再买一次
      * @param value 选填 操作值（取消订单时，传入订单取消原因）
-     *
+     * @return
      */
     @PUT
     @Transaction
@@ -159,7 +159,7 @@ public class OrderResource extends BuyerResource {
      *  @param order_status 订单状态
      *  @param page_start
      *  @param page_step
-     *
+     *  @return
      */
     @GET
     public HashMap getOrderList(Integer order_status,Integer page_start,Integer page_step) {
