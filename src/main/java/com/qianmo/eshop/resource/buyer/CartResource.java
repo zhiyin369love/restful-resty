@@ -40,14 +40,12 @@ public class CartResource extends BuyerResource {
     public Map deleteCartGoods(long goods_id, int goods_sku_id) {
         // try {
         if (buyer_id != 0 && goods_id != 0 && goods_sku_id != 0) {
-            //TODO 是否物理删除，如果是逻辑删除，目前没有字段可以区分
             cart.dao.deleteBy("buyer_id = ?  and goods_num = ? and goods_sku_id = ?", buyer_id, goods_id, goods_sku_id);
             return setResult("删除购物车商品成功");
         } else {
             return setResult("输入参数有误");
         }
    /* } catch (Exception e) {
-        //异常情况，按理说需要记录日志 TODO
       return new WebResult(HttpStatus.BAD_REQUEST, "删除购物车商品失败");
     }*/
     }
@@ -93,7 +91,6 @@ public class CartResource extends BuyerResource {
             return setResult("输入参数有误");
         }
 /*    } catch (Exception e) {
-      //异常情况，按理说需要记录日志，也可考虑做统一的日志拦截 TODO
       return new WebResult(HttpStatus.EXPECTATION_FAILED, "添加商品到购物车失败");
     }*/
     }
@@ -115,7 +112,6 @@ public class CartResource extends BuyerResource {
             return setResult("输入参数有误");
         }
     /*} catch (Exception e) {
-      //异常情况，按理说需要记录日志，也可考虑做统一的日志拦截 TODO
       return new WebResult(HttpStatus.EXPECTATION_FAILED, "编辑购物车失败");
     }*/
     }
@@ -183,7 +179,6 @@ public class CartResource extends BuyerResource {
         return resultMap;
 
    /* } catch (Exception e) {
-      //异常情况，按理说需要记录日志 TODO
       resultMap.put("cart_list",null);
       return resultMap;
     }*/

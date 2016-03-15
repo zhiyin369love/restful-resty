@@ -169,7 +169,6 @@ public class RetailerResource extends ApiResource {
         return resultMap;
 
 /*        } catch (Exception e) {
-            //异常情况，按理说需要记录日志 TODO
             resultMap.put("buyer_list", null);
             return resultMap;
         }*/
@@ -207,7 +206,6 @@ public class RetailerResource extends ApiResource {
         }
         return resultMap;
         /*} catch (Exception e) {
-            //异常情况，按理说需要记录日志 TODO
             return resultMap;
         }*/
     }

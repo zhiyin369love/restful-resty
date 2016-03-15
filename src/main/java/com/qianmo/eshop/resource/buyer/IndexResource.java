@@ -60,7 +60,6 @@ public class IndexResource extends ApiResource {
 //            return new WebResult(HttpStatus.BAD_REQUEST, "验证码错误");
 //        }
 //    /*} catch (Exception e) {
-//        //异常情况，按理说需要记录日志 TODO
 //        return new WebResult(HttpStatus.BAD_REQUEST, "验证码错误");
 //    }*/
 //    }
@@ -96,7 +95,6 @@ public class IndexResource extends ApiResource {
         }
         return resultMap;
         /*} catch (Exception e) {
-            //异常情况，按理说需要记录日志 TODO
             resultMap.put("seller_info", null);
             return resultMap;
         }*/
@@ -153,7 +151,6 @@ public class IndexResource extends ApiResource {
         //}
 
         /*} catch (Exception e) {
-            //异常情况，按理说需要记录日志 TODO
             resultMap.put("total", null);
             return resultMap;
         }*/

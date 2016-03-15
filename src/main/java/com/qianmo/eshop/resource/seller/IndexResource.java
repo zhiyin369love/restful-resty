@@ -82,7 +82,6 @@ public class IndexResource extends SellerResource {
         resultMap.put("total", total);
         return resultMap;
 /*    } catch (Exception e) {
-      //异常情况，按理说需要记录日志 TODO
       resultMap.put("total",null);
       return resultMap;
     }*/
