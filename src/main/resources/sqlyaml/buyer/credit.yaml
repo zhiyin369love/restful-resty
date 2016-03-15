@@ -9,7 +9,6 @@ getFieldCreditOrderAll:
    where  c.buyer_id = ?
 getFirldCreditAll:
     select c.id,c.status from credit c where c.buyer_id = ?
-
 getFieldBuyerInfoAll:
    select ou.buyer_id,ui.name
     from user_info ui left join order_user ou on ui.id = ou.buyer_id
