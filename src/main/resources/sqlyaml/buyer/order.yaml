@@ -21,11 +21,12 @@ getFirldGoodsInfoAll:
 
 getFieldGoodsSkuAll:
   SELECT
-  og.goods_sku_count AS count,
-  og.goods_sku_price AS price,
+  og.goods_sku_count as count,
+  og.goods_sku_price as price,
   og.single_total_price,
   og.sku_id,
-  gs.name AS sku_name
+  gs.name as sku_name
+  gs.status as goods_status
   FROM
   order_goods og
   INNER JOIN goods_sku gs ON og.sku_id = gs.id
