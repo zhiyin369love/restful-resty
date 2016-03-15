@@ -20,19 +20,13 @@ getFirldGoodsInfoAll:
   from goods_info gi LEFT JOIN order_goods og on gi.num = og.goods_num LEFT JOIN order_info oi on og.order_num = oi.num where oi.id = ?
 
 getFieldGoodsSkuAll:
-  SELECT
-  og.goods_sku_count as count,
-  og.goods_sku_price as price,
-  og.single_total_price,
-  og.sku_id,
-  gs.name as sku_name
-  gs.status as goods_status
-  FROM
+  select og.goods_sku_count as count,og.goods_sku_price as price,og.single_total_price,og.sku_id,gs.name as sku_name, gs.status as goods_status
+  from
   order_goods og
-  INNER JOIN goods_sku gs ON og.sku_id = gs.id
-  WHERE
+  left join goods_sku gs ON og.sku_id = gs.id
+  where
   og.goods_num = ?
-  AND og.order_num = ?
+  and og.order_num = ?
 
 getFirldOrderUserCreditAll:
   select order_num from order_user where buyer_id = ?
@@ -41,9 +35,7 @@ getFieldGoodsTypeALL:
   select gc.id as type_id ,gc.name as type_name from goods_category gc where gc.id = ?
 
 getFirldOrderRemarkAll:
-  select order_remark.created_at, order_remark.details,order_remark.op,order_remark.order_num,order_remark.reason,order_remark.user_id
-  from order_remark
-  LEFT JOIN order_info on order_remark.order_num = order_info.num where order_info.id = ?
+  SELECT a.created_at,a.details,a.op,a.order_num,a.reason,a.user_id FROM order_remark a INNER JOIN order_info b ON a.order_num = b.num WHERE b.id = ?
 
 getFieldSellerBankAll:
   select sb.account_address,sb.account_name,sb.account_num,sb.name from seller_bank sb where sb.seller_id = ?
