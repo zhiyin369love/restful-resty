@@ -53,7 +53,7 @@ public class ApiResource extends Resource {
             isSeller = UserInfo.get("isseller");
         } else {
             //登录失败
-            status = HttpStatus.NON_AUTHORITATIVE_INFORMATION;
+            status = HttpStatus.OK;
             code = status.getCode();
             message = "用户名或密码错误";
             isBuyer = false;
@@ -72,24 +72,24 @@ public class ApiResource extends Resource {
     }
 
     //修改密码
-    @POST("/update_pwd")
-    public WebResult updatePwd(String confirm_pwd, String new_pwd, String old_pwd) {
+    @PUT(value = "/update_pwd")
+    public WebResult updatePwd(String old_pwd, String new_pwd, String confirm_pwd) {
         Long id = SessionUtil.getUserId();
         if (user_info.dao.updatePwd(id, confirm_pwd, new_pwd, old_pwd)) {
-            return new WebResult(HttpStatus.OK, Maper.of("code", HttpStatus.OK, "message", "修改成功"));
+            return new WebResult<Map<String,Object>>(HttpStatus.OK, Maper.<String, Object>of("code", HttpStatus.OK.getCode(), "message", "修改成功"));
         } else {
-            return new WebResult(HttpStatus.BAD_REQUEST, Maper.of("code", HttpStatus.BAD_REQUEST, "message", "修改失败"));
+            return new WebResult<Map<String,Object>>(HttpStatus.OK, Maper.<String, Object>of("code", HttpStatus.INTERNAL_SERVER_ERROR.getCode(), "message", "修改失败"));
         }
     }
 
     //重置密码
-    @POST("/reset_pwd")
+    @PUT("/reset_pwd")
     public WebResult resetPwd(String confirm_pwd, String pwd, String token) {
         Long id = SessionUtil.getUserId();
         if (user_info.dao.resetPwd(id, confirm_pwd, pwd, token)) {
             return new WebResult<Map<String, Object>>(HttpStatus.OK, Maper.<String, Object>of("code", HttpStatus.OK, "message", "修改成功"));
         } else {
-            return new WebResult<Map<String, Object>>(HttpStatus.BAD_REQUEST, Maper.<String, Object>of("code", HttpStatus.BAD_REQUEST, "message", "修改失败"));
+            return new WebResult<Map<String, Object>>(HttpStatus.OK, Maper.<String, Object>of("code", HttpStatus.INTERNAL_SERVER_ERROR.getCode(), "message", "修改失败"));
         }
     }
 
@@ -100,7 +100,7 @@ public class ApiResource extends Resource {
         if (token != null) {
             return new WebResult<Map<String, Object>>(HttpStatus.OK, Maper.<String, Object>of("code", HttpStatus.OK, "message", "验证成功", "token", token));
         } else {
-            return new WebResult<Map<String, Object>>(HttpStatus.BAD_REQUEST, Maper.<String, Object>of("code", HttpStatus.BAD_REQUEST, "message", "验证失败"));
+            return new WebResult<Map<String, Object>>(HttpStatus.OK, Maper.<String, Object>of("code", HttpStatus.INTERNAL_SERVER_ERROR.getCode(), "message", "验证失败"));
         }
     }
 
@@ -134,7 +134,7 @@ public class ApiResource extends Resource {
                 return new WebResult(HttpStatus.OK, "发送验证码成功");
             }
         } else {
-            return new WebResult(HttpStatus.INTERNAL_SERVER_ERROR, "输入参数有误");
+            return new WebResult(HttpStatus.OK, "输入参数有误");
         }
 
     }

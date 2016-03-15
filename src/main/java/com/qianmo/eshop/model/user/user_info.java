@@ -2,9 +2,7 @@ package com.qianmo.eshop.model.user;
 
 import cn.dreampie.orm.Model;
 import cn.dreampie.orm.annotation.Table;
-import cn.dreampie.security.DefaultPasswordService;
-import cn.dreampie.security.Principal;
-import cn.dreampie.security.Subject;
+import cn.dreampie.security.*;
 import com.alibaba.fastjson.annotation.JSONField;
 import com.qianmo.eshop.common.CommonUtils;
 import com.qianmo.eshop.common.ConstantsUtils;
@@ -106,7 +104,7 @@ public class user_info extends Model<user_info> {
     public boolean updatePwd(long id, String confirm_pwd, String new_pwd, String old_pwd) {
         try {
             //判断新旧密码是否一致
-            if (confirm_pwd != new_pwd) {
+            if (!confirm_pwd.equals(new_pwd) ) {
                 return false;
             }
             //根据id获取用户信息,判断是否存在此用户
@@ -115,9 +113,10 @@ public class user_info extends Model<user_info> {
                 return false;
             } else {
                 //判断用户填写的旧密码是否正确
-                if (UserInfo.get("password").toString().equals(old_pwd)) {
+                if (UserInfo.get("password").toString().equals(DefaultPasswordService.instance().crypto(old_pwd))) {
                     //正确则更新密码
-                    UserInfo.set("password", DefaultPasswordService.instance().crypto(new_pwd,"123456890")).save();
+                    UserInfo.set("password", DefaultPasswordService.instance().crypto(new_pwd)).update();
+                    Subject.logout();
                 } else {
                     return false;
                 }
@@ -144,7 +143,8 @@ public class user_info extends Model<user_info> {
                 //判断用户的token是否正确
                 if (invite_verify_code.dao.findBy("token = ?",token).size() > 0) {
                     //正确则更新密码
-                    UserInfo.set("password", DefaultPasswordService.instance().crypto(pwd,"123456890")).save();
+                    UserInfo.set("password", DefaultPasswordService.instance().crypto(pwd)).save();
+                    Subject.logout();
                 } else {
                     return false;
                 }
@@ -192,4 +192,5 @@ public class user_info extends Model<user_info> {
         user_info  userTemp = user_info.dao.findFirst(getUserInfoSql,id);
         return userTemp == null ? new user_info(): userTemp;
     }
+
 }

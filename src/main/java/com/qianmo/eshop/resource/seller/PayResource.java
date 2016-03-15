@@ -91,6 +91,7 @@ public class PayResource extends SellerResource {
         result = CommonUtils.EditreturnCodeMessage(false);
         if (SellerBank != null) {
             pay_bank.set("id", id);
+            pay_bank.set("name",pay_bank.get("bank_name"));
             if (pay_bank.update()) {
                 result = CommonUtils.EditreturnCodeMessage(true);
             }
