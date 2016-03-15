@@ -2,8 +2,6 @@ package com.qianmo.eshop.resource.seller;
 
 import cn.dreampie.common.http.result.HttpStatus;
 import cn.dreampie.common.http.result.WebResult;
-import cn.dreampie.common.util.Maper;
-import cn.dreampie.orm.page.FullPage;
 import cn.dreampie.orm.page.Page;
 import cn.dreampie.route.annotation.API;
 import cn.dreampie.route.annotation.GET;
@@ -45,7 +43,6 @@ public class OrderResource extends SellerResource {
     @GET("/:id")
     public HashMap getOrderDetail(Long id) {
         HashMap result = new HashMap();
-
             //订单实体查询sql
             String sqlOrderInfo = YamlRead.getSQL("getFieldOrderInfoAll", "seller/order");
             //订单备注列表查询sql
@@ -155,8 +152,12 @@ public class OrderResource extends SellerResource {
         } else {
             orderInfoSql += " and a.created_at <=" + DateUtils.formatDate(data_end,DateUtils.format_yyyyMMdd);
         }
+        //当开始时间和结束时间相等时
+        if (data_end == data_start){
+            orderInfoSql += " and a.created_at = " + DateUtils.formatDate(data_start,DateUtils.format_yyyyMMdd);
+        }
         //订单状态
-        if(order_status != null && order_status !=0) {
+        if(order_status != null) {
             orderInfoSql += " and a.status =  " + order_status ;
         }
         if(page_start == null || page_start ==0) {
