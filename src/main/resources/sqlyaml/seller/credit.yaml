@@ -14,15 +14,22 @@ getFirldSellerCreditAll:
        where  c.seller_id = ?
 
 getFirldCountOrderUserAll:
-     select count(oi.num) as num  from order_info oi LEFT JOIN order_user ou on oi.num = ou.order_num where ou.buyer_id = ? and oi.pay_type_id = 3 and ou.seller_id = ?
-
+     select count(c.order_num) as num from credit c where c.status = ? and c.buyer_id = ? and c.seller_id = ?
 getFirldCountPriceOrderInfoAll:
-   select SUM(oi.total_price) as total_price  from order_info oi LEFT JOIN order_user ou on oi.num = ou.order_num where ou.buyer_id = ? and oi.pay_type_id = 3 and ou.seller_id = ?
-
+   select SUM(a.total_price) as total_price  from order_info  a where  a.num in (select c.order_num from credit c where c.status = ? and c.buyer_id = ? and c.seller_id = ?)
 getFieldOrderInfoAll:
-   select oi.created_at,oi.id,oi.num,oi.status,oi.pay_status,oi.pay_type_id,oi.total_price,ou.seller_id,ui.name
-    from  order_info oi left join credit c on oi.num = c.order_num left join order_user ou  on c.order_num = ou.order_num  left join user_info ui on ui.id = ou.seller_id
-    where c.seller_id = ?
+   select
+    a.created_at,
+   	a.id,
+   	a.num,
+   	a.status,
+   	a.pay_status,
+    a.pay_type_id,
+   	a.total_price,
+    c.id,
+    c.nickname
+    from order_info a,user_info c  where a.num = ? and c.id = ?;
+
 getFirldCreditAll:
     select c.id,c.status from credit c where c.seller_id = ?
 getFieldUserInfoAll:
