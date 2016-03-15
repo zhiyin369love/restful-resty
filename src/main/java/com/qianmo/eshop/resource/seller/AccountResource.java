@@ -52,7 +52,7 @@ public class AccountResource extends SellerResource {
      * @return
      */
     @GET("/:id")
-    public HashMap Details(long id) {
+    public HashMap details(long id) {
         HashMap result = new HashMap();
         //根据ID来查询出子账号的详细信息 type=1 为过滤掉非子账号用户
         user_info userInfo = user_info.dao.findFirstBy("id = ? and type = 1",id);
@@ -68,7 +68,7 @@ public class AccountResource extends SellerResource {
      * @return
      */
     @PUT("/:id")
-    public HashMap Edit(long id, user_info user_info) {
+    public HashMap edit(long id, user_info user_info) {
         HashMap result = user_info.dao.edit(id, user_info);
         return result;
     }
@@ -80,7 +80,7 @@ public class AccountResource extends SellerResource {
      * @return
      */
     @POST
-    public HashMap Add(user_info model) {
+    public HashMap add(user_info model) {
         HashMap result = new HashMap();
         result = CommonUtils.AddreturnCodeMessage(false);
         if (user_info.dao.save(model)) {
@@ -96,7 +96,7 @@ public class AccountResource extends SellerResource {
      * @return
      */
     @DELETE("/:id")
-    public HashMap Delete(long id) {
+    public HashMap delete(long id) {
         HashMap result = new HashMap();
         result = CommonUtils.DelreturnCodeMessage(false);
         if (user_info.dao.deleteById(id)) {
