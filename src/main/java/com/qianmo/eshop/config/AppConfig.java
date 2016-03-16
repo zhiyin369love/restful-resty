@@ -36,6 +36,8 @@ public class AppConfig extends Config {
     interceptorLoader.add(new SecurityInterceptor(new MyAuthenticateService()));
     //事务的拦截器 @Transaction
     interceptorLoader.add(new TransactionInterceptor());
+    //输入的统一校验
+    interceptorLoader.add(new InputValidInterceptor());
   }
 
   public void configHandler(HandlerLoader handlerLoader) {
