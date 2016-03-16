@@ -64,8 +64,9 @@ public class ConstantsUtils {
 	public final static Integer ORDER_TIME_s= 30;
 /********************************************************/
 
-
-
+   /***********************赊账状态****************************/
+   public final static Integer CREDIT_STATUS = 0;  //代表未销账
+	/**********************************************************/
 	/**************************验证码/邀请码类型**************************/
 	/**注册**/
 	public final static Integer INVITE_VERIFY_CODE_TYPE_REGISTER = 1;
