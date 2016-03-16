@@ -140,7 +140,7 @@ public class InputValidInterceptor implements Interceptor {
                         case regex:// 正则表达式校验
                             validateRegex(value, validateType.getRegVal(), validateType, key, result);
                             break;
-                        default:// 其他正则校验(数字校验,时间校验,邮箱校验,手机号校验,url校验,ip地址校验,国内邮编校验,正则表达式校验)
+                        default:// 其他正则校验(数字校验,时间校验,邮箱校验,手机号校验,url校验,ip地址校验,国内邮编校验)
                             validateRegex(value, validateType.getRegexs(), validateType, key, result);
                             break;
                     }
