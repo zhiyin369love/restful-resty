@@ -204,5 +204,18 @@ public class ConstantsUtils {
 	public final static Integer HTTP_STATUS_OK_201 = 201;
 	/**********************************************************/
 
+   /**************************统一校验用**************************/
+	/** 请求唯一标识 **/
+	public static final String TOKEN = "token";
 
+	/** PARAM_ARRAY 暂不详 **/
+	public static final String[] PARAM_ARRAY = { TOKEN };
+
+
+	/** 系统returnCode编码 **/
+	public interface RETURN_CODE {
+		String IS_OK = "0";// 正常
+		String SYSTEM_ERROR = "-9999";// 错误
+	}
+	/**********************************************************/
 }
