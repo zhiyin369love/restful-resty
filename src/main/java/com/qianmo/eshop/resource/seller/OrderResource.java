@@ -79,7 +79,7 @@ public class OrderResource extends SellerResource {
      * @return
      */
     @PUT("/:id")
-    public WebResult opOrder(Integer id, int op, String remark){
+    public Map opOrder(Integer id, int op, String remark){
 
             if (op == ConstantsUtils.SELLER_ORDER_OP_PAY_TYPE){
                 //收到货款
@@ -105,9 +105,14 @@ public class OrderResource extends SellerResource {
                 //当卖家不同意买家赊账时订单取消 op==5时
                 order_info.dao.update("update order_info set status = ? where id = ? ",ConstantsUtils.ORDER_INFO_STATUS_CANCEL,id);    //注：除了要删除订单主表之外，可能还要删除其他关联表，“待开发”
             }
-            return new WebResult(HttpStatus.OK, "操作订单成功");
+        return setResult("操作订单成功");
     }
-
+    private Map setResult(String message) {
+        Map resultMap = new HashMap();
+        resultMap.put("code",ConstantsUtils.HTTP_STATUS_OK_200);
+        resultMap.put("message",message);
+        return resultMap;
+    }
 
     /**
      * 获取订单列表
