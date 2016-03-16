@@ -5,8 +5,17 @@ getFieldActivityAll:
   where a.fieldid = ?
 
 getFieldCreditOrderAll:
-  select c.id,c.area_id,c.order_num,c.status,c.buyer_id,c.seller_id,c.created_at,c.updated_at,deleted_at from credit c
-   where  c.buyer_id = ?
+   select
+    a.created_at,
+  	a.id,
+  	a.num,
+  	a.status,
+  	a.pay_status,
+    a.pay_type_id,
+  	a.total_price,
+    c.id,
+    c.nickname
+    from order_info a ,user_info c  where a.num = ? and c.id = ?;
 getFirldCreditAll:
     select c.id,c.status from credit c where c.buyer_id = ?
 getFieldBuyerInfoAll:
