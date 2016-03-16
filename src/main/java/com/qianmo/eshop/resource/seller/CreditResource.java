@@ -7,6 +7,7 @@ import cn.dreampie.orm.page.Page;
 import cn.dreampie.route.annotation.API;
 import cn.dreampie.route.annotation.GET;
 import cn.dreampie.route.annotation.PUT;
+import com.alibaba.druid.util.StringUtils;
 import com.qianmo.eshop.common.ConstantsUtils;
 import com.qianmo.eshop.common.SessionUtil;
 import com.qianmo.eshop.common.YamlRead;
@@ -45,6 +46,9 @@ public class CreditResource extends SellerResource {
     @GET
     public HashMap getCredit(Integer page_start, Integer page_step, int show_type, Integer status) {
         System.out.print("进来");
+        if (StringUtils.isEmpty(String.valueOf(status))){
+            status = ConstantsUtils.CREDIT_STATUS;
+        }
         long seller_id = SessionUtil.getUserId();
         //long buyer_id = SessionUtil.getUserId();
         HashMap all = new HashMap();
@@ -90,15 +94,15 @@ public class CreditResource extends SellerResource {
                 //订单买家汇总赊账金额
               //  order_info order_info_list = new order_info();
              //   order_info order_info_count = new order_info();
-                order_info credit_order_id = order_info.dao.findFirst(total_price_count, buyer_id_list, seller_id);
-                order_info credit_order_count = order_info.dao.findFirst(total_order_count, buyer_id_list, seller_id);
+                order_info credit_order_id = order_info.dao.findFirst(total_price_count,status,buyer_id_list, seller_id);
+                order_info credit_order_count = order_info.dao.findFirst(total_order_count,status,buyer_id_list, seller_id);
 
                 String sqlcre = YamlRead.getSQL("getFirldCreditAll", "seller/credit");
                 credit order_name_list_credit = credit.dao.findFirst(sqlcre, seller_id);
                 result_buyer_credit.put("total_order_count", credit_order_count.get("num"));
                 result_buyer_credit.put("total_price", credit_order_id.get("total_price"));
                 result_buyer_credit.put("buyer_info", resultMapBuyer);
-                result_buyer_credit.put("credit_id", order_name_list_credit.get("id"));
+               // result_buyer_credit.put("credit_id", order_name_list_credit.get("id"));
 
                 result_buyer_credit.put("status", order_name_list_credit.get("status"));
                 creditsList.add(result_buyer_credit);
@@ -143,11 +147,11 @@ public class CreditResource extends SellerResource {
                     long orderId = orderInfoId.get("id");
                     OrderResource resource = new OrderResource();
                     List<HashMap> resultMapGood = resource.getOrderHashMaps(orderId);
-                    result_goods_order.put("goods_list", resultMapGood);                             //1
+                    result_goods_order.put("goods_list", resultMapGood);                         //1
                     //买家信息实体
                     String sql_buyer_info = YamlRead.getSQL("getFieldBuyerInfoAll", "seller/order");
                     String sql_buyer_receive = YamlRead.getSQL("getFieldBuyerReceiveAll", "seller/order");
-                    order_user o = order_user.dao.findFirst("select distinct c.buyer_id from credit c where c.seller_id = ?", seller_id);
+                    order_user o = order_user.dao.findFirst("select distinct c.buyer_id from credit c where c.seller_id = ? and c.order_num = ?", seller_id,credit_id_list);
                     long buyer_id = o.get("buyer_id");
                     result_buyer_info.put("buyer_id",buyer_id);
                     user_info buyer_name = user_info.dao.findFirst("select nickname from user_info where id = ? ",buyer_id);
@@ -156,7 +160,8 @@ public class CreditResource extends SellerResource {
                     result_goods_order.put("buyer_info", result_buyer_info);                        //2
                     //订单实体
                     String sqlOrderInfo = YamlRead.getSQL("getFieldOrderInfoAll", "seller/order");
-                    result_goods_order.put("order_info", order_info.dao.find(sqlOrderInfo, seller_id));   //3
+                    result_goods_order.put("order_info", order_info.dao.find(sqlOrderInfo,credit_id_list,seller_id));   //3
+
                     //订单备注
                     String sqlOrderRemark = YamlRead.getSQL("getFirldOrderRemarkAll", "seller/order");
                     result_goods_order.put("order_remark_list", order_remark.dao.find(sqlOrderRemark, seller_id));  //4

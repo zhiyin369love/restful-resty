@@ -1,13 +1,10 @@
 package com.qianmo.eshop.resource.seller;
 
-import cn.dreampie.common.http.result.HttpStatus;
-import cn.dreampie.common.http.result.WebResult;
 import cn.dreampie.orm.page.Page;
 import cn.dreampie.route.annotation.API;
 import cn.dreampie.route.annotation.GET;
 import cn.dreampie.route.annotation.PUT;
 import com.alibaba.druid.util.StringUtils;
-import com.alibaba.fastjson.JSONObject;
 import com.qianmo.eshop.common.ConstantsUtils;
 import com.qianmo.eshop.common.DateUtils;
 import com.qianmo.eshop.common.SessionUtil;
@@ -17,12 +14,9 @@ import com.qianmo.eshop.model.credit.credit;
 import com.qianmo.eshop.model.goods.goods_info;
 import com.qianmo.eshop.model.goods.goods_sku;
 import com.qianmo.eshop.model.goods.goods_category;
-import com.qianmo.eshop.model.order.order_goods;
 import com.qianmo.eshop.model.order.order_info;
 import com.qianmo.eshop.model.order.order_remark;
 import com.qianmo.eshop.model.order.order_user;
-import com.qianmo.eshop.resource.z_common.ApiResource;
-import org.apache.poi.ss.formula.functions.T;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
@@ -79,7 +73,7 @@ public class OrderResource extends SellerResource {
      * @return
      */
     @PUT("/:id")
-    public WebResult opOrder(Integer id, int op, String remark){
+    public Map opOrder(Integer id, int op, String remark){
 
             if (op == ConstantsUtils.SELLER_ORDER_OP_PAY_TYPE){
                 //收到货款
@@ -105,9 +99,14 @@ public class OrderResource extends SellerResource {
                 //当卖家不同意买家赊账时订单取消 op==5时
                 order_info.dao.update("update order_info set status = ? where id = ? ",ConstantsUtils.ORDER_INFO_STATUS_CANCEL,id);    //注：除了要删除订单主表之外，可能还要删除其他关联表，“待开发”
             }
-            return new WebResult(HttpStatus.OK, "操作订单成功");
+        return setResult("操作订单成功");
     }
-
+    private Map setResult(String message) {
+        Map resultMap = new HashMap();
+        resultMap.put("code",ConstantsUtils.HTTP_STATUS_OK_200);
+        resultMap.put("message",message);
+        return resultMap;
+    }
 
     /**
      * 获取订单列表

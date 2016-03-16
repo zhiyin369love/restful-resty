@@ -115,7 +115,7 @@ public class OrderResource extends BuyerResource {
      */
     @PUT
     @Transaction
-    public WebResult opOrder(Integer bank_id,long order_num,int op,String value, List<JSONObject> goods){
+    public Map opOrder(Integer bank_id,long order_num,int op,String value, List<JSONObject> goods){
             long buyer_id = SessionUtil.getUserId();
             switch (op){
                 case ConstantsUtils.ORDER_OP_PAY_TYPE:
@@ -150,7 +150,13 @@ public class OrderResource extends BuyerResource {
                     break;
 
             }
-            return new WebResult(HttpStatus.OK, "操作订单成功");
+            return setResult("操作订单成功");
+    }
+    private Map setResult(String message) {
+        Map resultMap = new HashMap();
+        resultMap.put("code",ConstantsUtils.HTTP_STATUS_OK_200);
+        resultMap.put("message",message);
+        return resultMap;
     }
 
     /**

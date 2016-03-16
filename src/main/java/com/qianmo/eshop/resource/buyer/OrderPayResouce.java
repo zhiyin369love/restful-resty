@@ -17,11 +17,16 @@ import java.util.Map;
 
 /**
  * 支付方式和支付银行
- * author:wss
- *  传入参数： id：支付方式id  、seller_id ：卖家id
+ * @author wss
  */
 @API("/pay/order")
 public class OrderPayResouce extends BuyerResource {
+    /**
+     *
+     * @param id
+     * @param seller_id
+     * @return
+     */
     @GET
     public List<HashMap> getList(Long id,Long seller_id){
        //long seller_id = SessionUtil.getUserId();
@@ -46,15 +51,13 @@ public class OrderPayResouce extends BuyerResource {
             if(sellPayList != null && sellPayList.size() >0) {
                 for(seller_pay sellPay : sellPayList) {
                     sellPayMap.clear();
+                    sellPayMap.put("details",sellPay.get("details"));
+                    sellPayMap.put("pay_id",sellPay.get("pay_id"));
+                    sellPayMap.put("pay_name",sellPay.get("pay_name"));
                     //如果是在线支付，那么需要查找银行列表
                     if(ConstantsUtils.PAY_TYPE_NAME_OFFLINE.equals(sellPay.get("pay_name"))) {
                         List<seller_bank> sellerBankList =  seller_bank.dao.find(getPayBankList,seller_id);
                         sellPayMap.put("pay_bank_list",sellerBankList);
-                        sellPayMap.put("details",sellPay.get("details"));
-                        sellPayMap.put("pay_id",sellPay.get("pay_id"));
-                        sellPayMap.put("pay_name",sellPay.get("pay_name"));
-                        sellPayMap.put("seller_id",sellPay.get("seller_id"));
-                        sellPayMap.put("status",sellPay.get("status"));
                         resultMapList.add(sellPayMap);
                     }
                 }
