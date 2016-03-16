@@ -26,13 +26,15 @@ import java.util.List;
 /**
  * 获取赊账信息
  * @author :wss
- * @param :page_start:  第几条开始
- * @param :page_step:   返回多少条
  */
 
 @API("/credit")
 public class CreditResource extends BuyerResource {
-
+    /**
+     * @param page_start  第几条开始
+     * @param page_step 返回多少条
+     * @return
+     */
     @GET
     public HashMap getCredit(Integer page_start,Integer page_step) {
             long buyer_id = SessionUtil.getUserId();
@@ -86,7 +88,7 @@ public class CreditResource extends BuyerResource {
                 //一个买家对应对个订单实体
                 result.put("buyer_info",result_buyer);
                 result.put("goods_list",resultMapGood);
-                result.put("order_info", order_info.dao.find(sqlCredit,buyer_id));
+                result.put("order_info", order_info.dao.find(sqlCredit,credit_id_list,buyer_id));
                 result.put("order_remark_list", order_remark.dao.find(sqlOrderRemark,buyer_id));
                 result_goods.put("order",result);
                 //赊账实体表
