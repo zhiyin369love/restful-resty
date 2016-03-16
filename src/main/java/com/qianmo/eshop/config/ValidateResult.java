@@ -5,8 +5,8 @@ package com.qianmo.eshop.config;
  * 校验通用结果
  */
 public class ValidateResult {
-	private String returnCode;// key值同OutputObject的returnCode
-	private String returnMessage;// key值同OutputObject的returnMessage
+	private String code;// key值同OutputObject的returnCode
+	private String message;// key值同OutputObject的returnMessage
 
 	public interface ERROR_MSG {
 		String REQUIRED = "是必填的";
@@ -35,34 +35,34 @@ public class ValidateResult {
 	 * Constructor
 	 **/
 	public ValidateResult(String returnCode, String returnMessage) {
-		this.setReturnCode(returnCode);
-		this.setReturnMessage(returnMessage);
+		this.setCode(returnCode);
+		this.setMessage(returnMessage);
 	}
 
 	/**
 	 * Getters And Setters
 	 **/
-	public String getReturnCode() {
-		return returnCode;
+	public String getCode() {
+		return code;
 	}
 
-	public void setReturnCode(String returnCode) {
-		this.returnCode = returnCode;
+	public void setCode(String code) {
+		this.code = code;
 	}
 
-	public String getReturnMessage() {
-		return returnMessage;
+	public String getMessage() {
+		return message;
 	}
 
-	public void setReturnMessage(String returnMessage) {
-		this.returnMessage = returnMessage;
+	public void setMessage(String message) {
+		this.message = message;
 	}
 
-	public String toString() {
-		return "returnCode:" + returnCode + "\treturnMessage:" + returnMessage;
+	/*public String toString() {
+		return "code:" + code + "\tmessage:" + message;
 	}
 
 	public String toJson() {
-		return "{\"returnCode\":\"" + returnCode + "\",\"returnMessage\":\"" + returnMessage + "\"}";
-	}
+		return "{\"code\":\"" + code + "\",\"message\":\"" + message + "\"}";
+	}*/
 }

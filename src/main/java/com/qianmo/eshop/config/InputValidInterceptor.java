@@ -45,10 +45,10 @@ public class InputValidInterceptor implements Interceptor {
             } else {
                 try {
                     result = checkParams(ValidateRule.values(), params);
-                    if (!RETURN_CODE.IS_OK.equals(result.getReturnCode())) {
+                    if (!RETURN_CODE.IS_OK.equals(result.getCode())) {
                         ri.getRouteMatch().getResponse().setStatus(HttpStatus.OK);
-                        ri.getRouteMatch().getResponse().getWriter().print(result.getReturnMessage());
-                        //throw new InterceptorException(result.getReturnMessage());
+                        ri.render(result);
+                        //throw new InterceptorException(result.getMessage());
                     } else {
                         ri.invoke();
                     }
@@ -133,7 +133,7 @@ public class InputValidInterceptor implements Interceptor {
                         case idcard:// 证件号校验
                             // 校验规则：15位通过 || 18位通过
                             validateRegex(value, ValidateType.REGEX.IDCARD_15, validateType, key, result);
-                            if (!RETURN_CODE.IS_OK.equals(result.getReturnCode())) {
+                            if (!RETURN_CODE.IS_OK.equals(result.getCode())) {
                                 validateRegex(value, ValidateType.REGEX.IDCARD_18, validateType, key, result);
                             }
                             break;
@@ -144,7 +144,7 @@ public class InputValidInterceptor implements Interceptor {
                             validateRegex(value, validateType.getRegexs(), validateType, key, result);
                             break;
                     }
-                    if (!RETURN_CODE.IS_OK.equals(result.getReturnCode())) {// 校验失败，返回
+                    if (!RETURN_CODE.IS_OK.equals(result.getCode())) {// 校验失败，返回
                         return result;
                     }
                 } catch (Exception e) {
@@ -222,8 +222,8 @@ public class InputValidInterceptor implements Interceptor {
     private static void isRequired(String value, ValidateType validateType,
                                    String key, ValidateResult result) {
         if (value == null || "".equals(value.trim())) {// 校验失败,封装返回结果
-            result.setReturnCode(RETURN_CODE.SYSTEM_ERROR);
-            result.setReturnMessage(getText(validateType.getErrMsg(), key));
+            result.setCode(RETURN_CODE.SYSTEM_ERROR);
+            result.setMessage(getText(validateType.getErrMsg(), key));
         }
     }
 
@@ -236,8 +236,8 @@ public class InputValidInterceptor implements Interceptor {
             long length = Long.parseLong(regVal);
 
             if ((value.length() != length)) {
-                result.setReturnCode(RETURN_CODE.SYSTEM_ERROR);
-                result.setReturnMessage(getText(validateType.getErrMsg(), key, String.valueOf(length)));
+                result.setCode(RETURN_CODE.SYSTEM_ERROR);
+                result.setMessage(getText(validateType.getErrMsg(), key, String.valueOf(length)));
             }
         } catch (Exception e) {
             System.err.println(getText(WARNING_MSG.VALIDATE_LENGTH, e.getMessage()));
@@ -253,8 +253,8 @@ public class InputValidInterceptor implements Interceptor {
             long length = Long.parseLong(regVal);
 
             if ((value.length() > length)) {
-                result.setReturnCode(RETURN_CODE.SYSTEM_ERROR);
-                result.setReturnMessage(getText(validateType.getErrMsg(), key, String.valueOf(length)));
+                result.setCode(RETURN_CODE.SYSTEM_ERROR);
+                result.setMessage(getText(validateType.getErrMsg(), key, String.valueOf(length)));
             }
         } catch (Exception e) {
             System.err.println("VALIDATE MAX LENGTH ERROR ! THE ERROR IS " + e.getMessage() + "!");
@@ -269,8 +269,8 @@ public class InputValidInterceptor implements Interceptor {
         try {
             long length = Long.parseLong(regVal);
             if ((value.length() < length)) {
-                result.setReturnCode(RETURN_CODE.SYSTEM_ERROR);
-                result.setReturnMessage(getText(validateType.getErrMsg(), key, String.valueOf(length)));
+                result.setCode(RETURN_CODE.SYSTEM_ERROR);
+                result.setMessage(getText(validateType.getErrMsg(), key, String.valueOf(length)));
             }
         } catch (Exception e) {
             System.err.println("VALIDATE MIN ERROR ! THE ERROR IS " + e.getMessage() + "!");
@@ -324,8 +324,8 @@ public class InputValidInterceptor implements Interceptor {
         }
 
         if (!validateFlag) {// 校验失败,封装返回结果
-            result.setReturnCode(RETURN_CODE.SYSTEM_ERROR);
-            result.setReturnMessage(getText(validateType.getErrMsg(), key, scope));
+            result.setCode(RETURN_CODE.SYSTEM_ERROR);
+            result.setMessage(getText(validateType.getErrMsg(), key, scope));
         }
     }
 
@@ -344,8 +344,8 @@ public class InputValidInterceptor implements Interceptor {
             return;
         }
         if (!matchRegex(value, regex)) {// 校验失败,封装返回结果
-            result.setReturnCode(RETURN_CODE.SYSTEM_ERROR);
-            result.setReturnMessage(getText(validateType.getErrMsg(), key));
+            result.setCode(RETURN_CODE.SYSTEM_ERROR);
+            result.setMessage(getText(validateType.getErrMsg(), key));
         }
     }
 

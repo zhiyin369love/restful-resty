@@ -214,7 +214,7 @@ public class ConstantsUtils {
 
 	/** 系统returnCode编码 **/
 	public interface RETURN_CODE {
-		String IS_OK = "0";// 正常
+		String IS_OK = "200";// 正常
 		String SYSTEM_ERROR = "-9999";// 错误
 	}
 	/**********************************************************/
