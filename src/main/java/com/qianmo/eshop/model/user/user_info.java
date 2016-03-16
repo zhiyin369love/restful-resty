@@ -173,8 +173,9 @@ public class user_info extends Model<user_info> {
         return randCode;
     }
 
-    public HashMap edit(long id,user_info model){
-        HashMap result = new HashMap();
+    public HashMap edit(user_info model){
+        HashMap result;
+        Long id = SessionUtil.getUserId();
         user_info UserInfo = user_info.dao.findById(id);
         result = CommonUtils.EditreturnCodeMessage(false);
         if(UserInfo != null){

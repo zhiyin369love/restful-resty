@@ -22,9 +22,9 @@ public class SellerResource extends ApiResource {
         return user_info.dao.getUserInfo();
     }
 
-    @PUT("/:id")
-    public HashMap edit(long id, user_info user_info) {
-        HashMap result = user_info.dao.edit(id, user_info);
+    @PUT
+    public HashMap edit(user_info user) {
+        HashMap result = user_info.dao.edit(user);
         return result;
     }
 }

@@ -4,6 +4,7 @@ import cn.dreampie.orm.transaction.Transaction;
 import cn.dreampie.route.annotation.*;
 import com.qianmo.eshop.common.CommonUtils;
 import com.qianmo.eshop.common.SessionUtil;
+import com.qianmo.eshop.model.buyer.buyer_receive_address;
 import com.qianmo.eshop.model.buyer.buyer_seller;
 import com.qianmo.eshop.model.user.user_info;
 import com.qianmo.eshop.resource.z_common.ApiResource;
@@ -26,6 +27,7 @@ public class BuyerResource extends ApiResource {
     public user_info getUserInfo() {
         return user_info.dao.getUserInfo();
     }
+
 
     /**
      * 买家修改个人信息,买家完善个人信息
@@ -55,6 +57,8 @@ public class BuyerResource extends ApiResource {
             //判断是否修改成功
             if (isBind) {
                 if (user.update()) {
+                    //第一次完善信息会同步写入收货地址信息
+                    buyer_receive_address.dao.toModel(user).save();
                     //result写入修改成功信息
                     result = CommonUtils.EditreturnCodeMessage(true);
                 }
