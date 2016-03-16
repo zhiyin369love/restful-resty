@@ -30,14 +30,43 @@ public class BuyerResource extends ApiResource {
 
 
     /**
-     * 买家修改个人信息,买家完善个人信息
+     * 买家修改个人信息
      *
      * @param user 待编辑的买家信息
      * @return
      */
+    @PUT("/update")
+    @Transaction
+    public Map edit(user_info user) {
+        Map result;
+        long id;
+        id = SessionUtil.getUserId();
+        user_info userInfo = user_info.dao.findById(id);
+        //result 用来保存返回结果 code,message
+        result = CommonUtils.EditreturnCodeMessage(false);
+        //判断修改的用户信息是否属于当前登录用户
+        if (userInfo != null) {
+            user.set("id", id);
+            //判断是否修改成功
+            if (user.update()) {
+                //result写入修改成功信息
+                result = CommonUtils.EditreturnCodeMessage(true);
+            }
+        }
+        return result;
+    }
+
+
+    /**
+     * 买家完善个人信息
+     *
+     * @param user 待编辑的买家信息
+     * @param bind_code 绑定码
+     * @return
+     */
     @PUT
     @Transaction
-    public Map edit(user_info user, int bind_code) {
+    public Map editBindCode(user_info user, int bind_code) {
         Map result;
         long id;
         id = SessionUtil.getUserId();
@@ -48,6 +77,7 @@ public class BuyerResource extends ApiResource {
         if (userInfo != null) {
             boolean isBind = true;
             user.set("id", id);
+            user.set("phone", userInfo.get("username"));
             if (!CommonUtils.isEmpty(bind_code)) {
                 //判断此次是否填写绑定码,若是则调用绑定方法
                 if (!buyer_seller.dao.bindSeller(bind_code, id)) {
@@ -67,6 +97,5 @@ public class BuyerResource extends ApiResource {
         }
         return result;
     }
-
 
 }
