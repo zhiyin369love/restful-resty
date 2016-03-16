@@ -4,7 +4,7 @@ package com.qianmo.eshop.config;
  * Created by zhangyang on 2016/3/16 0016.
  */
 public enum ValidateRule {
-    userId("num,maxlength=18,minlength=1");
+    userId("required,num,maxlength=18,minlength=1");
 
     private String checkRegx;
 

@@ -2,6 +2,7 @@ package com.qianmo.eshop.config;
 
 
 import cn.dreampie.common.http.exception.WebException;
+import cn.dreampie.common.http.result.HttpStatus;
 import cn.dreampie.route.core.Params;
 import cn.dreampie.route.core.RouteInvocation;
 import cn.dreampie.route.interceptor.Interceptor;
@@ -45,7 +46,9 @@ public class InputValidInterceptor implements Interceptor {
                 try {
                     result = checkParams(ValidateRule.values(), params);
                     if (!RETURN_CODE.IS_OK.equals(result.getReturnCode())) {
-                        throw new InterceptorException(result.getReturnMessage());
+                        ri.getRouteMatch().getResponse().setStatus(HttpStatus.OK);
+                        ri.getRouteMatch().getResponse().getWriter().print(result.getReturnMessage());
+                        //throw new InterceptorException(result.getReturnMessage());
                     } else {
                         ri.invoke();
                     }
