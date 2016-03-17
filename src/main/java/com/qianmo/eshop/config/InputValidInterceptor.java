@@ -1,7 +1,6 @@
 package com.qianmo.eshop.config;
 
 
-
 import cn.dreampie.log.Logger;
 import cn.dreampie.route.core.Params;
 import cn.dreampie.route.core.RouteInvocation;
@@ -19,6 +18,7 @@ import java.util.regex.Pattern;
  */
 public class InputValidInterceptor implements Interceptor {
     private static final Logger logger = Logger.getLogger(InputValidInterceptor.class);
+
     /**
      * 对输入参数进行拦截
      *
@@ -40,29 +40,20 @@ public class InputValidInterceptor implements Interceptor {
             } else {
                 try {
                     result = checkParams(ValidateRule.values(), params);
-                    if (!RETURN_CODE.IS_OK.equals(result.getCode())) {
-                        //ri.getRouteMatch().getResponse().setStatus(HttpStatus.OK);
-                        result.setCode(RETURN_CODE.IS_OK);
-                        ri.render(result);
-                        //throw new InterceptorException(result.getMessage());
-                    } else {
-                        ri.invoke();
-                    }
                 } catch (Throwable t) {
                     logger.error(t.getCause().getMessage());
                     //如果统一验证有异常，那么需要继续调用方法
                     ri.invoke();
-                   /* Throwable cause = t.getCause();
-
-                    if (cause == null) {
-                        cause = t;
-                    }
-                    if (cause instanceof WebException) {
-                        throw (WebException) cause;
-                    } else {
-                        throw new InterceptorException(cause.getMessage(), cause);
-                    }*/
                 }
+                if (!RETURN_CODE.IS_OK.equals(result.getCode())) {
+                    //ri.getRouteMatch().getResponse().setStatus(HttpStatus.OK);
+                    result.setCode(RETURN_CODE.IS_OK);
+                    ri.render(result);
+                    //throw new InterceptorException(result.getMessage());
+                } else {
+                    ri.invoke();
+                }
+
             }
         }
     }
@@ -90,7 +81,7 @@ public class InputValidInterceptor implements Interceptor {
             Object value = params.get(key);
             if (value instanceof Map) {
                 //框架在前期会把参数拼接好，map是<String,Object>结构的
-                if(value != null) {
+                if (value != null) {
                     Map input = (Map) value;
                     Set<String> keySets = input.keySet();
                     //三层循环，如果是JSONObject，那么外层循环次数会非常少，三层循环也不会有大问题
@@ -110,26 +101,26 @@ public class InputValidInterceptor implements Interceptor {
                 }
             } else if (value instanceof List) {
                 List<Object> valueList = (List<Object>) value;
-                if(valueList != null && valueList.size() >0) {
-                   for(int i = 0; i < valueList.size(); i++) {
-                       Map input = (Map) valueList.get(i);
-                       Set<String> keySets = input.keySet();
-                       //可以跟jsonObject合并，但实际上重复代码也就几行，
-                       //三层循环，如果是list<Object>，那么外层循环次数会非常少，三层循环也不会有大问题
-                       for (String keyTemp : keySets) {
-                           for (ValidateRule rule : sources) {
-                               if (keyTemp.equals(rule.name())) {
-                                   regexs = rule.getCheckRegx();//获取参数对应的校验规则，如果不存在校验规则，则不去校验
-                                   break;
-                               }
-                           }
-                           ValidateResult validateResult = getValidateResult(regexs, value, result, key);
-                           //如果有校验失败，直接跳出循环
-                           if (validateResult != null && validateResult.getCode() == RETURN_CODE.SYSTEM_ERROR) {
-                               return validateResult;
-                           }
-                       }
-                   }
+                if (valueList != null && valueList.size() > 0) {
+                    for (int i = 0; i < valueList.size(); i++) {
+                        Map input = (Map) valueList.get(i);
+                        Set<String> keySets = input.keySet();
+                        //可以跟jsonObject合并，但实际上重复代码也就几行，
+                        //三层循环，如果是list<Object>，那么外层循环次数会非常少，三层循环也不会有大问题
+                        for (String keyTemp : keySets) {
+                            for (ValidateRule rule : sources) {
+                                if (keyTemp.equals(rule.name())) {
+                                    regexs = rule.getCheckRegx();//获取参数对应的校验规则，如果不存在校验规则，则不去校验
+                                    break;
+                                }
+                            }
+                            ValidateResult validateResult = getValidateResult(regexs, value, result, key);
+                            //如果有校验失败，直接跳出循环
+                            if (validateResult != null && validateResult.getCode() == RETURN_CODE.SYSTEM_ERROR) {
+                                return validateResult;
+                            }
+                        }
+                    }
                 }
             } else {
                 for (ValidateRule rule : sources) {

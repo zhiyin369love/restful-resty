@@ -1,37 +1,36 @@
 getFieldActivityAll:
   select a.id,a.fieldid,a.activitytypeid,a.input,a.inputQuantity,a.intro,a.created_at,b.name activitytype
-  from activity_info a
-  left outer join activity_type b on a.activitytypeid = b.id
+   from activity_info a
+   left outer join activity_type b on a.activitytypeid = b.id
   where a.fieldid = ?
 
 getFieldBuyerInfoAll:
-     select distinct c.buyer_id from credit c where c.seller_id = ?
+   select distinct c.buyer_id from credit c where c.seller_id = ?
 getFirldOrderUserCreditAll:
-  select id,area_id,order_num,buyer_id,seller_id,created_at,updated_at,deleted_at from order_user where buyer_id = ?
+   select id,area_id,order_num,buyer_id,seller_id,created_at,updated_at,deleted_at from order_user where buyer_id = ?
 
 getFirldSellerCreditAll:
-    select c.id,c.area_id,c.order_num,c.status,c.buyer_id,c.seller_id,c.created_at,c.updated_at,deleted_at from credit c
-       where  c.seller_id = ?
+   select c.id,c.area_id,c.order_num,c.status,c.buyer_id,c.seller_id,c.created_at,c.updated_at,deleted_at from credit c  where  c.seller_id = ?
 
 getFirldCountOrderUserAll:
-     select count(c.order_num) as num from credit c where c.status = ? and c.buyer_id = ? and c.seller_id = ?
+   select count(c.order_num) as num from credit c where c.status = ? and c.buyer_id = ? and c.seller_id = ?
 getFirldCountPriceOrderInfoAll:
    select SUM(a.total_price) as total_price  from order_info  a where  a.num in (select c.order_num from credit c where c.status = ? and c.buyer_id = ? and c.seller_id = ?)
 getFieldOrderInfoAll:
    select
     a.created_at,
-   	a.id,
-   	a.num,
-   	a.status,
-   	a.pay_status,
+    a.id,
+    a.num,
+    a.status,
+    a.pay_status,
     a.pay_type_id,
-   	a.total_price,
+    a.total_price,
     c.id,
     c.nickname
     from order_info a,user_info c  where a.num = ? and c.id = ?;
 
 getFirldCreditAll:
-    select c.id,c.status from credit c where c.seller_id = ?
+  select c.id,c.status from credit c where c.seller_id = ?
 getFieldUserInfoAll:
    select name from user_info where id = ?
 getFirldOrderRemarkAll:
