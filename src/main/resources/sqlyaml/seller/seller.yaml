@@ -72,7 +72,9 @@ getMyRetailer:
              a.username phone,
              a.remark,
              a.id user_id,
-             NULL invite_code
+             NULL invite_code,
+             NULL notexpire,
+             b.status  is_cooperation
       FROM
              user_info a  LEFT JOIN
              buyer_seller b
@@ -88,7 +90,9 @@ getMyRetailer:
              d.phone phone,
              d.remark,
              NULL user_id,
-             d.code invite_code
+             d.code invite_code,
+             IF(SYSDATE() < d.expire_time, 1,0)  notexpire,
+             null is_cooperation
      FROM
              invite_verify_code d
      WHERE

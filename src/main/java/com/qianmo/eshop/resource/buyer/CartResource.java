@@ -4,6 +4,7 @@ package com.qianmo.eshop.resource.buyer;
 import cn.dreampie.orm.transaction.Transaction;
 import cn.dreampie.route.annotation.*;
 import com.alibaba.fastjson.JSONObject;
+import com.qianmo.eshop.common.CommonUtils;
 import com.qianmo.eshop.common.ConstantsUtils;
 import com.qianmo.eshop.common.SessionUtil;
 import com.qianmo.eshop.model.cart.cart;
@@ -41,9 +42,9 @@ public class CartResource extends BuyerResource {
         // try {
         if (buyer_id != 0 && goods_id != 0 && goods_sku_id != 0) {
             cart.dao.deleteBy("buyer_id = ?  and goods_num = ? and goods_sku_id = ?", buyer_id, goods_id, goods_sku_id);
-            return setResult("删除购物车商品成功");
+            return CommonUtils.getCodeMessage(true,"删除购物车商品成功");
         } else {
-            return setResult("输入参数有误");
+            return CommonUtils.getCodeMessage(false,"输入参数有误");
         }
    /* } catch (Exception e) {
       return new WebResult(HttpStatus.BAD_REQUEST, "删除购物车商品失败");
@@ -88,7 +89,7 @@ public class CartResource extends BuyerResource {
             cart.dao.save(carts);
             return setResult("添加商品到购物车成功");
         } else {
-            return setResult("输入参数有误");
+            return CommonUtils.getCodeMessage(false,"输入参数有误");
         }
 /*    } catch (Exception e) {
       return new WebResult(HttpStatus.EXPECTATION_FAILED, "添加商品到购物车失败");
@@ -109,7 +110,7 @@ public class CartResource extends BuyerResource {
             cart.dao.update("update cart set goods_sku_count = ?  where id = ? and buyer_id = ?", count, cart_id, buyer_id);
             return setResult("编辑购物车成功");
         } else {
-            return setResult("输入参数有误");
+            return CommonUtils.getCodeMessage(false,"输入参数有误");
         }
     /*} catch (Exception e) {
       return new WebResult(HttpStatus.EXPECTATION_FAILED, "编辑购物车失败");
