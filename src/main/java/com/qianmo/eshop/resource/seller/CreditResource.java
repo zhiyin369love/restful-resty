@@ -1,8 +1,4 @@
 package com.qianmo.eshop.resource.seller;
-
-import cn.dreampie.common.http.result.HttpStatus;
-import cn.dreampie.common.http.result.WebResult;
-import cn.dreampie.orm.page.FullPage;
 import cn.dreampie.orm.page.Page;
 import cn.dreampie.route.annotation.API;
 import cn.dreampie.route.annotation.GET;
@@ -12,23 +8,18 @@ import com.qianmo.eshop.common.ConstantsUtils;
 import com.qianmo.eshop.common.SessionUtil;
 import com.qianmo.eshop.common.YamlRead;
 import com.qianmo.eshop.model.buyer.buyer_receive_address;
-import com.qianmo.eshop.model.cart.cart;
-import com.qianmo.eshop.model.goods.goods_info;
-import com.qianmo.eshop.model.goods.goods_sku;
-import com.qianmo.eshop.model.goods.goods_category;
 import com.qianmo.eshop.model.order.order_info;
 import com.qianmo.eshop.model.order.order_remark;
 import com.qianmo.eshop.model.order.order_user;
 import com.qianmo.eshop.model.credit.credit;
-import com.qianmo.eshop.model.user.invite_verify_code;
 import com.qianmo.eshop.model.user.user_info;
-import com.qianmo.eshop.resource.buyer.*;
-import com.qianmo.eshop.resource.z_common.ApiResource;
-import com.qianmo.eshop.resource.seller.OrderResource;
+
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 /**
  * 赊账 和 销账
  * @author wss
@@ -71,12 +62,11 @@ public class CreditResource extends SellerResource {
             Page<credit> creditFullPagelist = null;
             if (status != null) {
                 sqlbuyer_info = sqlbuyer_info + "and c.status = ?";
-               // order_users_list = credit.dao.find(sqlbuyer_info, seller_id, status);
                 creditFullPagelist = credit.dao.paginate(pageNumber,page_step,sqlbuyer_info,seller_id,status);
             } else {
                 creditFullPagelist = credit.dao.paginate(pageNumber, page_step, sqlbuyer_info, seller_id); //获取一个卖家对应的所有买家
             }
-                // if (creditFullPagelist != null)
+
             for (credit credit_list : creditFullPagelist.getList()) {
                 long buyer_id_list = credit_list.get("buyer_id");
                 String users_buyer_name = YamlRead.getSQL("getFieldUserInfoAll", "seller/credit");
@@ -92,8 +82,6 @@ public class CreditResource extends SellerResource {
                 String total_order_count = YamlRead.getSQL("getFirldCountOrderUserAll", "seller/credit");
                 String total_price_count = YamlRead.getSQL("getFirldCountPriceOrderInfoAll", "seller/credit");
                 //订单买家汇总赊账金额
-              //  order_info order_info_list = new order_info();
-             //   order_info order_info_count = new order_info();
                 order_info credit_order_id = order_info.dao.findFirst(total_price_count,status,buyer_id_list, seller_id);
                 order_info credit_order_count = order_info.dao.findFirst(total_order_count,status,buyer_id_list, seller_id);
 
@@ -159,7 +147,7 @@ public class CreditResource extends SellerResource {
                     result_buyer_info.put("buyer_receive", buyer_receive_address.dao.find(sql_buyer_receive, seller_id));
                     result_goods_order.put("buyer_info", result_buyer_info);                        //2
                     //订单实体
-                    String sqlOrderInfo = YamlRead.getSQL("getFieldOrderInfoAll", "seller/order");
+                    String sqlOrderInfo = YamlRead.getSQL("getFieldOrderInfoAll", "seller/credit");
                     result_goods_order.put("order_info", order_info.dao.find(sqlOrderInfo,credit_id_list,seller_id));   //3
 
                     //订单备注
@@ -185,7 +173,7 @@ public class CreditResource extends SellerResource {
      * @return
      */
     @PUT
-    public WebResult opOrder(List<credit> credits) {
+    public Map opOrder(List<credit> credits) {
 
             for (credit c2 : credits) {
                 if (c2.get("buyer_id") != null) {
@@ -194,7 +182,13 @@ public class CreditResource extends SellerResource {
                     credit.dao.update("update credit set status = ?  where id = ? ", ConstantsUtils.CREDIT_ALREADY_STATUS, c2.get("credit_id"));
                 }
             }
-            return new WebResult(HttpStatus.OK, "操作赊账成功");
+        return setResult("操作赊账成功");
+    }
+    private Map setResult(String message) {
+        Map resultMap = new HashMap();
+        resultMap.put("code",ConstantsUtils.HTTP_STATUS_OK_200);
+        resultMap.put("message",message);
+        return resultMap;
     }
 }
 
