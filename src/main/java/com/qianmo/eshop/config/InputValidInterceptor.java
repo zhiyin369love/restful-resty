@@ -1,16 +1,13 @@
 package com.qianmo.eshop.config;
 
 
-import cn.dreampie.common.http.exception.WebException;
-import cn.dreampie.common.http.result.HttpStatus;
+
+import cn.dreampie.log.Logger;
 import cn.dreampie.route.core.Params;
 import cn.dreampie.route.core.RouteInvocation;
 import cn.dreampie.route.interceptor.Interceptor;
-import cn.dreampie.route.interceptor.exception.InterceptorException;
 import com.alibaba.druid.util.StringUtils;
-import com.alibaba.fastjson.JSONObject;
 import com.qianmo.eshop.common.ConstantsUtils.RETURN_CODE;
-import com.qianmo.eshop.config.ValidateResult.WARNING_MSG;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -21,7 +18,7 @@ import java.util.regex.Pattern;
  * Created by zhangyang on 16/03/16
  */
 public class InputValidInterceptor implements Interceptor {
-
+    private static final Logger logger = Logger.getLogger(InputValidInterceptor.class);
     /**
      * 对输入参数进行拦截
      *
@@ -52,7 +49,10 @@ public class InputValidInterceptor implements Interceptor {
                         ri.invoke();
                     }
                 } catch (Throwable t) {
-                    Throwable cause = t.getCause();
+                    logger.error(t.getCause().getMessage());
+                    //如果统一验证有异常，那么需要继续调用方法
+                    ri.invoke();
+                   /* Throwable cause = t.getCause();
 
                     if (cause == null) {
                         cause = t;
@@ -61,7 +61,7 @@ public class InputValidInterceptor implements Interceptor {
                         throw (WebException) cause;
                     } else {
                         throw new InterceptorException(cause.getMessage(), cause);
-                    }
+                    }*/
                 }
             }
         }
@@ -83,13 +83,13 @@ public class InputValidInterceptor implements Interceptor {
 
         // 创建ValidateResult对象,作为校验出参，默认通过
         ValidateResult result = new ValidateResult(RETURN_CODE.IS_OK, null);
-        //校验规则可能很大，因此将参数做为主循环，减少循环次数
         for (String key : params.getNames()) {
             String regexs = "";
             //TODO 例外参数
             //需要判断是jsonObject还是list<JsonObject>如果是普通的可以用下面的逻辑
             Object value = params.get(key);
             if (value instanceof Map) {
+                //框架在前期会把参数拼接好，map是<String,Object>结构的
                 if(value != null) {
                     Map input = (Map) value;
                     Set<String> keySets = input.keySet();
@@ -167,7 +167,8 @@ public class InputValidInterceptor implements Interceptor {
                     return result;
                 }
             } catch (Exception e) {
-                System.err.println(e.getMessage());
+                logger.error(e.getMessage());
+                //System.err.println(e.getMessage());
             }
         }
         return null;
@@ -248,7 +249,8 @@ public class InputValidInterceptor implements Interceptor {
                 }
                 typeList.add(validateType);
             } catch (Exception e) {
-                System.err.println(e.getMessage());
+                logger.error(e.getMessage());
+                //System.err.println(e.getMessage());
             }
         }
 
@@ -290,7 +292,8 @@ public class InputValidInterceptor implements Interceptor {
                 result.setMessage(getText(validateType.getErrMsg(), key, String.valueOf(length)));
             }
         } catch (Exception e) {
-            System.err.println(getText(WARNING_MSG.VALIDATE_LENGTH, e.getMessage()));
+            logger.error(e.getMessage());
+            //System.err.println(getText(WARNING_MSG.VALIDATE_LENGTH, e.getMessage()));
         }
     }
 
@@ -307,7 +310,8 @@ public class InputValidInterceptor implements Interceptor {
                 result.setMessage(getText(validateType.getErrMsg(), key, String.valueOf(length)));
             }
         } catch (Exception e) {
-            System.err.println("VALIDATE MAX LENGTH ERROR ! THE ERROR IS " + e.getMessage() + "!");
+            logger.error(e.getMessage());
+            //System.err.println("VALIDATE MAX LENGTH ERROR ! THE ERROR IS " + e.getMessage() + "!");
         }
     }
 
@@ -323,7 +327,8 @@ public class InputValidInterceptor implements Interceptor {
                 result.setMessage(getText(validateType.getErrMsg(), key, String.valueOf(length)));
             }
         } catch (Exception e) {
-            System.err.println("VALIDATE MIN ERROR ! THE ERROR IS " + e.getMessage() + "!");
+            logger.error(e.getMessage());
+            //System.err.println("VALIDATE MIN ERROR ! THE ERROR IS " + e.getMessage() + "!");
         }
     }
 
@@ -334,7 +339,8 @@ public class InputValidInterceptor implements Interceptor {
                                ValidateType validateType, String key, ValidateResult result) {
         final String regex = "^\\s*(\\(|\\[)\\s*((-?\\d+)(\\.\\d+)?)+\\s*~\\s*((-?\\d+)(\\.\\d+)?)+\\s*(\\)|\\])\\s*$";
         if (!matchRegex(scope, regex)) {// 校验配置的区间值格式是否正确
-            System.err.println("RANGE CONFIGURATION ERROR!! THE WRONG RANGE IS='" + scope + "'!!");
+            logger.error("RANGE CONFIGURATION ERROR!! THE WRONG RANGE IS='" + scope + "'!!");
+            //System.err.println("RANGE CONFIGURATION ERROR!! THE WRONG RANGE IS='" + scope + "'!!");
         }
         scope = scope.replaceAll(" ", "");//去空格
         // 取出配置的字段
@@ -343,7 +349,8 @@ public class InputValidInterceptor implements Interceptor {
         double min = Double.parseDouble(scopes[0].substring(1));
         double max = Double.parseDouble(scopes[1].substring(0, scopes[1].length() - 1));
         if (min > max) {//配置错误
-            System.err.println("RANGE CONFIGURATION ERROR!! THE WRONG RANGE IS='" + scope + "'!! MAXVALUE MUST GREATER THEN MINVALUE!!");
+            logger.error("RANGE CONFIGURATION ERROR!! THE WRONG RANGE IS='" + scope + "'!! MAXVALUE MUST GREATER THEN MINVALUE!!");
+            //System.err.println("RANGE CONFIGURATION ERROR!! THE WRONG RANGE IS='" + scope + "'!! MAXVALUE MUST GREATER THEN MINVALUE!!");
         }
         String firstBrackets = String.valueOf(scopes[0].charAt(0));
 
@@ -351,12 +358,12 @@ public class InputValidInterceptor implements Interceptor {
         if ("(".equals(firstBrackets)) {// 和小数校验
             if (value <= min) {
                 validateFlag = Boolean.FALSE;
-                System.err.println("输入的值必须大于最小值！");
+                logger.error("输入的值必须大于最小值！");
             }
         } else if ("[".equals(firstBrackets)) {
             if (value < min) {
                 validateFlag = Boolean.FALSE;
-                System.err.println("输入的值必须大于等于最小值！");
+                logger.error("输入的值必须大于等于最小值！");
             }
         }
 
@@ -364,12 +371,12 @@ public class InputValidInterceptor implements Interceptor {
         if (")".equals(lastBrackets)) {// 和大数校验
             if (value >= max) {
                 validateFlag = Boolean.FALSE;
-                System.err.println("输入的值必须小于最大值！");
+                logger.error("输入的值必须小于最大值！");
             }
         } else if ("]".equals(lastBrackets)) {
             if (value > max) {
                 validateFlag = Boolean.FALSE;
-                System.err.println("输入的值必须小于等于最大值！");
+                logger.error("输入的值必须小于等于最大值！");
             }
         }
 
