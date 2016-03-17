@@ -16,9 +16,12 @@ getFieldBuyerReceiveAll:
   select bra.address as receive_address,bra.name as receive_name,bra.phone as receive_phone from buyer_receive_address bra LEFT JOIN order_info oi on bra.id = oi.buyer_receive_id where oi.id = ?
 
 getFirldGoodsInfoAll:
-  select gi.details,gi.form_id,gi.generic_name,gi.id as goods_id,gi.name as goods_name,gi.ingredient,gi.license_num,gi.main_pic_url,gi.num as number,gi.category_id,gi.pic_url_list,gi.producer,gi.standard
-  from goods_info gi LEFT JOIN order_goods og on gi.num = og.goods_num LEFT JOIN order_info oi on og.order_num = oi.num where oi.id = ?
-
+   select gi.details,gi.form_id,gi.generic_name,gi.id as goods_id,gi.name as goods_name,gi.ingredient,gi.license_num,gi.main_pic_url,gi.num as number,gi.pic_url_list,gi.producer,gi.standard,gi.category_id
+     from goods_info gi
+     WHERE  1= 1
+      AND EXISTS (SELECT 1 FROM order_goods og LEFT JOIN order_info oi ON og.order_num = oi.num WHERE oi.id = ?
+                       AND gi.num = og.goods_num
+      )
 getFieldGoodsSkuAll:
   select og.goods_sku_count as count,og.goods_sku_price as price,og.single_total_price,og.sku_id,gs.name as sku_name, gs.status as goods_status
   from

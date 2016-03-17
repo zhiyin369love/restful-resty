@@ -119,10 +119,10 @@ public class IndexResource extends ApiResource {
         //循环截取所需的字段
         if (sellerlist != null && sellerlist.size() > 0) {
             user_info userInfo = new user_info();
-            HashMap jsonObject = new HashMap();
+
             for (buyer_seller sell : sellerlist) {
+                HashMap jsonObject = new HashMap();
                 user_info sellInfo = userInfo.getUserInfoById(sell.<Long>get("seller_id"));
-                jsonObject.clear();
                 //如果为了更好的节省效率和代码复用，接口文档中的字段名称最好都统一，
                 // 例如nickname有的地方是seller_name,有的地方是nickname
                 jsonObject.put("seller_id", sell.get("seller_id"));

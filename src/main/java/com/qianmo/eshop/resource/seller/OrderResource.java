@@ -201,7 +201,7 @@ public class OrderResource extends SellerResource {
     }
         //商品实体封装
         public List<HashMap> getOrderHashMaps(long id) {
-            HashMap resultGoods =  new HashMap();
+
             //商品信息
             String sqlGoodInfo = YamlRead.getSQL("getFirldGoodsInfoAll","seller/order");
             //商品规格列表
@@ -214,15 +214,15 @@ public class OrderResource extends SellerResource {
             Map goodsResult = new HashMap();
             List<goods_info>  goods_infoList =  goods_info.dao.find(sqlGoodInfo,id);
             List<HashMap> resultMap = new ArrayList<HashMap>();
-            for (goods_info goodlist: goods_infoList ){
-                resultGoods.clear();
+           for (goods_info goodlist: goods_infoList ){
+                HashMap resultGoods =  new HashMap();
                // goods_info goods_info_list = goods_info.dao.findFirst(sqlGoodInfo,id);
                 long goodsNum = goodlist.get("number");
                 long orderNum = num.get("num");
                 long category_id = goodlist.get("category_id");
                 resultGoods.put("goods_sku_list", goods_sku.dao.find(sqlGoodsSku,goodsNum,orderNum));
                 resultGoods.put("goods_type", goods_category.dao.find(sqlGoodType,category_id));
-                resultGoods.put("goods_info", goods_info.dao.findFirst(sqlGoodInfo,id));
+                resultGoods.put("goods_info", goods_info.dao.findFirstBy(" num = ? ",goodsNum));
                 resultMap.add(resultGoods);
             }
             return resultMap;

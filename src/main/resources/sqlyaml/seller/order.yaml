@@ -3,7 +3,7 @@ getFieldOrderIdAll:
 getFieldOrderInfoAll:
   select oi.created_at,oi.id order_id,oi.num order_num,oi.status order_status,oi.pay_status,oi.pay_type_id pay_type,oi.total_price,ou.seller_id,ui.name seller_name
     from order_info oi left join order_user ou on oi.num = ou.order_num left join user_info ui on ui.id = ou.seller_id
-    where oi.id = ?
+    where oi.id = ? and ou.seller_id = ?
 
 getFieldBuyerInfoAll:
    SELECT
@@ -28,8 +28,11 @@ getFieldOrderNumAll:
   select num from order_info where id = ?
 getFirldGoodsInfoAll:
    select gi.details,gi.form_id,gi.generic_name,gi.id as goods_id,gi.name as goods_name,gi.ingredient,gi.license_num,gi.main_pic_url,gi.num as number,gi.pic_url_list,gi.producer,gi.standard,gi.category_id
-     from goods_info gi LEFT JOIN order_goods og on gi.num = og.goods_num LEFT JOIN order_info oi on og.order_num = oi.num where oi.id = ?
-
+     from goods_info gi
+     WHERE  1= 1
+      AND EXISTS (SELECT 1 FROM order_goods og LEFT JOIN order_info oi ON og.order_num = oi.num WHERE oi.id = ?
+                       AND gi.num = og.goods_num
+      )
 getFieldGoodsSkuListAll:
      select gs.amount,gsp.price,gsp.sku_id,gs.name
          from goods_sku_price gsp LEFT JOIN  goods_sku gs on gsp.goods_num = gs.goods_num LEFT JOIN goods_info gi on gs.goods_num = gi.id LEFT JOIN order_goods og on gi.num = og.goods_num LEFT JOIN order_info oi on og.order_num = oi.num where oi.id = ?
