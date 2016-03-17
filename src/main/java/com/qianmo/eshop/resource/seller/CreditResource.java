@@ -8,6 +8,7 @@ import cn.dreampie.route.annotation.API;
 import cn.dreampie.route.annotation.GET;
 import cn.dreampie.route.annotation.PUT;
 import com.alibaba.druid.util.StringUtils;
+import com.alibaba.fastjson.JSONObject;
 import com.qianmo.eshop.common.CommonUtils;
 import com.qianmo.eshop.common.ConstantsUtils;
 import com.qianmo.eshop.common.SessionUtil;
@@ -48,7 +49,7 @@ public class CreditResource extends SellerResource {
      */
     @GET
     public HashMap getCredit(Integer page_start, Integer page_step, int show_type, Integer status) {
-        System.out.print("进来");
+        //System.out.print("进来");
         if (status == null || StringUtils.isEmpty(String.valueOf(status))){
             status = ConstantsUtils.CREDIT_STATUS;
         }
@@ -69,7 +70,7 @@ public class CreditResource extends SellerResource {
                 page_step = ConstantsUtils.DEFAULT_PAGE_STEP;
             }
             int pageNumber = page_start/page_step + 1;
-            Page<credit> creditFullPagelist = null;
+            Page<credit> creditFullPagelist;
             //if (status != null) {
                 sqlbuyer_info = sqlbuyer_info + " and c.status = ?";
                // order_users_list = credit.dao.find(sqlbuyer_info, seller_id, status);
@@ -158,7 +159,7 @@ public class CreditResource extends SellerResource {
                     result_buyer_info.put("buyer_id",buyer_id);
                     user_info buyer_name = user_info.dao.findFirst("select nickname from user_info where id = ? ",buyer_id);
                     result_buyer_info.put("buyer_nickname", buyer_name.get("nickname"));
-                    result_buyer_info.put("buyer_receive", buyer_receive_address.dao.find(sql_buyer_receive, seller_id));
+                    result_buyer_info.put("buyer_receive", buyer_receive_address.dao.findFirst(sql_buyer_receive, orderId));
                     result_goods_order.put("buyer_info", result_buyer_info);                        //2
                     //订单实体
                     String sqlOrderInfo = YamlRead.getSQL("getFieldOrderInfoAll", "seller/order");
@@ -166,11 +167,11 @@ public class CreditResource extends SellerResource {
 
                     //订单备注
                     String sqlOrderRemark = YamlRead.getSQL("getFirldOrderRemarkAll", "seller/order");
-                    result_goods_order.put("order_remark_list", order_remark.dao.find(sqlOrderRemark, seller_id));  //4
+                    result_goods_order.put("order_remark_list", order_remark.dao.find(sqlOrderRemark, orderId));  //4
 
                     //多个订单实体
                     result_buyer_credit.put("order", result_goods_order);
-                    result_buyer_credit.put("credit_id", id);
+                    result_buyer_credit.put("credit_id", String.valueOf(id));
                     result_buyer_credit.put("status", seller_status);
                     creditsList.add(result_buyer_credit);
                 }
@@ -183,12 +184,12 @@ public class CreditResource extends SellerResource {
 
     /**
      * 销账
-     * @param credits
+     * @param credit_list
      * @return
      */
     @PUT
-    public Map opOrder(List<credit> credits) {
-            for (credit c2 : credits) {
+    public Map opOrder(List<JSONObject> credit_list) {
+            for (JSONObject c2 : credit_list) {
                 if (c2.get("buyer_id") != null) {
                     credit.dao.update("update credit set status = ?  where buyer_id = ? ", ConstantsUtils.CREDIT_ALREADY_STATUS, c2.get("buyer_id"));
                 } else if (c2.get("credit_id") != null) {
