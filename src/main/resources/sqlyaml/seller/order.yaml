@@ -42,7 +42,7 @@ getFieldGoodsTypeALL:
 getFieldGoodsSkuAll:
      SELECT og.goods_sku_count count,og.goods_sku_price  price,og.single_total_price,og.sku_id,gs.name sku_name
      FROM order_goods og
-     INNER JOIN goods_sku gs ON og.sku_id = gs.id
+     left JOIN goods_sku gs ON og.sku_id = gs.id
      WHERE og.goods_num = ?
      AND og.order_num = ?
 getFirldOrderRemarkAll:

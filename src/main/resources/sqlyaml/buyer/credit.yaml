@@ -1,49 +1,49 @@
 getFieldActivityAll:
   select a.id,a.fieldid,a.activitytypeid,a.input,a.inputQuantity,a.intro,a.created_at,b.name activitytype
-  from activity_info a
-  left outer join activity_type b on a.activitytypeid = b.id
-  where a.fieldid = ?
+   from activity_info a
+   left outer join activity_type b on a.activitytypeid = b.id
+   where a.fieldid = ?
 
 getFieldCreditOrderAll:
    select
-    a.created_at,
-  	a.id,
-  	a.num,
-  	a.status,
-  	a.pay_status,
-    a.pay_type_id,
-  	a.total_price,
-    c.id,
-    c.nickname
-    from order_info a ,user_info c  where a.num = ? and c.id = ?;
+    DATE_FORMAT(a.created_at,'%Y-%c-%d %h:%i:%s') created_at,
+    cast(a.id as CHAR) order_id,
+    CAST(a.num as CHAR) order_num,
+    a.status order_status,
+    a.pay_status pay_status,
+    a.pay_type_id pay_type,
+    a.total_price total_price,
+    cast(c.id as CHAR) seller_id,
+    c.nickname seller_name
+    from order_info a left join order_user b on a.num = b.order_num left join user_info c on b.seller_id = c.id  where  a.num = ? and c.id = ?
+
+getCreditByBuyerId:
+   SELECT id,order_num,STATUS,seller_id FROM credit WHERE buyer_id = ?
 getFirldCreditAll:
-    select c.id,c.status from credit c where c.buyer_id = ?
+   select c.id,c.status from credit c where c.buyer_id = ?
 getFieldBuyerInfoAll:
    select ou.buyer_id,ui.name
     from user_info ui left join order_user ou on ui.id = ou.buyer_id
      left join order_info oi on  ou.order_num = oi.num LEFT JOIN credit c on oi.num = c.order_num
-      where c.buyer_id = ?
+     where c.buyer_id = ?
 
 getFieldBuyerReceiveAll:
    select bra.name,bra.phone,bra.address
      from buyer_receive_address bra LEFT JOIN order_user ou on bra.buyer_id = ou.buyer_id LEFT JOIN order_info oi on oi.num = ou.order_num LEFT JOIN credit c on oi.num = c.order_num
-    where c.buyer_id = ?
+     where c.buyer_id = ?
 getFirldOrderUserCreditAll:
-  select id,area_id,order_num,buyer_id,seller_id,created_at,updated_at,deleted_at from order_user where buyer_id = ?
+   select id,area_id,order_num,buyer_id,seller_id,created_at,updated_at,deleted_at from order_user where buyer_id = ?
 getFirldGoodsInfoAll:
    select gi.details,gi.form_id,gi.generic_name,gi.id,gi.name,gi.ingredient,gi.license_num,gi.main_pic_url,gi.number,gi.pic_url_list,gi.producer,gi.standard
-        from goods_info gi LEFT JOIN order_goods og on gi.num = og.goods_num LEFT JOIN order_info oi on og.order_num = oi.num LEFT JOIN credit c on oi.num = c.order_num where c.buyer_id = ?
-
+     from goods_info gi LEFT JOIN order_goods og on gi.num = og.goods_num LEFT JOIN order_info oi on og.order_num = oi.num LEFT JOIN credit c on oi.num = c.order_num where c.buyer_id = ?
 getFieldGoodsSkuListAll:
- select gs.amount,gsp.price,gsp.sku_id,gs.name
-         from goods_sku_price gsp LEFT JOIN  goods_sku gs on gsp.goods_num = gs.goods_num LEFT JOIN goods_info gi on gs.goods_num = gi.id LEFT JOIN order_goods og on gi.num = og.goods_num LEFT JOIN order_info oi on og.order_num = oi.num LEFT JOIN credit c on oi.num = c.order_num where c.buyer_id = ?
-
+   select gs.amount,gsp.price,gsp.sku_id,gs.name
+     from goods_sku_price gsp LEFT JOIN  goods_sku gs on gsp.goods_num = gs.goods_num LEFT JOIN goods_info gi on gs.goods_num = gi.id LEFT JOIN order_goods og on gi.num = og.goods_num LEFT JOIN order_info oi on og.order_num = oi.num LEFT JOIN credit c on oi.num = c.order_num where c.buyer_id = ?
 getFieldGoodsTypeALL:
-  select gi.name,gi.type_id
-          from goods_info gi LEFT JOIN order_goods og on gi.num = og.goods_num LEFT JOIN order_info oi on og.order_num = oi.num  LEFT JOIN credit c on oi.num = c.order_num  where c.buyer_id = ?
+    select gi.name,gi.type_id
+     from goods_info gi LEFT JOIN order_goods og on gi.num = og.goods_num LEFT JOIN order_info oi on og.order_num = oi.num  LEFT JOIN credit c on oi.num = c.order_num  where c.buyer_id = ?
 
 getFirldOrderRemarkAll:
-  select order_remark.created_at, order_remark.details,order_remark.op,order_remark.order_num,order_remark.reason,order_remark.user_id
+   select order_remark.created_at, order_remark.details,order_remark.op,order_remark.order_num,order_remark.reason,order_remark.user_id
     from order_remark
     LEFT JOIN order_info on order_remark.order_num = order_info.num LEFT JOIN credit c on order_info.num = c.order_num where c.buyer_id = ?
-
