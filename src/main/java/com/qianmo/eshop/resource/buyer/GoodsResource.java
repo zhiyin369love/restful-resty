@@ -116,6 +116,7 @@ public class GoodsResource extends BuyerResource {
                     goods.setProducer(goodsInfo.get("producer").toString());
                     goods.setSeller_name(goodsInfo.get("seller_name").toString());
                     goods.setIngredient(goodsInfo.get("ingredient").toString());
+                    goods.setSeller_id(goodsInfo.<Long>get("seller_id"));
 
                     //商品规格信息
                     List<GoodsSku> skuList = new ArrayList<GoodsSku>();
