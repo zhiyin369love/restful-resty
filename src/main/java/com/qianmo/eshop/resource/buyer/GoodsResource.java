@@ -51,10 +51,10 @@ public class GoodsResource extends BuyerResource {
             page_step = ConstantsUtils.DEFAULT_PAGE_STEP;  //默认返回10条
         }
         String sql = "SELECT a.id goods_id,a.num goods_num,a.main_pic_url,a.name goods_name,a.producer," +
-                "a.ingredient,a.seller_id,b.nickname seller_name " +
-                "FROM goods_info a" +
-                "INNER JOIN user_info b ON a.seller_id = b.id " +
-                "INNER JOIN buyer_seller c ON a.seller_id = c.seller_id AND c.status = 1 WHERE c.buyer_id = ?";
+                " a.ingredient,a.seller_id,b.nickname seller_name " +
+                " FROM goods_info a" +
+                " INNER JOIN user_info b ON a.seller_id = b.id " +
+                " INNER JOIN buyer_seller c ON a.seller_id = c.seller_id AND c.status = 1 WHERE c.buyer_id = ?";
          /*
         判断是否根据分类查找商品
          */
@@ -100,9 +100,9 @@ public class GoodsResource extends BuyerResource {
         FullPage<goods_info> list = goods_info.dao.fullPaginate(page_start / page_step + 1,
                 page_step, sql, buyer_id);
         String skuSql = "SELECT a.id sku_id,a.name sku_name, IFNULL(b.price,a.list_price) price, " +
-                "IFNULL(b.status,1) status FROM goods_sku a " +
-                "LEFT JOIN goods_sku_price b ON a.id = b.sku_id AND b.buyer_id = ? " +
-                "WHERE a.goods_num = ? AND a.status = 1";
+                " IFNULL(b.status,1) status FROM goods_sku a " +
+                " LEFT JOIN goods_sku_price b ON a.id = b.sku_id AND b.buyer_id = ? " +
+                " WHERE a.goods_num = ? AND a.status = 1";
         //非空判断
         if(list!=null && list.getList().size()>0){
             for (goods_info info:list.getList()){
