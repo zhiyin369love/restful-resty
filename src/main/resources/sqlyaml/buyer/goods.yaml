@@ -13,8 +13,8 @@ findGoods:
 findGoodsSku:
   SELECT a.id sku_id,a.name sku_name,IFNULL(b.price,a.list_price) price,a.seller_id
   FROM goods_sku a
-  LEFT JOIN goods_sku_price b ON a.id = b.sku_id
-  WHERE a.goods_num=? AND a.status=1 AND a.deleted_at is null AND b.buyer_id=? AND b.status=1
+  LEFT JOIN goods_sku_price b ON a.id = b.sku_id AND b.buyer_id=? AND b.status=1
+  WHERE a.goods_num=? AND a.status=1 AND a.deleted_at is null
 
 #获取商品信息列表
 findGoodsInfo:

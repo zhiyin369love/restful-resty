@@ -12,6 +12,7 @@ public class GoodsSku {
     private BigDecimal price;//商品规格价格
     private String release_date;//商品规格上架时间
     private Integer seller_count;//商品规格已售总数
+    private Long seller_id;//卖家ID
 
     public Long getSku_id() {
         return sku_id;
@@ -59,5 +60,13 @@ public class GoodsSku {
 
     public void setSeller_count(Integer seller_count) {
         this.seller_count = seller_count;
+    }
+
+    public Long getSeller_id() {
+        return seller_id;
+    }
+
+    public void setSeller_id(Long seller_id) {
+        this.seller_id = seller_id;
     }
 }

@@ -123,6 +123,7 @@ public class GoodsResource extends BuyerResource {
                     goodsSku.setSku_id(Long.parseLong(goodsInfo.get("sku_id").toString()));
                     goodsSku.setSku_name(goodsInfo.get("sku_name").toString());
                     goodsSku.setStatus(goodsInfo.<Integer>get("status"));
+                    goodsSku.setSeller_id(goodsInfo.<Long>get("seller_id"));
                     goodsSku.setPrice(goodsInfo.<BigDecimal>get("price"));
                     skuList.add(goodsSku);
                     goods.setGoods_sku_list(skuList);
@@ -133,6 +134,7 @@ public class GoodsResource extends BuyerResource {
                     goodsSku.setSku_id(Long.parseLong(goodsInfo.get("sku_id").toString()));
                     goodsSku.setSku_name(goodsInfo.get("sku_name").toString());
                     goodsSku.setStatus(goodsInfo.<Integer>get("status"));
+                    goodsSku.setSeller_id(goodsInfo.<Long>get("seller_id"));
                     goodsSku.setPrice(goodsInfo.<BigDecimal>get("price"));
                     skuList.add(goodsSku);
                     goods.setGoods_sku_list(skuList);
@@ -176,7 +178,7 @@ public class GoodsResource extends BuyerResource {
         }
         goods_info goodsInfo = goods_info.dao.findFirst(YamlRead.getSQL("findGoods", "buyer/goods"), id);
         resultMap.put("goods_info", goodsInfo);
-        List<goods_sku> list = goods_sku.dao.find(YamlRead.getSQL("findGoodsSku", "buyer/goods"), goodsInfo.get("goods_num"), buyer_id);
+        List<goods_sku> list = goods_sku.dao.find(YamlRead.getSQL("findGoodsSku", "buyer/goods"), buyer_id, goodsInfo.get("goods_num"));
         resultMap.put("goods_sku_list", list);
         return resultMap;
     }
