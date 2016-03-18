@@ -50,17 +50,17 @@ public class GoodsResource extends BuyerResource {
         if (page_step == null) {
             page_step = ConstantsUtils.DEFAULT_PAGE_STEP;  //默认返回10条
         }
-
-        String sql = YamlRead.getSQL("findGoodsInfo", "buyer/goods");
-        /*
+        String sql = "SELECT a.id goods_id,a.num goods_num,a.main_pic_url,a.name goods_name,a.producer," +
+                "a.ingredient,a.seller_id,b.nickname seller_name " +
+                "FROM goods_info a" +
+                "INNER JOIN user_info b ON a.seller_id = b.id " +
+                "INNER JOIN buyer_seller c ON a.seller_id = c.seller_id AND c.status = 1 WHERE c.buyer_id = ?";
+         /*
         判断是否根据分类查找商品
          */
         if (category_id != null && category_id > 0) {
             sql = sql + " AND a.category_id=" + category_id;
         }
-//        else {
-//            sql = sql + " AND a.category_id in (SELECT id from goods_category where pid=" + category_id + ")";
-//        }
         /*
         判断是否根据商品名称模糊搜索
          */
@@ -96,63 +96,109 @@ public class GoodsResource extends BuyerResource {
                 }
             }
         }
-
-        HashMap<Long, GoodsInfo> map = new HashMap<Long, GoodsInfo>();
+        List<GoodsInfo> goodsList = new ArrayList<GoodsInfo>();
         FullPage<goods_info> list = goods_info.dao.fullPaginate(page_start / page_step + 1,
                 page_step, sql, buyer_id);
+        String skuSql = "SELECT a.id sku_id,a.name sku_name, IFNULL(b.price,a.list_price) price, " +
+                "IFNULL(b.status,1) status FROM goods_sku a " +
+                "LEFT JOIN goods_sku_price b ON a.id = b.sku_id AND b.buyer_id = ? " +
+                "WHERE a.goods_num = ? AND a.status = 1";
         //非空判断
-        if (list != null && list.getTotalRow() > 0) {
-            for (goods_info goodsInfo : list.getList()) {
-                GoodsInfo goods = map.get(Long.parseLong(goodsInfo.get("goods_id").toString()));
-                if (goods == null) {
-                    goods = new GoodsInfo();
-                    goods.setGoods_id(Long.parseLong(goodsInfo.get("goods_id").toString()));
-                    goods.setGoods_name(goodsInfo.get("goods_name").toString());
-                    goods.setGoods_num(Long.parseLong(goodsInfo.get("goods_num").toString()));
-                    //判断是否有主图
-                    if (goodsInfo.get("main_pic_url") != null) {
-                        goods.setMain_pic_url(goodsInfo.get("main_pic_url").toString());
-                    }
-                    goods.setProducer(goodsInfo.get("producer").toString());
-                    goods.setSeller_name(goodsInfo.get("seller_name").toString());
-                    goods.setIngredient(goodsInfo.get("ingredient").toString());
-                    goods.setSeller_id(goodsInfo.<Long>get("seller_id"));
-
-                    //商品规格信息
-                    List<GoodsSku> skuList = new ArrayList<GoodsSku>();
-                    GoodsSku goodsSku = new GoodsSku();
-                    goodsSku.setSku_id(Long.parseLong(goodsInfo.get("sku_id").toString()));
-                    goodsSku.setSku_name(goodsInfo.get("sku_name").toString());
-                    goodsSku.setStatus(goodsInfo.<Integer>get("status"));
-                    goodsSku.setSeller_id(goodsInfo.<Long>get("seller_id"));
-                    goodsSku.setPrice(goodsInfo.<BigDecimal>get("price"));
-                    skuList.add(goodsSku);
-                    goods.setGoods_sku_list(skuList);
-                } else {
-                    //商品规格信息
-                    List<GoodsSku> skuList = (List) goods.getGoods_sku_list();
-                    GoodsSku goodsSku = new GoodsSku();
-                    goodsSku.setSku_id(Long.parseLong(goodsInfo.get("sku_id").toString()));
-                    goodsSku.setSku_name(goodsInfo.get("sku_name").toString());
-                    goodsSku.setStatus(goodsInfo.<Integer>get("status"));
-                    goodsSku.setSeller_id(goodsInfo.<Long>get("seller_id"));
-                    goodsSku.setPrice(goodsInfo.<BigDecimal>get("price"));
-                    skuList.add(goodsSku);
-                    goods.setGoods_sku_list(skuList);
+        if(list!=null && list.getList().size()>0){
+            for (goods_info info:list.getList()){
+                GoodsInfo goodsInfo = new GoodsInfo();
+                goodsInfo.setGoods_id(Long.parseLong(info.get("goods_id").toString()));
+                goodsInfo.setGoods_name(info.get("goods_name").toString());
+                goodsInfo.setGoods_num(Long.parseLong(info.get("goods_num").toString()));
+                //判断是否有主图
+                if (info.get("main_pic_url") != null) {
+                    goodsInfo.setMain_pic_url(info.get("main_pic_url").toString());
                 }
-                map.put(goods.getGoods_id(), goods);
+                goodsInfo.setProducer(info.get("producer").toString());
+                goodsInfo.setSeller_name(info.get("seller_name").toString());
+                goodsInfo.setIngredient(info.get("ingredient").toString());
+                goodsInfo.setSeller_id(info.<Long>get("seller_id"));
+
+                List<goods_sku> skuList = goods_sku.dao.find(skuSql,buyer_id,info.get("goods_num"));
+                List<GoodsSku> goodsSkuList = new ArrayList<GoodsSku>();
+                if(skuList!=null && skuList.size()>0){
+                    for (goods_sku sku:skuList){
+                        if(sku.get("status").equals(Long.parseLong(ConstantsUtils.GOODS_SKU_PRICE_BUY_ENBLE.toString()))){
+                            GoodsSku goodsSku = new GoodsSku();
+                            goodsSku.setSku_id(Long.parseLong(sku.get("sku_id").toString()));
+                            goodsSku.setSku_name(sku.get("sku_name").toString());
+                            goodsSku.setStatus(sku.<Integer>get("status"));
+                            goodsSku.setPrice(sku.<BigDecimal>get("price"));
+                            goodsSkuList.add(goodsSku);
+                        }
+                    }
+                }
+                if (goodsSkuList!=null && goodsSkuList.size()>0){
+                    goodsInfo.setGoods_sku_list(goodsSkuList);
+                    goodsList.add(goodsInfo);
+                }
             }
         }
-        List<GoodsInfo> goodsInfoList = new ArrayList<GoodsInfo>();
-        //非空判断
-        if (map != null && map.size() > 0) {
-            for (Long goodsId : map.keySet()) {
-                goodsInfoList.add(map.get(goodsId));
-            }
-        }
-        resultMap.put("goods_list", goodsInfoList);
-        resultMap.put("total_count", goodsInfoList.size());
+        resultMap.put("goods_list", goodsList);
+        resultMap.put("total_count", goodsList.size());
         return resultMap;
+
+
+//        HashMap<Long, GoodsInfo> map = new HashMap<Long, GoodsInfo>();
+//
+//        //非空判断
+//        if (list != null && list.getTotalRow() > 0) {
+//            for (goods_info goodsInfo : list.getList()) {
+//                GoodsInfo goods = map.get(Long.parseLong(goodsInfo.get("goods_id").toString()));
+//                if (goods == null) {
+//                    goods = new GoodsInfo();
+//                    goods.setGoods_id(Long.parseLong(goodsInfo.get("goods_id").toString()));
+//                    goods.setGoods_name(goodsInfo.get("goods_name").toString());
+//                    goods.setGoods_num(Long.parseLong(goodsInfo.get("goods_num").toString()));
+//                    //判断是否有主图
+//                    if (goodsInfo.get("main_pic_url") != null) {
+//                        goods.setMain_pic_url(goodsInfo.get("main_pic_url").toString());
+//                    }
+//                    goods.setProducer(goodsInfo.get("producer").toString());
+//                    goods.setSeller_name(goodsInfo.get("seller_name").toString());
+//                    goods.setIngredient(goodsInfo.get("ingredient").toString());
+//                    goods.setSeller_id(goodsInfo.<Long>get("seller_id"));
+//
+//                    //商品规格信息
+//                    List<GoodsSku> skuList = new ArrayList<GoodsSku>();
+//                    GoodsSku goodsSku = new GoodsSku();
+//                    goodsSku.setSku_id(Long.parseLong(goodsInfo.get("sku_id").toString()));
+//                    goodsSku.setSku_name(goodsInfo.get("sku_name").toString());
+//                    goodsSku.setStatus(goodsInfo.<Integer>get("status"));
+//                    goodsSku.setSeller_id(goodsInfo.<Long>get("seller_id"));
+//                    goodsSku.setPrice(goodsInfo.<BigDecimal>get("price"));
+//                    skuList.add(goodsSku);
+//                    goods.setGoods_sku_list(skuList);
+//                } else {
+//                    //商品规格信息
+//                    List<GoodsSku> skuList = (List) goods.getGoods_sku_list();
+//                    GoodsSku goodsSku = new GoodsSku();
+//                    goodsSku.setSku_id(Long.parseLong(goodsInfo.get("sku_id").toString()));
+//                    goodsSku.setSku_name(goodsInfo.get("sku_name").toString());
+//                    goodsSku.setStatus(goodsInfo.<Integer>get("status"));
+//                    goodsSku.setSeller_id(goodsInfo.<Long>get("seller_id"));
+//                    goodsSku.setPrice(goodsInfo.<BigDecimal>get("price"));
+//                    skuList.add(goodsSku);
+//                    goods.setGoods_sku_list(skuList);
+//                }
+//                map.put(goods.getGoods_id(), goods);
+//            }
+//        }
+//        List<GoodsInfo> goodsInfoList = new ArrayList<GoodsInfo>();
+//        //非空判断
+//        if (map != null && map.size() > 0) {
+//            for (Long goodsId : map.keySet()) {
+//                goodsInfoList.add(map.get(goodsId));
+//            }
+//        }
+//        resultMap.put("goods_list", goodsInfoList);
+//        resultMap.put("total_count", goodsInfoList.size());
+//        return resultMap;
     }
 
     /**
@@ -179,8 +225,21 @@ public class GoodsResource extends BuyerResource {
         }
         goods_info goodsInfo = goods_info.dao.findFirst(YamlRead.getSQL("findGoods", "buyer/goods"), id);
         resultMap.put("goods_info", goodsInfo);
-        List<goods_sku> list = goods_sku.dao.find(YamlRead.getSQL("findGoodsSku", "buyer/goods"), buyer_id, goodsInfo.get("goods_num"));
-        resultMap.put("goods_sku_list", list);
+
+        String skuSql = "SELECT a.id sku_id,a.name sku_name, IFNULL(b.price,a.list_price) price, " +
+                "IFNULL(b.status,1) status FROM goods_sku a " +
+                "LEFT JOIN goods_sku_price b ON a.id = b.sku_id AND b.buyer_id = ? " +
+                "WHERE a.goods_num = ? AND a.status = 1";
+        List<goods_sku> list = goods_sku.dao.find(skuSql, buyer_id, goodsInfo.get("goods_num"));
+        List<goods_sku> skuList = new ArrayList<goods_sku>();
+        if(list!=null && list.size()>0){
+            for(goods_sku sku : list){
+                if (sku.get("status").equals(Long.parseLong(ConstantsUtils.GOODS_SKU_PRICE_BUY_ENBLE.toString()))){
+                    skuList.add(sku);
+                }
+            }
+        }
+        resultMap.put("goods_sku_list", skuList);
         return resultMap;
     }
 }
