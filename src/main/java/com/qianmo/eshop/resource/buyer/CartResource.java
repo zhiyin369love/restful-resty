@@ -34,15 +34,14 @@ public class CartResource extends BuyerResource {
     /**
      * 删除购物车商品，此处是用买家id+商品+商品型号id来联合删除的，实际上也可以用购物车id来做删除
      *
-     * @param goods_id     商品id
-     * @param goods_sku_id 商品型号id
+     * @param cart_id    购物车id
      */
-    @DELETE
+    @DELETE("/:cart_id")
     @Transaction
-    public Map deleteCartGoods(long goods_id, int goods_sku_id) {
+    public Map deleteCartGoods(Long cart_id) {
         // try {
-        if (buyer_id != 0 && goods_id != 0 && goods_sku_id != 0) {
-            cart.dao.deleteBy("buyer_id = ?  and goods_num = ? and goods_sku_id = ?", buyer_id, goods_id, goods_sku_id);
+        if (buyer_id != 0 && cart_id != null) {
+            cart.dao.deleteById(cart_id);
             return CommonUtils.getCodeMessage(true, "删除购物车商品成功");
         } else {
             return CommonUtils.getCodeMessage(false, "输入参数有误");

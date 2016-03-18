@@ -87,7 +87,7 @@ public class OrderResource extends BuyerResource {
             long orderNum = num.get("num");
             long category_id = goodlist.get("category_id");
             resultGoods.put("goods_sku_list", goods_sku.dao.find(sqlGoodsSku, goodsNum, orderNum));
-            resultGoods.put("goods_type", goods_category.dao.find(sqlGoodType, category_id));
+            resultGoods.put("goods_type", goods_category.dao.findFirst(sqlGoodType, category_id));
             resultGoods.put("goods_info", goods_info.dao.findFirstBy(" num = ? ", goodsNum));
             resultMap.add(resultGoods);
         }
@@ -262,7 +262,7 @@ public class OrderResource extends BuyerResource {
     public HashMap addOrder(Long buyer_receive_id, String cart_list, Long seller_id) {
         //System.out.print("进来");
         long buyer_id = SessionUtil.getUserId();
-        HashMap result = new HashMap();
+        //HashMap result = new HashMap();
         //订单编号组成的规则、年月日时分秒+4位随机数
         long ltime = System.currentTimeMillis();
         Date date = new Date(ltime);
@@ -270,7 +270,7 @@ public class OrderResource extends BuyerResource {
         //订单编号
 
         //根据购物车ID，从购物车中选取买家购买信息
-        String sql3 = YamlRead.getSQL("getFieldCartAll", "buyer/cart");
+        //String sql3 = YamlRead.getSQL("getFieldCartAll", "buyer/cart");
         List<cart> results = cart.dao.findBy(" id in (" + cart_list + ")");
         //商品表中订单总价
 
@@ -288,9 +288,7 @@ public class OrderResource extends BuyerResource {
                 BigDecimal single_total_price = new BigDecimal(goods_sku_count).multiply(goods_sku_price);
                 total_price.add(single_total_price);
                 //插入订单商品表和订单用户表
-
                 new order_goods().set("area_id", cart.get("area_id")).set("goods_num", cart.get("goods_num")).set("sku_id", cart.get("goods_sku_id")).set("order_num", num).set("goods_sku_price", goods_sku_price).set("goods_sku_count", cart.get("goods_sku_count")).set("single_total_price", single_total_price).save();
-
             }
             //num = CodeUtils.code(dateFormat.format(date), ConstantsUtils.ORDER_NUM_TYPE);
             cart.dao.deleteBy("id in (" + cart_list + ")");
