@@ -127,7 +127,7 @@ public class GoodsResource extends BuyerResource {
                             GoodsSku goodsSku = new GoodsSku();
                             goodsSku.setSku_id(Long.parseLong(sku.get("sku_id").toString()));
                             goodsSku.setSku_name(sku.get("sku_name").toString());
-                            goodsSku.setStatus(sku.<Integer>get("status"));
+                            goodsSku.setStatus(Integer.valueOf(sku.get("status").toString()));
                             goodsSku.setPrice(sku.<BigDecimal>get("price"));
                             goodsSkuList.add(goodsSku);
                         }
