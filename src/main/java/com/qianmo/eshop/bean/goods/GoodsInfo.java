@@ -22,7 +22,7 @@ public class GoodsInfo {
     private Long seller_id;//商品销售厂家ID
     private String seller_name;//商品销售厂家名称
 
-    private Collection<GoodsSku> skuList;//商品规格信息
+    private Collection<GoodsSku> goods_sku_list;//商品规格信息
 
     public Long getGoods_id() {
         return goods_id;
@@ -144,11 +144,11 @@ public class GoodsInfo {
         this.seller_name = seller_name;
     }
 
-    public Collection<GoodsSku> getSkuList() {
-        return skuList;
+    public Collection<GoodsSku> getGoods_sku_list() {
+        return goods_sku_list;
     }
 
-    public void setSkuList(Collection<GoodsSku> skuList) {
-        this.skuList = skuList;
+    public void setGoods_sku_list(Collection<GoodsSku> goods_sku_list) {
+        this.goods_sku_list = goods_sku_list;
     }
 }

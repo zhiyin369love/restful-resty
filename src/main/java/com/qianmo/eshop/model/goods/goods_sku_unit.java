@@ -19,7 +19,7 @@ public class goods_sku_unit extends Model<goods_sku_unit> {
 
     public List getList(){
         List list = new ArrayList();
-        String sql = YamlRead.getSQL("findSkuUint","seller/goods");
+        String sql = YamlRead.getSQL("findSkuUnit","seller/goods");
         List<goods_sku_unit> result = dao.find(sql);
         List physicalList = new ArrayList();
         List packageList = new ArrayList();

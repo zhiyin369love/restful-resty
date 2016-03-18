@@ -28,23 +28,19 @@ public class GoodsResource extends BuyerResource {
     /**
      * 获取商品列表
      *
-     * @param goods_name      商品名称
-     * @param category_id     商品一级分类ID
-     * @param sub_category_id 商品二级分类ID
-     * @param page_start      第几页开始
-     * @param page_step       返回多少条
-     * @param sort            排序 1:新品
-     * @param sort_style      排序方式
-     * @param sort_type       排序类型
+     * @param goods_name  商品名称
+     * @param category_id 商品分类ID
+     * @param page_start  第几页开始
+     * @param page_step   返回多少条
+     * @param sort        排序 1:新品
+     * @param sort_style  排序方式
+     * @param sort_type   排序类型
      * @return
      */
     @GET
-    public HashMap goods(String goods_name, Integer category_id, Integer sub_category_id,
+    public HashMap goods(String goods_name, Integer category_id,
                          Integer page_start, Integer page_step, Integer sort, Integer sort_style, Integer sort_type) {
         HashMap resultMap = new HashMap();
-        if (category_id == null) {
-            return resultMap;
-        }
         /*
         判断是否有分页信息，如果没有，给定默认值
          */
@@ -57,13 +53,14 @@ public class GoodsResource extends BuyerResource {
 
         String sql = YamlRead.getSQL("findGoodsInfo", "buyer/goods");
         /*
-        判断是根据一级分类查商品还是二级分类查商品
+        判断是否根据分类查找商品
          */
-        if (sub_category_id != null && sub_category_id > 0) {
-            sql = sql + " AND a.category_id=" + sub_category_id;
-        } else {
-            sql = sql + " AND a.category_id in (SELECT id from goods_category where pid=" + category_id + ")";
+        if (category_id != null && category_id > 0) {
+            sql = sql + " AND a.category_id=" + category_id;
         }
+//        else {
+//            sql = sql + " AND a.category_id in (SELECT id from goods_category where pid=" + category_id + ")";
+//        }
         /*
         判断是否根据商品名称模糊搜索
          */
@@ -127,20 +124,18 @@ public class GoodsResource extends BuyerResource {
                     goodsSku.setSku_name(goodsInfo.get("sku_name").toString());
                     goodsSku.setStatus(goodsInfo.<Integer>get("status"));
                     goodsSku.setPrice(goodsInfo.<BigDecimal>get("price"));
-                    goodsSku.setRelease_date(goodsInfo.get("release_date").toString());
                     skuList.add(goodsSku);
-                    goods.setSkuList(skuList);
+                    goods.setGoods_sku_list(skuList);
                 } else {
                     //商品规格信息
-                    List<GoodsSku> skuList = (List) goods.getSkuList();
+                    List<GoodsSku> skuList = (List) goods.getGoods_sku_list();
                     GoodsSku goodsSku = new GoodsSku();
                     goodsSku.setSku_id(Long.parseLong(goodsInfo.get("sku_id").toString()));
                     goodsSku.setSku_name(goodsInfo.get("sku_name").toString());
                     goodsSku.setStatus(goodsInfo.<Integer>get("status"));
                     goodsSku.setPrice(goodsInfo.<BigDecimal>get("price"));
-                    goodsSku.setRelease_date(goodsInfo.get("release_date").toString());
                     skuList.add(goodsSku);
-                    goods.setSkuList(skuList);
+                    goods.setGoods_sku_list(skuList);
                 }
                 map.put(goods.getGoods_id(), goods);
             }

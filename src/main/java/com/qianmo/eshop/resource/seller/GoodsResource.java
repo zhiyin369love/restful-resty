@@ -102,25 +102,39 @@ public class GoodsResource extends SellerResource {
                         goodsSku.setPrice(goodsInfo.<BigDecimal>get("list_price"));
                     }
                     //判断是否有上架时间信息
-                    if (goodsInfo.get("release_date") != null) {
+                    if (goodsInfo.get("release_date") != null
+                            && goodsInfo.<Integer>get("status")==1) {
                         goodsSku.setRelease_date(goodsInfo.get("release_date").toString());
                     }
+                    goodsSku.setSeller_count(0);
+                    //判断该商品规格是否有售出
+                    if (goodsInfo.get("sell_count") != null) {
+                        goodsSku.setSeller_count(goodsInfo.<Integer>get("sell_count"));
+                    }
                     skuList.add(goodsSku);
-                    goods.setSkuList(skuList);
+                    goods.setGoods_sku_list(skuList);
                 } else {
-                    List<GoodsSku> skuList = (List) goods.getSkuList();
+                    List<GoodsSku> skuList = (List) goods.getGoods_sku_list();
                     GoodsSku goodsSku = new GoodsSku();
                     goodsSku.setSku_id(goodsInfo.<Long>get("sku_id"));
                     goodsSku.setSku_name(goodsInfo.get("sku_name").toString());
                     goodsSku.setStatus(goodsInfo.<Integer>get("status"));
-                    if (goodsInfo.get("price") != null) {
-                        goodsSku.setPrice(goodsInfo.<BigDecimal>get("price"));
+                    //判断是否有价格信息
+                    if (goodsInfo.get("list_price") != null) {
+                        goodsSku.setPrice(goodsInfo.<BigDecimal>get("list_price"));
                     }
-                    if (goodsInfo.get("release_date") != null) {
+                    //判断是否有上架时间信息
+                    if (goodsInfo.get("release_date") != null
+                            && goodsInfo.<Integer>get("status")==1) {
                         goodsSku.setRelease_date(goodsInfo.get("release_date").toString());
                     }
+                    goodsSku.setSeller_count(0);
+                    //判断该商品规格是否有售出
+                    if (goodsInfo.get("sell_count") != null) {
+                        goodsSku.setSeller_count(goodsInfo.<Integer>get("sell_count"));
+                    }
                     skuList.add(goodsSku);
-                    goods.setSkuList(skuList);
+                    goods.setGoods_sku_list(skuList);
                 }
                 map.put(goods.getGoods_id(), goods);
             }
@@ -205,74 +219,184 @@ public class GoodsResource extends SellerResource {
     }
 
     /**
-     * 编辑商品
-     *
-     * @param goods          商品信息
-     * @param id             商品id
-     * @param delete_pic_url 删除的图片地址
+     * 删除商品规格
+     * @param id
      * @return
      */
-    @PUT("/:id")
+    @DELETE("/sku/:id")
     @Transaction
-    public HashMap edit(goods_info goods, Long id, String delete_pic_url) {
+    public HashMap delete(Integer id){
+        goods_sku goodsSku = goods_sku.dao.findFirstBy("id=? AND seller_id=?",id,seller_id);
+        //非空判断
+        if(goodsSku!=null){
+            //删除商品规格
+            goodsSku.set("deleted_at",new Date());
+            goodsSku.update();
+            //删除商品规格价格
+            goods_sku_price.dao.deleteBy("sku_id=?",id);
+            return CommonUtils.getCodeMessage(true,"删除商品规格成功");
+        }else{
+            return CommonUtils.getCodeMessage(false,"删除商品规格失败");
+        }
+    }
+
+    /**
+     * 编辑商品
+     * @param goods      商品信息
+     * @return
+     */
+    @PUT
+    @Transaction
+    public HashMap edit(goods_info goods){
         /*
         修改商品基本信息
         */
         goods_info info = goods.get("goods_info", goods_info.class);
-        goods_info goodsInfo = goods_info.dao.findById(id);
-        if (goodsInfo.<Long>get("seller_id") == seller_id) {
-            goodsInfo.set("name", info.get("goods_name"));
-            goodsInfo.update();
+        goods_info goodsInfo = goods_info.dao.findById(info.get("goods_id"));
+        if(seller_id.equals(goodsInfo.get("seller_id"))){
+            info.set("id", info.get("goods_id"));
+            info.set("name", info.get("goods_name"));
+            info.update();
             /*
-            删除商品图片
-            */
-            if (delete_pic_url != null) {
-                String[] deletePic = delete_pic_url.split(",");
-                for (String delete_pic : deletePic) {
-                    if (delete_pic.indexOf(ConstantsUtils.PIC_DIR) != -1) {
-                        deleteMainPic(delete_pic.substring(delete_pic.indexOf(ConstantsUtils.PIC_DIR)));
-                    }
-                }
-            }
-            /*
-            对商品规格信息的操作
+            添加商品规格信息
             */
             List<JSONObject> list = goods.get("goods_sku_list");
+//            List<goods_sku> skuList = new ArrayList<goods_sku>();
+            //非空判断
             if (list != null && list.size() > 0) {
                 for (JSONObject obj : list) {
-                    //status为1表示新增商品规格
-                    if (Integer.parseInt(obj.get("status").toString()) == 1) {
-                        goods_sku goodsSku = new goods_sku();
+                    goods_sku goodsSku = new goods_sku();
+                    if(obj.get("sku_id")==null){
                         goodsSku.set("status", ConstantsUtils.RELEASE_STATUS_OFF);//商品规格状态(0 未上架 1 已上架)
                         goodsSku.set("area_id", ConstantsUtils.ALL_AREA_ID);
-                        goodsSku.set("goods_num", goodsInfo.get("num"));
+                        goodsSku.set("goods_num", info.<Long>get("goods_num"));
                         goodsSku.set("amount", obj.get("sku_amount"));
                         goodsSku.set("name", obj.get("sku_name"));
                         goodsSku.set("unit_id", obj.get("sku_unit_id"));
                         goodsSku.set("seller_id", seller_id);
                         goodsSku.save();
-                    } else {
-                        goods_sku goodsSku = new goods_sku();
-                        goodsSku.set("id", obj.get("sku_id"));
-                        switch (Integer.parseInt(obj.get("status").toString())) {
-                            case 2: //status为2表示修改商品规格
-                                goodsSku.set("amount", obj.get("sku_amount"));
-                                goodsSku.set("name", obj.get("sku_name"));
-                                goodsSku.set("unit_id", obj.get("sku_unit_id"));
-                                break;
-                            case 3: //status为3表示删除商品规格
-                                goodsSku.set("deleted_at", new Date());
-                                break;
-                        }
-                        goodsSku.update();
                     }
+//                    else {
+//                        goodsSku.set("id",obj.get("sku_id"));
+//                        goodsSku.set("amount", obj.get("sku_amount"));
+//                        goodsSku.set("name", obj.get("sku_name"));
+//                        goodsSku.set("unit_id", obj.get("sku_unit_id"));
+//                        goodsSku.update();
+//                    }
+//                    skuList.add(goodsSku);
                 }
             }
+//            goods_sku.dao.save(skuList);
             return CommonUtils.getCodeMessage(true, "修改商品成功");
-        } else {
+        } else{
             return CommonUtils.getCodeMessage(false, "修改商品失败");
         }
+    }
 
+//    /**
+//     * 编辑商品
+//     *
+//     * @param goods          商品信息
+//     * @param id             商品id
+//     * @param delete_pic_url 删除的图片地址
+//     * @return
+//     */
+//    @PUT("/:id")
+//    @Transaction
+//    public HashMap edit(goods_info goods, Long id, String delete_pic_url) {
+//        /*
+//        修改商品基本信息
+//        */
+//        goods_info info = goods.get("goods_info", goods_info.class);
+//        goods_info goodsInfo = goods_info.dao.findById(id);
+//        if (goodsInfo.<Long>get("seller_id") == seller_id) {
+//            goodsInfo.set("name", info.get("goods_name"));
+//            goodsInfo.update();
+//            /*
+//            删除商品图片
+//            */
+//            if (delete_pic_url != null) {
+//                String[] deletePic = delete_pic_url.split(",");
+//                for (String delete_pic : deletePic) {
+//                    if (delete_pic.indexOf(ConstantsUtils.PIC_DIR) != -1) {
+//                        deleteMainPic(delete_pic.substring(delete_pic.indexOf(ConstantsUtils.PIC_DIR)));
+//                    }
+//                }
+//            }
+//            /*
+//            对商品规格信息的操作
+//            */
+//            List<JSONObject> list = goods.get("goods_sku_list");
+//            if (list != null && list.size() > 0) {
+//                for (JSONObject obj : list) {
+//                    //status为1表示新增商品规格
+//                    if (Integer.parseInt(obj.get("status").toString()) == 1) {
+//                        goods_sku goodsSku = new goods_sku();
+//                        goodsSku.set("status", ConstantsUtils.RELEASE_STATUS_OFF);//商品规格状态(0 未上架 1 已上架)
+//                        goodsSku.set("area_id", ConstantsUtils.ALL_AREA_ID);
+//                        goodsSku.set("goods_num", goodsInfo.get("num"));
+//                        goodsSku.set("amount", obj.get("sku_amount"));
+//                        goodsSku.set("name", obj.get("sku_name"));
+//                        goodsSku.set("unit_id", obj.get("sku_unit_id"));
+//                        goodsSku.set("seller_id", seller_id);
+//                        goodsSku.save();
+//                    } else {
+//                        goods_sku goodsSku = new goods_sku();
+//                        goodsSku.set("id", obj.get("sku_id"));
+//                        switch (Integer.parseInt(obj.get("status").toString())) {
+//                            case 2: //status为2表示修改商品规格
+//                                goodsSku.set("amount", obj.get("sku_amount"));
+//                                goodsSku.set("name", obj.get("sku_name"));
+//                                goodsSku.set("unit_id", obj.get("sku_unit_id"));
+//                                break;
+//                            case 3: //status为3表示删除商品规格
+//                                goodsSku.set("deleted_at", new Date());
+//                                break;
+//                        }
+//                        goodsSku.update();
+//                    }
+//                }
+//            }
+//            return CommonUtils.getCodeMessage(true, "修改商品成功");
+//        } else {
+//            return CommonUtils.getCodeMessage(false, "修改商品失败");
+//        }
+//
+//    }
+
+    /**
+     * 批量删除商品
+     * @param goods_list    商品列表
+     * @return
+     */
+    @POST("/delete")
+    @Transaction
+    public HashMap delete(List<JSONObject> goods_list) {
+        //非空判断
+        if (goods_list != null && goods_list.size() > 0) {
+            for (JSONObject obj : goods_list) {
+                if (obj.get("sku_id") != null) {//商品规格ID不为空时，只删除商品规格信息
+                    goods_sku.dao.updateColsBy("deleted_at", "id = ? AND seller_id = ?",
+                            new Date(), obj.get("sku_id"), seller_id);
+                    //删除商品规格价格
+                    goods_sku_price.dao.deleteBy("sku_id = ? AND seller_id = ?",
+                            obj.get("sku_id"), seller_id);
+                } else { //商品规格ID为空时，删除商品及规格信息
+                    //删除商品
+                    goods_info.dao.updateColsBy("deleted_at", "num = ? AND seller_id = ?",
+                            new Date(), obj.get("goods_num"), seller_id);
+                    //删除商品规格
+                    goods_sku.dao.updateColsBy("deleted_at","goods_num=? AND seller_id = ?",
+                            new Date(), obj.get("goods_num"), seller_id);
+                    //删除商品价格
+                    goods_sku_price.dao.deleteBy("goods_num=?  AND seller_id = ?",
+                            obj.get("goods_num"),seller_id);
+                }
+            }
+            return CommonUtils.getCodeMessage(true, "删除商品成功");
+        }else{
+            return CommonUtils.getCodeMessage(false, "删除商品失败");
+        }
     }
 
     /**
@@ -361,10 +485,12 @@ public class GoodsResource extends SellerResource {
      * @return 图片名称
      */
     @POST("/upload/main")
-    @FILE(dir = ConstantsUtils.GOODS_MAIN_PIC, overwrite = true, allows = {"image/png", "image/jpg", "image/gif", "image/bmp"})
-    public String mainPic(UploadedFile main_pic) {
+    @FILE(dir = ConstantsUtils.GOODS_MAIN_PIC, overwrite = true, allows = {"image/png", "image/jpg", "image/gif", "image/bmp","image/jpeg"})
+    public HashMap mainPic(UploadedFile main_pic) {
         String mainPicUrl = this.getRequest().getBaseUri() + ConstantsUtils.GOODS_MAIN_PIC + main_pic.getFileName();
-        return mainPicUrl;
+        HashMap resultMap = new HashMap();
+        resultMap.put("main_pic_url",mainPicUrl);
+        return resultMap;
     }
 
     /**
@@ -374,8 +500,8 @@ public class GoodsResource extends SellerResource {
      * @return 图片名称
      */
     @POST("/upload/detail")
-    @FILE(dir = ConstantsUtils.GOODS_DETAIL_PIC, overwrite = true, allows = {"image/png", "image/jpg", "image/gif", "image/bmp"})
-    public String detailPic(Map<String, UploadedFile> picMap) {
+    @FILE(dir = ConstantsUtils.GOODS_DETAIL_PIC, overwrite = true, allows = {"image/png", "image/jpg", "image/gif", "image/bmp","image/jpeg"})
+    public HashMap detailPic(Map<String, UploadedFile> picMap) {
         String baseUri = this.getRequest().getBaseUri() + ConstantsUtils.GOODS_DETAIL_PIC;
         String fileUrl = "";
         if (picMap != null && picMap.size() > 0) {
@@ -388,7 +514,9 @@ public class GoodsResource extends SellerResource {
                 }
             }
         }
-        return fileUrl;
+        HashMap resultMap = new HashMap();
+        resultMap.put("detail_pic_url",fileUrl);
+        return resultMap;
     }
 
     /**
