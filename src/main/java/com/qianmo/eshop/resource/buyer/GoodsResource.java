@@ -75,27 +75,28 @@ public class GoodsResource extends BuyerResource {
                 sql = sql + " ORDER BY b.release_date DESC";
             }
             //按价格排序
-            if (sort_style != null && sort_style == ConstantsUtils.SORT_PRICE) {
-                sql = sql + ",c.price";
-                if (sort_type != null && sort_type == ConstantsUtils.SORT_ASC) {
-                    sql = sql + " ASC";//升序
-                } else {
-                    sql = sql + " DESC";//降序
-                }
-
-            }
-        } else {
-            //按价格排序
-            if (sort_style != null && sort_style == ConstantsUtils.SORT_PRICE) {
-                sql = sql + "c.price";
-                //是否升序
-                if (sort_type != null && sort_type == ConstantsUtils.SORT_ASC) {
-                    sql = sql + " ASC";//升序
-                } else {
-                    sql = sql + " DESC";//降序
-                }
-            }
+//            if (sort_style != null && sort_style == ConstantsUtils.SORT_PRICE) {
+//                sql = sql + ",c.price";
+//                if (sort_type != null && sort_type == ConstantsUtils.SORT_ASC) {
+//                    sql = sql + " ASC";//升序
+//                } else {
+//                    sql = sql + " DESC";//降序
+//                }
+//
+//            }
         }
+//        else {
+//            //按价格排序
+//            if (sort_style != null && sort_style == ConstantsUtils.SORT_PRICE) {
+//                sql = sql + "c.price";
+//                //是否升序
+//                if (sort_type != null && sort_type == ConstantsUtils.SORT_ASC) {
+//                    sql = sql + " ASC";//升序
+//                } else {
+//                    sql = sql + " DESC";//降序
+//                }
+//            }
+//        }
         List<GoodsInfo> goodsList = new ArrayList<GoodsInfo>();
         FullPage<goods_info> list = goods_info.dao.fullPaginate(page_start / page_step + 1,
                 page_step, sql, buyer_id);
