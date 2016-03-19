@@ -7,10 +7,7 @@ import cn.dreampie.route.annotation.GET;
 import cn.dreampie.route.annotation.POST;
 import cn.dreampie.route.annotation.PUT;
 import com.alibaba.fastjson.JSONObject;
-import com.qianmo.eshop.common.CodeUtils;
-import com.qianmo.eshop.common.ConstantsUtils;
-import com.qianmo.eshop.common.SessionUtil;
-import com.qianmo.eshop.common.YamlRead;
+import com.qianmo.eshop.common.*;
 import com.qianmo.eshop.model.buyer.buyer_receive_address;
 import com.qianmo.eshop.model.cart.cart;
 import com.qianmo.eshop.model.goods.goods_category;
@@ -108,14 +105,17 @@ public class OrderResource extends BuyerResource {
      */
     @PUT
     @Transaction
-    public Map opOrder(Integer bank_id, long order_num, int op, String value, List<Map> goods) {
+    public Map opOrder(Long bank_id, long order_num, int op, String value, List<Map> goods) {
         long buyer_id = SessionUtil.getUserId();
         switch (op) {
             case ConstantsUtils.ORDER_OP_PAY_TYPE:
+                //1：银行汇款 2：货到付款 3：记账 4：在线支付
                 if ("1".equals(value)) {                               // 当支付方式选择银行支付的时候
                     if (bank_id != null) {
                         order_info.dao.update("update order_info set pay_type_id = ?  where num = ? ", op, order_num);
                     }
+                } else {
+                    order_info.dao.update("update order_info set pay_type_id = ?  where num = ? ", op, order_num);
                 }
                 break;
             case ConstantsUtils.ORDER_OP_BANK:
@@ -130,18 +130,19 @@ public class OrderResource extends BuyerResource {
                 order_info.dao.update("update order_info set status = ?  where num = ? ", ConstantsUtils.ORDER_INFO_STATUS_FINISHED, order_num);
                 break;
             case ConstantsUtils.ORDER_OP_PAY_CELL: // 4 取消订单
-                order_info o = new order_info();
+                order_info o = order_info.dao.findFirstBy(" num = ?",order_num);
                 if (o.get("status") == ConstantsUtils.ORDER_INFO_STATUS_CREATED
                         || o.get("pay_status") == ConstantsUtils.ORDER_PAYMENT_STATUS_WAITE) {
                     order_info.dao.update("update order_info set status = ?  where num = ? ", ConstantsUtils.ORDER_INFO_STATUS_CANCEL, order_num);
-                    new order_remark().set("order_num", order_num).set("op", op).set("reason", value).set("user_id", buyer_id).save();
+                    new order_remark().set("order_num", order_num).set("op", op).set("reason", value).set("user_id", buyer_id).set("area_id",ConstantsUtils.ALL_AREA_ID).set("details","").save();
+                } else {
+                    return CommonUtils.getCodeMessage(false,"不允许取消");
                 }
                 break;
             case ConstantsUtils.ORDER_OP_BUYER_AGAIN:  //5再买一次  添加一次购物车
                 CartResource cartResource = new CartResource();
                 cartResource.addCartGoods(goods);
                 break;
-
         }
         return setResult("操作订单成功");
     }

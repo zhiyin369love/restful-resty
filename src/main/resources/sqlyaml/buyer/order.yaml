@@ -2,7 +2,7 @@ getFieldOrderIdAll:
   select id from order_info where num = ?
 
 getFieldOrderInfoAll:
-  select oi.created_at as created_at,oi.id as order_id ,oi.num as order_num ,oi.status as order_status,oi.pay_status as pay_status,oi.pay_type_id as pay_type,oi.total_price as total_price, ou.seller_id as seller_id,ui.name as seller_name
+  select oi.created_at as created_at,oi.id as order_id ,cast(oi.num as CHAR)  order_num ,oi.status as order_status,oi.pay_status as pay_status,oi.pay_type_id as pay_type,oi.total_price as total_price, ou.seller_id as seller_id,ui.name as seller_name
   from order_info oi left join order_user ou on oi.num = ou.order_num left join user_info ui on ui.id = ou.seller_id
   where  oi.id = ?
 

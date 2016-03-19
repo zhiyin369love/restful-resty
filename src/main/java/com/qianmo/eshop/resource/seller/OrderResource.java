@@ -73,7 +73,7 @@ public class OrderResource extends SellerResource {
      * @return
      */
     @PUT("/:id")
-    public Map opOrder(Integer id, int op, String remark) {
+    public Map opOrder(Long id, int op, String remark) {
 
         if (op == ConstantsUtils.SELLER_ORDER_OP_PAY_TYPE) {
             //收到货款
@@ -84,8 +84,12 @@ public class OrderResource extends SellerResource {
             new order_remark().set("order_num", id).set("op", op).set("details", remark).save();
         } else if (op == ConstantsUtils.SELLER_ORDER_OP_PAY_STATUS) {
             //取消
-            order_info.dao.update("update order_info set status = ?  where id = ? ", ConstantsUtils.ORDER_INFO_STATUS_CANCEL, id);
-            new order_remark().set("order_num", id).set("op", op).set("details", remark).save();
+            order_info orderInfo = order_info.dao.findFirstBy("num = ?",id);
+            order_user orderUser = order_user.dao.findFirstBy(" order_num = ?",id);
+            orderInfo.set("status",ConstantsUtils.ORDER_INFO_STATUS_CANCEL).update();
+            //order_info.dao.update("update order_info set status = ?  where id = ? ", ConstantsUtils.ORDER_INFO_STATUS_CANCEL, id);
+            new order_remark().set("order_num", id).set("op", op).set("details", remark).set("reason", "").set("user_id", orderUser.get("seller_id")).set("area_id",ConstantsUtils.ALL_AREA_ID).save();
+            //new order_remark().set("order_num", order_num).set("op", op).set("reason", value).set("user_id", buyer_id).set("area_id",ConstantsUtils.ALL_AREA_ID).set("details","").save();
         } else if (op == ConstantsUtils.SELLER_ORDER_OP_PAY_GOODS) {
             //卖家备注订单
             new order_remark().set("order_num", id).set("op", op).set("details", remark).save();
@@ -94,10 +98,11 @@ public class OrderResource extends SellerResource {
             HashMap result3 = new HashMap();
             String creditorder = YamlRead.getSQL("getFileCreditOrderUserAll", "seller/order");
             order_user o = order_user.dao.findFirst(creditorder, id);
+            order_info.dao.update("update order_info set pay_status = ?  where num = ? ", ConstantsUtils.ORDER_PAYMENT_STATUS_RECEIVED, id);
             new credit().set("area_id", ConstantsUtils.ALL_AREA_ID).set("order_num", id).set("status", 0).set("buyer_id", o.get("buyer_id")).set("seller_id", o.get("seller_id")).save();
         } else {
             //当卖家不同意买家赊账时订单取消 op==5时
-            order_info.dao.update("update order_info set status = ? where id = ? ", ConstantsUtils.ORDER_INFO_STATUS_CANCEL, id);    //注：除了要删除订单主表之外，可能还要删除其他关联表，“待开发”
+            order_info.dao.update("update order_info set status = ? where num = ? ", ConstantsUtils.ORDER_INFO_STATUS_CANCEL, id);    //注：除了要删除订单主表之外，可能还要删除其他关联表，“待开发”
         }
         return CommonUtils.getCodeMessage(true,"操作订单成功");
     }

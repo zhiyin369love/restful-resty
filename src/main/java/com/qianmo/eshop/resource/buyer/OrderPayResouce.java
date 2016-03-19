@@ -22,7 +22,7 @@ import java.util.Map;
  *
  * @author wss
  */
-@API("/pay/order")
+@API("/order/pay")
 public class OrderPayResouce extends BuyerResource {
     /**
      * @param id
