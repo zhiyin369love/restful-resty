@@ -40,7 +40,7 @@ public class GoodsResource extends SellerResource {
     @GET
     public HashMap list(String goods_name, Integer goods_status, Integer category_id,
                         Integer sub_category_id, Integer page_start, Integer page_step) {
-        String countSql = "SELECT distinct a.id FROM goods_info a " +
+        String countSql = "SELECT DISTINCT a.id FROM goods_info a " +
                 "INNER JOIN goods_sku b ON a.num = b.goods_num " +
                 "WHERE a.seller_id = ? AND a.deleted_at IS NULL AND b.deleted_at IS NULL ";
         HashMap resultMap = new HashMap();
