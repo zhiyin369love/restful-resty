@@ -98,8 +98,8 @@ public class GoodsResource extends BuyerResource {
 //            }
 //        }
         List<GoodsInfo> goodsList = new ArrayList<GoodsInfo>();
-        FullPage<goods_info> list = goods_info.dao.fullPaginate(page_start / page_step + 1,
-                page_step, sql, buyer_id);
+        FullPage<goods_info> list = goods_info.dao.fullPaginate(page_start / page_step + 1,page_step, sql, buyer_id);
+        int total_count = list.getTotalRow();
         String skuSql = "SELECT a.id sku_id,a.name sku_name, IFNULL(b.price,a.list_price) price, " +
                 " IFNULL(b.status,1) status FROM goods_sku a " +
                 " LEFT JOIN goods_sku_price b ON a.id = b.sku_id AND b.buyer_id = ? " +
@@ -137,11 +137,13 @@ public class GoodsResource extends BuyerResource {
                 if (goodsSkuList!=null && goodsSkuList.size()>0){
                     goodsInfo.setGoods_sku_list(goodsSkuList);
                     goodsList.add(goodsInfo);
+                }else{
+                    total_count--;
                 }
             }
         }
         resultMap.put("goods_list", goodsList);
-        resultMap.put("total_count", goodsList.size());
+        resultMap.put("total_count", total_count);
         return resultMap;
 
 

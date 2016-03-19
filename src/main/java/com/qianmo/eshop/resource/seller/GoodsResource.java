@@ -40,6 +40,9 @@ public class GoodsResource extends SellerResource {
     @GET
     public HashMap list(String goods_name, Integer goods_status, Integer category_id,
                         Integer sub_category_id, Integer page_start, Integer page_step) {
+        String countSql = "SELECT distinct a.id FROM goods_info a " +
+                "INNER JOIN goods_sku b ON a.num = b.goods_num " +
+                "WHERE a.seller_id = ? AND a.deleted_at IS NULL AND b.deleted_at IS NULL ";
         HashMap resultMap = new HashMap();
         if (category_id == null) {
             return resultMap;
@@ -59,26 +62,30 @@ public class GoodsResource extends SellerResource {
          */
         if (sub_category_id != null && sub_category_id > 0) {
             sql = sql + " AND a.category_id=" + sub_category_id;
+            countSql = countSql + " AND a.category_id=" + sub_category_id;
         } else {
             sql = sql + " AND a.category_id in (SELECT id from goods_category where pid=" + category_id + ")";
+            countSql = countSql + " AND a.category_id in (SELECT id from goods_category where pid=" + category_id + ")";
         }
         /*
         判断是否根据商品上下架状态查商品
          */
         if (goods_status != null) {
             sql = sql + " AND b.status=" + goods_status;
+            countSql = countSql + " AND b.status="+goods_status;
         }
         /*
         判断是否根据商品名称模糊搜索
          */
         if (goods_name != null && !"".equals(goods_name)) {
             sql = sql + " AND a.name like '%" + goods_name + "%'";
+            countSql = countSql + " AND a.name like '%" + goods_name + "%'";
         }
         HashMap<Long, GoodsInfo> map = new HashMap<Long, GoodsInfo>();
         FullPage<goods_info> list = goods_info.dao.fullPaginate(page_start / page_step + 1,
                 page_step, sql, seller_id);
         //查询结果非空判断
-        if (list != null && list.getTotalRow() > 0) {
+        if (list != null && list.getList().size() > 0) {
             for (goods_info goodsInfo : list.getList()) {
                 GoodsInfo goods = map.get(goodsInfo.<Long>get("goods_id")); //
                 if (goods == null) {
@@ -146,8 +153,15 @@ public class GoodsResource extends SellerResource {
                 goodsInfoList.add(map.get(goodsId));
             }
         }
+
+        List countList = goods_info.dao.find(countSql,seller_id);
         resultMap.put("goods_list", goodsInfoList);
-        resultMap.put("total_count", goodsInfoList.size());
+        if(countList!=null){
+            resultMap.put("total_count", countList.size());
+        } else{
+            resultMap.put("total_count", 0);
+        }
+
         return resultMap;
     }
 
