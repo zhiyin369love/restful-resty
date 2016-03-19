@@ -1,5 +1,7 @@
 package com.qianmo.eshop.resource.buyer;
 
+import cn.dreampie.common.http.result.HttpStatus;
+import cn.dreampie.orm.page.FullPage;
 import cn.dreampie.orm.page.Page;
 import cn.dreampie.orm.transaction.Transaction;
 import cn.dreampie.route.annotation.API;
@@ -107,44 +109,53 @@ public class OrderResource extends BuyerResource {
     @Transaction
     public Map opOrder(Long bank_id, long order_num, int op, String value, List<Map> goods) {
         long buyer_id = SessionUtil.getUserId();
+        boolean isSuccess = false;
+        Map result = new HashMap();
         switch (op) {
             case ConstantsUtils.ORDER_OP_PAY_TYPE:
                 //1：银行汇款 2：货到付款 3：记账 4：在线支付
                 if ("1".equals(value)) {                               // 当支付方式选择银行支付的时候
                     if (bank_id != null) {
-                        order_info.dao.update("update order_info set pay_type_id = ?  where num = ? ", op, order_num);
+                        isSuccess = order_info.dao.update("update order_info set pay_type_id = ?  where num = ? ", Long.valueOf(value), order_num);
                     }
                 } else {
-                    order_info.dao.update("update order_info set pay_type_id = ?  where num = ? ", op, order_num);
+                    isSuccess = order_info.dao.update("update order_info set pay_type_id = ?  where num = ? ", Long.valueOf(value), order_num);
                 }
                 break;
             case ConstantsUtils.ORDER_OP_BANK:
-                if (bank_id != null) {  // 1 选择银行  目前默认为农行
+                /*if (bank_id != null) {  // 1 选择银行  目前默认为农行
                     //待开发
-                }
+                }*/
                 break;
             case ConstantsUtils.ORDER_OP_PAY_STATUS: // 2 我已付款
-                order_info.dao.update("update order_info set pay_status = ?  where num = ? ", ConstantsUtils.ORDER_PAYMENT_STATUS_RECEIVED, order_num);
+                isSuccess = order_info.dao.update("update order_info set pay_status = ?  where num = ? ", ConstantsUtils.ORDER_PAYMENT_STATUS_WAITE_TRUE, order_num);
                 break;
             case ConstantsUtils.ORDER_OP_PAY_GOODS: // 3 确认收货
-                order_info.dao.update("update order_info set status = ?  where num = ? ", ConstantsUtils.ORDER_INFO_STATUS_FINISHED, order_num);
+                isSuccess = order_info.dao.update("update order_info set status = ?  where num = ? ", ConstantsUtils.ORDER_INFO_STATUS_FINISHED, order_num);
                 break;
             case ConstantsUtils.ORDER_OP_PAY_CELL: // 4 取消订单
-                order_info o = order_info.dao.findFirstBy(" num = ?",order_num);
+                order_info o = order_info.dao.findFirstBy(" num = ?", order_num);
                 if (o.get("status") == ConstantsUtils.ORDER_INFO_STATUS_CREATED
                         || o.get("pay_status") == ConstantsUtils.ORDER_PAYMENT_STATUS_WAITE) {
-                    order_info.dao.update("update order_info set status = ?  where num = ? ", ConstantsUtils.ORDER_INFO_STATUS_CANCEL, order_num);
-                    new order_remark().set("order_num", order_num).set("op", op).set("reason", value).set("user_id", buyer_id).set("area_id",ConstantsUtils.ALL_AREA_ID).set("details","").save();
+                    isSuccess = order_info.dao.update("update order_info set status = ?  where num = ? ", ConstantsUtils.ORDER_INFO_STATUS_CANCEL, order_num);
+                    isSuccess = new order_remark().set("order_num", order_num).set("op", op).set("reason", value).set("user_id", buyer_id).set("area_id", ConstantsUtils.ALL_AREA_ID).set("details", "").save();
                 } else {
-                    return CommonUtils.getCodeMessage(false,"不允许取消");
+                    return CommonUtils.getCodeMessage(false, "不允许取消");
                 }
                 break;
             case ConstantsUtils.ORDER_OP_BUYER_AGAIN:  //5再买一次  添加一次购物车
                 CartResource cartResource = new CartResource();
-                cartResource.addCartGoods(goods);
+                result = cartResource.addCartGoods(goods);
+                if("200".equals(result.get("code").toString())) {
+                    isSuccess = true;
+                }
                 break;
         }
-        return setResult("操作订单成功");
+        if (isSuccess) {
+            return setResult("操作订单成功");
+        } else {
+            return CommonUtils.getCodeMessage(false,"操作订单失败");
+        }
     }
 
     private Map setResult(String message) {
@@ -177,14 +188,14 @@ public class OrderResource extends BuyerResource {
             page_step = ConstantsUtils.DEFAULT_PAGE_STEP;
         }
         int pageNumber = page_start / page_step + 1;
-        Page<order_info> orderUserPage = null;
+        FullPage<order_info> orderUserPage = null;
         String getOrderNumByStatusSql = YamlRead.getSQL("getOrderNumByStatus", "buyer/order");
         if (order_status != null) {
             getOrderNumByStatusSql = getOrderNumByStatusSql + "  and a.status = ?";
-            orderUserPage = order_info.dao.paginate(pageNumber, page_step, getOrderNumByStatusSql, buyerId, order_status);
+            orderUserPage = order_info.dao.fullPaginate(pageNumber, page_step, getOrderNumByStatusSql, buyerId, order_status);
             orderUserList = orderUserPage == null ? new ArrayList<order_info>() : orderUserPage.getList();
         } else {
-            orderUserPage = order_info.dao.paginate(pageNumber, page_step, getOrderNumByStatusSql, buyerId);
+            orderUserPage = order_info.dao.fullPaginate(pageNumber, page_step, getOrderNumByStatusSql, buyerId);
             orderUserList = orderUserPage == null ? new ArrayList<order_info>() : orderUserPage.getList();
         }
         //订单实体
@@ -200,7 +211,7 @@ public class OrderResource extends BuyerResource {
         HashMap resultMap = new HashMap();
         resultMap.put("order_list", resultMapList);
         JSONObject pageInfo = new JSONObject();
-        pageInfo.put("total_count", resultMapList.size());
+        pageInfo.put("total_count", orderUserPage.getTotalRow());
         resultMap.put("page_info", pageInfo);
         return resultMap;
        /* HashMap result = new HashMap();
@@ -287,7 +298,7 @@ public class OrderResource extends BuyerResource {
                 Integer goods_sku_count = cart.get("goods_sku_count");
                 BigDecimal goods_sku_price = results_goods.get("price");
                 BigDecimal single_total_price = new BigDecimal(goods_sku_count).multiply(goods_sku_price);
-                total_price.add(single_total_price);
+                total_price = total_price.add(single_total_price);
                 //插入订单商品表和订单用户表
                 new order_goods().set("area_id", cart.get("area_id")).set("goods_num", cart.get("goods_num")).set("sku_id", cart.get("goods_sku_id")).set("order_num", num).set("goods_sku_price", goods_sku_price).set("goods_sku_count", cart.get("goods_sku_count")).set("single_total_price", single_total_price).save();
             }

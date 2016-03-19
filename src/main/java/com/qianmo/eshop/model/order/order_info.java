@@ -4,6 +4,8 @@ import cn.dreampie.orm.Model;
 import cn.dreampie.orm.annotation.Table;
 import com.qianmo.eshop.common.ConstantsUtils;
 
+import java.math.BigDecimal;
+
 /**
  * Created by ccq on 16-1-1.
  */
@@ -16,8 +18,8 @@ public class order_info extends Model<order_info> {
      * 根据卖家id获取当日交易总金额
      * @param seller_id
      */
-    public double getDayTotalPrice(long seller_id) {
-        return order_info.dao.findFirst("select sum(total_price) totalPice from order_info oi left join order_user ou on oi.num = ou.order_num where ou.seller_id = ?  and oi.status != ? and date(oi.created_at) = date(sysdate())",seller_id, ConstantsUtils.ORDER_INFO_STATUS_CANCEL).<Double>get("totalPice");
+    public BigDecimal getDayTotalPrice(long seller_id) {
+        return order_info.dao.findFirst("select sum(total_price) totalPice from order_info oi left join order_user ou on oi.num = ou.order_num where ou.seller_id = ?  and oi.status != ? and date(oi.created_at) = date(sysdate())",seller_id, ConstantsUtils.ORDER_INFO_STATUS_CANCEL).<BigDecimal>get("totalPice");
     }
 
     /**
@@ -25,7 +27,7 @@ public class order_info extends Model<order_info> {
      * @param seller_id
      */
     public long getDayTotalOrder(long seller_id) {
-       return  order_info.dao.findFirst("select count(*) cn from order_info oi left join order_user ou on oi.num = ou.order_num where ou.seller_id = ?  and oi.status != ? and date(oi.created_at) = date(sysdate())", seller_id, ConstantsUtils.ORDER_INFO_STATUS_CANCEL).<Long>get("cn");
+       return  order_info.dao.findFirst("select count(*) cn from order_info oi left join order_user ou on oi.num = ou.order_num where ou.seller_id = ?   and date(oi.created_at) = date(sysdate())", seller_id).<Long>get("cn");
     }
 
 

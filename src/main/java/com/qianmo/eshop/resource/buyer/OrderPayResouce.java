@@ -37,7 +37,6 @@ public class OrderPayResouce extends BuyerResource {
         if(buyerSellerList == null || buyerSellerList.size() <= 0) {
             return CommonUtils.getCodeMessage(false,"非本人绑定的经销商");
         }
-
         //获取支付方式sql
         String getPaySql = YamlRead.getSQL("getSellPayList", "buyer/order");
         //获取支付银行列表sql
@@ -67,26 +66,7 @@ public class OrderPayResouce extends BuyerResource {
                 resultMapList.add(sellPayMap);
             }
         }
-
         result.put("seller_pay_list",resultMapList);
-
-        //result2.put("pay_bank_list",);
-        //支付方式相关查询sql
-           /* String sql2 = YamlRead.getSQL("getFieldSellerPayAll","buyer/order");
-            seller_pay o = new seller_pay();
-            if(seller_pay.dao.find(sql2,id)!=null && seller_pay.dao.find(sql2,id).size()>0){
-                o = seller_pay.dao.find(sql2,id).get(0);
-            }*/
-           /* seller_pay o = seller_pay.dao.findFirstBy("seller_id = ?",id);
-            result2.put("details",o.get("details"));
-            result2.put("pay_id",o.get("id"));
-            result2.put("pay_name",o.get("name"));
-            result2.put("seller_id",o.get("seller_id"));
-            result2.put("status",o.get("status"));
-
-            result.put("seller_pay",result2);*/
         return result;
-
     }
-
 }

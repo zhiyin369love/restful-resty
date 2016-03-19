@@ -309,10 +309,10 @@ public class RetailerResource extends ApiResource {
                     goodsSkuPriceResultList.add(goodsSkuPrice);
                 }
             }
+            resultMap.put("buyer_price_list", goodsSkuPriceResultList);
+            resultMap.put("total_count", goodsSkuFullPageList.getTotalRow());
+            resultMap.put("page_size", page_step);
         }
-        resultMap.put("buyer_price_list", goodsSkuPriceResultList);
-        resultMap.put("total_count", goodsSkuPriceResultList.size());
-        resultMap.put("page_size", page_step);
         return resultMap;
     }
 

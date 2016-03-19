@@ -39,9 +39,9 @@ public class IndexResource extends SellerResource {
             return setResult("输入参数有误");
         }
         //零售商数量
-        long cartNum = cart.dao.findFirst("select count(*) cn from buyer_seller where seller_id = ?", seller_id).<Long>get("cn");
+        long cartNum = cart.dao.findFirst("select count(*) cn from buyer_seller where seller_id = ? and status = 1", seller_id).<Long>get("cn");
         //赊账零售商数量
-        long cancelStatusNum = credit.dao.findFirst("select count(*) cn from credit where seller_id = ? and status = ?", seller_id, ConstantsUtils.CREDIT_CANCEL_STATUS).<Long>get("cn");
+        long cancelStatusNum = credit.dao.findFirst("select count(distinct(buyer_id)) cn from credit where seller_id = ? and status = ?", seller_id, ConstantsUtils.CREDIT_CANCEL_STATUS).<Long>get("cn");
         //赊账总数量
         double cancelSum = new credit().getTotalPriceBySellerIdStatus(seller_id, ConstantsUtils.CREDIT_CANCEL_STATUS).<BigDecimal>get("total").doubleValue();
         //客服电话
@@ -52,7 +52,7 @@ public class IndexResource extends SellerResource {
         //今日订单数
         long orderNum =  orderInfo.getDayTotalOrder(seller_id);
         //今日交易额
-        double totalPrice = orderInfo.getDayTotalPrice(seller_id);
+        BigDecimal totalPrice = orderInfo.getDayTotalPrice(seller_id);
         //待发货订单数
         long waitSendOrders = getOrderInfoBySellingStatus(seller_id, ConstantsUtils.ORDER_INFO_STATUS_WAIT_RECEIVE);
         //待收款订单数

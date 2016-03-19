@@ -142,7 +142,7 @@ public class IndexResource extends ApiResource {
             long receiveWait = order_info.dao.findFirst("SELECT COUNT(*) cn FROM order_info a  LEFT JOIN order_user b" +
                     "                ON a.num = b.order_num" +
                     "                WHERE  a.status = ? and b.order_num IS NOT NULL AND b.buyer_id = ? AND b.area_id = ?", ConstantsUtils.ORDER_INFO_STATUS_WAIT_RECEIVE, buyer_id, ConstantsUtils.ALL_AREA_ID).<Long>get("cn");
-            total.put("todo_pay_count", receiveWait);
+            total.put("todo_pay_count", payWait);
             total.put("todo_receive_count", receiveWait);
             resultMap.put("total", total);
             //  return resultMap;
