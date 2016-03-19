@@ -175,4 +175,14 @@ public class ApiResource extends Resource {
         }
         return new WebResult<Map<String, Object>>(HttpStatus.CREATED, result);
     }
+
+    /**
+     * 获取当前登录个人信息
+     *
+     * @return
+     */
+    @GET("/user")
+    public user_info getUserInfo() {
+        return user_info.dao.getUserInfo();
+    }
 }
