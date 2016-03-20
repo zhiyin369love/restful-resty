@@ -108,8 +108,11 @@ public class GoodsResource extends BuyerResource {
                  }
              }
         }
-        sql = sql + " AND b.num in ("+goodsNum+")";
-        List<goods_info> list = goods_info.dao.find(sql,buyer_id);
+        List<goods_info> list = null;
+        if (!"".equals(goodsNum)){
+            sql = sql + " AND b.num in ("+goodsNum+")";
+            list = goods_info.dao.find(sql,buyer_id);
+        }
 //        FullPage<goods_info> list = goods_info.dao.fullPaginate(page_start / page_step + 1,
 //                page_step, sql, buyer_id);
 //        List countList = goods_info.dao.find(countSql,buyer_id);
