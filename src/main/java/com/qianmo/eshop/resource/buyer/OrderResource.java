@@ -138,7 +138,7 @@ public class OrderResource extends BuyerResource {
                 if (o.get("status") == ConstantsUtils.ORDER_INFO_STATUS_CREATED
                         || o.get("pay_status") == ConstantsUtils.ORDER_PAYMENT_STATUS_WAITE) {
                     isSuccess = order_info.dao.update("update order_info set status = ?  where num = ? ", ConstantsUtils.ORDER_INFO_STATUS_CANCEL, order_num);
-                    isSuccess = new order_remark().set("order_num", order_num).set("op", op).set("reason", value).set("user_id", buyer_id).set("area_id", ConstantsUtils.ALL_AREA_ID).set("details", "").save();
+                    //isSuccess = new order_remark().set("order_num", order_num).set("op", op).set("reason", value).set("user_id", buyer_id).set("area_id", ConstantsUtils.ALL_AREA_ID).set("details", "").save();
                 } else {
                     return CommonUtils.getCodeMessage(false, "不允许取消");
                 }
