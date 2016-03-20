@@ -72,7 +72,7 @@ public class IndexResource extends SellerResource {
         //今日订单数
         total.put("today_order_count", orderNum);
         //今日交易额
-        total.put("today_order_price", totalPrice);
+        total.put("today_order_price", totalPrice==null?0:totalPrice);
         //待发货订单数
         total.put("todo_delivery_count", waitSendOrders);
         //待付款订单数
@@ -88,7 +88,7 @@ public class IndexResource extends SellerResource {
     }
 
     private Long getOrderInfoBySellingStatus(long seller_id, int status) {
-        return order_info.dao.findFirst("select count(*) cn from order_info where seller_id = ?  and status = ? ", seller_id, status).<Long>get("cn");
+        return order_info.dao.findFirst("select count(*) cn from order_info oi left join order_user ou on oi.num = ou.order_num where ou.seller_id = ?   and oi.status = ? ", seller_id, status).<Long>get("cn");
     }
 
     private Long getGoodsBySellIdStatus(long seller_id, int status) {
