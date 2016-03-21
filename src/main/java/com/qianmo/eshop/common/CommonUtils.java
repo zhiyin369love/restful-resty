@@ -202,7 +202,7 @@ public final class CommonUtils {
         HashMap result = new HashMap();
         int code = HttpStatus.INTERNAL_SERVER_ERROR.getCode();
         if (istrue) {
-            code = HttpStatus.CREATED.getCode();
+            code = HttpStatus.OK.getCode();
         }
         result.put("code", code);
         result.put("message", message);
