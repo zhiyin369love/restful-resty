@@ -192,7 +192,7 @@ public class RetailerResource extends ApiResource {
                 //是否手机号码
                 boolean isOrderNum = buyer_name.matches("[0-9]+");
                 if(isOrderNum) {
-                    sql += " and a.phone like '%" + phone + "%'";
+                    sql += " and a.phone like '%" + buyer_name + "%'";
                 } else {
                     sql += " and (a.nickname like '%" + buyer_name + "%'" + " or a.name like '%" + buyer_name + "%' )";
                 }
@@ -309,10 +309,10 @@ public class RetailerResource extends ApiResource {
                     goodsSkuPriceResultList.add(goodsSkuPrice);
                 }
             }
+            resultMap.put("buyer_price_list", goodsSkuPriceResultList);
+            resultMap.put("total_count", goodsSkuFullPageList.getTotalRow());
+            resultMap.put("page_size", page_step);
         }
-        resultMap.put("buyer_price_list", goodsSkuPriceResultList);
-        resultMap.put("total_count", goodsSkuPriceResultList.size());
-        resultMap.put("page_size", page_step);
         return resultMap;
     }
 

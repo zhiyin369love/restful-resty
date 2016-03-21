@@ -34,7 +34,7 @@ public class CartResource extends BuyerResource {
     /**
      * 删除购物车商品，此处是用买家id+商品+商品型号id来联合删除的，实际上也可以用购物车id来做删除
      *
-     * @param cart_id    购物车id
+     * @param cart_id 购物车id
      */
     @DELETE("/:cart_id")
     @Transaction
@@ -71,22 +71,30 @@ public class CartResource extends BuyerResource {
                 tempCart.set("goods_num", good.get("goods_num"));
                 //商品型号id
                 tempCart.set("goods_sku_id", good.get("goods_sku_id"));
-                //订购数量
-                tempCart.set("goods_sku_count", good.get("goods_sku_count"));
-                //卖家id
-                long seller_id = Long.valueOf(good.get("seller_id").toString());
-                tempCart.set("seller_id", seller_id);
-                //卖家name
-                tempCart.set("seller_name", user_info.dao.findById(seller_id).get("name"));
-                goods_sku goodsSku = goods_sku.dao.findById(good.get("goods_sku_id"));
-                //商品规格状态
-                tempCart.set("status", goodsSku.get("status"));
-                //区域id
-                tempCart.set("area_id", ConstantsUtils.ALL_AREA_ID);
-                //cart.dao.save(tempCart);
-                carts.add(tempCart);
+                cart cartTemp = cart.dao.findFirstBy(" goods_sku_id = ? and buyer_id = ? ", good.get("goods_sku_id"), buyer_id);
+                if (cartTemp != null) {
+                    long cartCounts = Long.valueOf(cartTemp.get("goods_sku_count").toString()) + Long.valueOf(good.get("goods_sku_count").toString());
+                    cartTemp.set("goods_sku_count", cartCounts).update();
+                } else {
+                    //订购数量
+                    tempCart.set("goods_sku_count", good.get("goods_sku_count"));
+                    //卖家id
+                    long seller_id = Long.valueOf(good.get("seller_id").toString());
+                    tempCart.set("seller_id", seller_id);
+                    //卖家name
+                    tempCart.set("seller_name", user_info.dao.findById(seller_id).get("name"));
+                    goods_sku goodsSku = goods_sku.dao.findById(good.get("goods_sku_id"));
+                    //商品规格状态
+                    tempCart.set("status", goodsSku.get("status"));
+                    //区域id
+                    tempCart.set("area_id", ConstantsUtils.ALL_AREA_ID);
+                    //cart.dao.save(tempCart);
+                    carts.add(tempCart);
+                }
             }
-            cart.dao.save(carts);
+            if (carts.size() > 0) {
+                cart.dao.save(carts);
+            }
             return setResult("添加商品到购物车成功");
         } else {
             return CommonUtils.getCodeMessage(false, "输入参数有误");

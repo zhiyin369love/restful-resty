@@ -39,9 +39,9 @@ public class IndexResource extends SellerResource {
             return setResult("输入参数有误");
         }
         //零售商数量
-        long cartNum = cart.dao.findFirst("select count(*) cn from buyer_seller where seller_id = ?", seller_id).<Long>get("cn");
+        long cartNum = cart.dao.findFirst("select count(*) cn from buyer_seller where seller_id = ? and status = 1", seller_id).<Long>get("cn");
         //赊账零售商数量
-        long cancelStatusNum = credit.dao.findFirst("select count(*) cn from credit where seller_id = ? and status = ?", seller_id, ConstantsUtils.CREDIT_CANCEL_STATUS).<Long>get("cn");
+        long cancelStatusNum = credit.dao.findFirst("select count(distinct(buyer_id)) cn from credit where seller_id = ? and status = ?", seller_id, ConstantsUtils.CREDIT_CANCEL_STATUS).<Long>get("cn");
         //赊账总数量
         double cancelSum = new credit().getTotalPriceBySellerIdStatus(seller_id, ConstantsUtils.CREDIT_CANCEL_STATUS).<BigDecimal>get("total").doubleValue();
         //客服电话
@@ -52,7 +52,7 @@ public class IndexResource extends SellerResource {
         //今日订单数
         long orderNum =  orderInfo.getDayTotalOrder(seller_id);
         //今日交易额
-        double totalPrice = orderInfo.getDayTotalPrice(seller_id);
+        BigDecimal totalPrice = orderInfo.getDayTotalPrice(seller_id);
         //待发货订单数
         long waitSendOrders = getOrderInfoBySellingStatus(seller_id, ConstantsUtils.ORDER_INFO_STATUS_WAIT_RECEIVE);
         //待收款订单数
@@ -72,7 +72,7 @@ public class IndexResource extends SellerResource {
         //今日订单数
         total.put("today_order_count", orderNum);
         //今日交易额
-        total.put("today_order_price", totalPrice);
+        total.put("today_order_price", totalPrice==null?0:totalPrice);
         //待发货订单数
         total.put("todo_delivery_count", waitSendOrders);
         //待付款订单数
@@ -88,7 +88,7 @@ public class IndexResource extends SellerResource {
     }
 
     private Long getOrderInfoBySellingStatus(long seller_id, int status) {
-        return order_info.dao.findFirst("select count(*) cn from order_info where seller_id = ?  and status = ? ", seller_id, status).<Long>get("cn");
+        return order_info.dao.findFirst("select count(*) cn from order_info oi left join order_user ou on oi.num = ou.order_num where ou.seller_id = ?   and oi.status = ? ", seller_id, status).<Long>get("cn");
     }
 
     private Long getGoodsBySellIdStatus(long seller_id, int status) {

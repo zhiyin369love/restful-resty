@@ -193,10 +193,10 @@ public class ConstantsUtils {
 	/**************************支付方式名称**************************/
 	/**支付方式名称 **/
 	/**	1：银行汇款 2：货到付款 3：记账 4：在线支付**/
-	public final static String PAY_TYPE_NAME_ONLINNE = "在线支付";
-	public final static String PAY_TYPE_NAME_BANK = "银行汇款";
+	public final static String PAY_TYPE_NAME_ONLINNE = "银行汇款";
+	public final static String PAY_TYPE_NAME_BANK = "货到付款";
 	public final static String PAY_TYPE_NAME_CREDIT = "记账";
-	public final static String PAY_TYPE_NAME_OFFLINE = "货到付款";
+	public final static String PAY_TYPE_NAME_OFFLINE = "在线支付";
 	/**********************************************************/
 	/**************************HTTP STATUS**************************/
 	/**http的状态**/

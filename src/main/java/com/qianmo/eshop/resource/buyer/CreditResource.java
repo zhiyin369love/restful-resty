@@ -52,7 +52,7 @@ public class CreditResource extends BuyerResource {
 
            //分页
             List<HashMap> creditsList = new ArrayList<HashMap>();
-            Page<credit> creditOrderList = null;
+            FullPage<credit> creditOrderList = null;
         //List<credit>  CreditOrderList =  credit.dao.find(sqlcredit,buyer_id);
             if(page_start == null || page_start ==0) {
                  page_start = ConstantsUtils.DEFAULT_PAGE_START;
@@ -61,7 +61,7 @@ public class CreditResource extends BuyerResource {
                 page_step = ConstantsUtils.DEFAULT_PAGE_STEP;
             }
             int pageNumber = page_start/page_step + 1;
-            creditOrderList  =  credit.dao.paginate(pageNumber,page_step,sqlCredit,buyer_id);
+            creditOrderList  =  credit.dao.fullPaginate(pageNumber,page_step,sqlCredit,buyer_id);
             //List<HashMap> resultMap = new ArrayList<HashMap>();
 
             if(creditOrderList.getList() != null && creditOrderList.getList().size() >0) {
@@ -103,7 +103,7 @@ public class CreditResource extends BuyerResource {
                 }
             }
             //分页信息
-            resulttall_count.put("total_count",creditsList.size());
+            resulttall_count.put("total_count",creditOrderList.getTotalRow());
             resulttall_count.put("credit_list",creditsList);
 
             return resulttall_count;

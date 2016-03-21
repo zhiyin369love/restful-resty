@@ -1,5 +1,6 @@
 package com.qianmo.eshop.resource.seller;
 
+import cn.dreampie.orm.page.FullPage;
 import cn.dreampie.orm.page.Page;
 import cn.dreampie.route.annotation.API;
 import cn.dreampie.route.annotation.GET;
@@ -46,6 +47,7 @@ public class CreditResource extends SellerResource {
         //long buyer_id = SessionUtil.getUserId();
         HashMap all = new HashMap();
         List<HashMap> creditsList = new ArrayList<HashMap>();
+        FullPage<credit> creditFullPagelist;
         if (show_type == 0) {
             //用户信息
             //List<credit> order_users_list = new ArrayList<credit>();
@@ -59,11 +61,11 @@ public class CreditResource extends SellerResource {
                 page_step = ConstantsUtils.DEFAULT_PAGE_STEP;
             }
             int pageNumber = page_start / page_step + 1;
-            Page<credit> creditFullPagelist;
+
             //if (status != null) {
             sqlbuyer_info = sqlbuyer_info + " and c.status = ?";
             // order_users_list = credit.dao.find(sqlbuyer_info, seller_id, status);
-            creditFullPagelist = credit.dao.paginate(pageNumber, page_step, sqlbuyer_info, seller_id, status);
+            creditFullPagelist = credit.dao.fullPaginate(pageNumber, page_step, sqlbuyer_info, seller_id, status);
            /* } else {
                 creditFullPagelist = credit.dao.paginate(pageNumber, page_step, sqlbuyer_info, seller_id); //获取一个卖家对应的所有买家
             }*/
@@ -102,12 +104,11 @@ public class CreditResource extends SellerResource {
             }
             //分页
             // FullPage<credit> inviteCodeList = credit.dao.fullPaginateBy(page_start / page_step + 1, page_step, "id = ?", seller_id, ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE);
-            all.put("total_count", creditsList.size());
+            all.put("total_count", creditFullPagelist.getTotalRow());
 
             all.put("credit_list", creditsList);
         } else if (show_type == 1) {
             //分页
-            Page<credit> creditFullPagelist = null;
             //分页
             if (page_start == null || page_start == 0) {
                 page_start = ConstantsUtils.DEFAULT_PAGE_START;
@@ -120,7 +121,7 @@ public class CreditResource extends SellerResource {
             //if (status != null) {   //判断订单赊账是否
             sqlcre = sqlcre + " and  c.status = ?";
             //creditOrderList = credit.dao.find(sqlcre, seller_id, status);
-            creditFullPagelist = credit.dao.paginate(pageNumber, page_step, sqlcre, seller_id, status);
+            creditFullPagelist = credit.dao.fullPaginate(pageNumber, page_step, sqlcre, seller_id, status);
             /*} else {
                 creditFullPagelist = credit.dao.paginate(pageNumber, page_step, sqlcre, seller_id);
             }*/
@@ -151,7 +152,7 @@ public class CreditResource extends SellerResource {
                     result_goods_order.put("buyer_info", result_buyer_info);                        //2
                     //订单实体
                     String sqlOrderInfo = YamlRead.getSQL("getFieldOrderInfoAll", "seller/order");
-                    result_goods_order.put("order_info", order_info.dao.findFirst(sqlOrderInfo, orderId, seller_id));   //3
+                    result_goods_order.put("order_info", order_info.dao.findFirst(sqlOrderInfo, orderId));   //3
 
                     //订单备注
                     String sqlOrderRemark = YamlRead.getSQL("getFirldOrderRemarkAll", "seller/order");
@@ -164,7 +165,7 @@ public class CreditResource extends SellerResource {
                     creditsList.add(result_buyer_credit);
                 }
             }
-            all.put("total_count", creditsList.size());
+            all.put("total_count", creditFullPagelist.getTotalRow());
             all.put("credit_list", creditsList);
         }
         return all;
