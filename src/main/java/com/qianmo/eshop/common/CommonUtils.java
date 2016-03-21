@@ -157,7 +157,7 @@ public final class CommonUtils {
         int code = HttpStatus.INTERNAL_SERVER_ERROR.getCode();
         String message = "编辑失败";
         if (istrue) {
-            code = HttpStatus.CREATED.getCode();
+            code = HttpStatus.OK.getCode();
             message = "编辑成功";
         }
         result.put("code", code);
@@ -170,7 +170,7 @@ public final class CommonUtils {
         int code = HttpStatus.INTERNAL_SERVER_ERROR.getCode();
         String message = "添加失败";
         if (istrue) {
-            code = HttpStatus.CREATED.getCode();
+            code = HttpStatus.OK.getCode();
             message = "添加成功";
         }
         result.put("code", code);
@@ -183,7 +183,7 @@ public final class CommonUtils {
         int code = HttpStatus.INTERNAL_SERVER_ERROR.getCode();
         String message = "删除失败";
         if (istrue) {
-            code = HttpStatus.CREATED.getCode();
+            code = HttpStatus.OK.getCode();
             message = "删除成功";
         }
         result.put("code", code);
