@@ -41,7 +41,13 @@ public class ApiResource extends Resource {
         Map result;
 
         //调用登录方法
-        Subject.login(username, pwd, remember_me);
+        try {
+            Subject.login(username, pwd, remember_me);
+        }
+        catch (Exception ex){
+            result = CommonUtils.getCodeMessage(true,"用户名密码错误");
+            return result;
+        }
         //获取缓存是否有用户信息来判断是否登录成功
         user_info UserInfo = (user_info) Subject.getPrincipal().getModel();
         if (UserInfo != null) {
