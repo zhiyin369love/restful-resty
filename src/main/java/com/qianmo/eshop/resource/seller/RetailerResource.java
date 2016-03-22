@@ -372,4 +372,37 @@ public class RetailerResource extends ApiResource {
         return resultMap;
     }
 
+
+
+    /**
+     * 获取经销商下的零售商注册未注册数量
+     *
+     * @param buyer_name 零售商名称
+     */
+    @GET("/registerCount")
+    public Map getRetailerList(String buyer_name) {
+        Map resultMap = new HashMap();
+        //try {
+        if (seller_id != 0l) {
+            //需要判断是否已注册,如果已经注册过，需要根据phone去找买家id，如果没有注册过，那么返回结果中is_invited是0
+            FullPage<invite_verify_code> inviteCodeList = null;
+            String noRegistersql = YamlRead.getSQL("getNoRegisterUserList", "seller/seller");
+            String registersql = YamlRead.getSQL("getRegisterUserList", "seller/seller");
+            if(!StringUtils.isEmpty(buyer_name)) {
+                //是否手机号码
+                boolean isNum = buyer_name.matches("[0-9]+");
+                if(isNum) {
+                    noRegistersql += " and a.phone like '%" + buyer_name + "%'";
+                    registersql += "  and a.phone like '%" + buyer_name + "%'";
+                } else {
+                    registersql += " and (a.nickname like '%" + buyer_name + "%'" + " or a.name like '%" + buyer_name + "%' )";
+                }
+            }
+            long noRegisterCount = invite_verify_code.dao.findFirst(noRegistersql,seller_id,ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE).<Long>get("cn");
+            long registerCount = invite_verify_code.dao.findFirst(registersql,seller_id).<Long>get("cn");
+            resultMap.put("noRegisterCount", noRegisterCount);
+            resultMap.put("registerCount", registerCount);
+        }
+        return resultMap;
+    }
 }

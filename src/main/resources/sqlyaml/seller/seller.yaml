@@ -81,7 +81,7 @@ getMyRetailer:
        ON    a.id = b.buyer_id
       WHERE
              b.seller_id = ?
-      UNION
+      UNION ALL
     SELECT
              NULL,
              0 is_invited,
@@ -105,4 +105,27 @@ getMyRetailer:
                                   user_info c
                             WHERE d.phone = c.username )) a
                             where 1 = 1
+getNoRegisterUserList:
+   SELECT
+             count(1) cn
+     FROM
+             invite_verify_code d
+     WHERE
+             d.user_id = ?
+             AND d.type = ?
+             AND NOT EXISTS
+                   (  SELECT
+                           1
+                             FROM
+                                  user_info c
+                            WHERE d.phone = c.username )
+getRegisterUserList:
+      SELECT
+             count(1) cn
+      FROM
+             user_info a  LEFT JOIN
+             buyer_seller b
+       ON    a.id = b.buyer_id
+      WHERE
+             b.seller_id = ?
 

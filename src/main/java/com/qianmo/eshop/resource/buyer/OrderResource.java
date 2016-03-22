@@ -319,7 +319,7 @@ public class OrderResource extends BuyerResource {
     }
 
 
-    //获取卖家订单状态数量
+    //获取买家订单状态数量
     @GET("/orderCount")
     public Map getOrderCount(String buyer_name_num, String data_end, String data_start) {
         //通过session获取当前登录用户
