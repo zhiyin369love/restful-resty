@@ -1,11 +1,6 @@
 getFieldGoodsSkuPriceAll:
   select  gsp.price from goods_sku_price gsp where gsp.sku_id = ? and gsp.buyer_id = ? and gsp.seller_id = ?
 
-#获取商品信息
-findGoods:
-  SELECT a.id goods_id,a.name goods_name,a.num goods_num,a.category_id,a.details,a.form_id,a.generic_name,a.ingredient,a.seller_id,a.license_num,a.main_pic_url,a.pic_url_list,a.producer,a.standard,a.seller_id,b.name form_name
-    FROM goods_info a
-    LEFT JOIN goods_form b ON a.form_id = b.id WHERE a.id=?
 
 
 #获取商品规格及价格信息
@@ -15,12 +10,30 @@ findGoodsSku:
   LEFT JOIN goods_sku_price b ON a.id = b.sku_id AND b.buyer_id=? AND b.status=1
   WHERE a.goods_num=? AND a.status=1 AND a.deleted_at is null
 
-#获取商品信息列表
+#获取商品编号
+findGoodsNum:
+  SELECT DISTINCT b.num goods_num FROM (SELECT id sku_id,goods_num,list_price price
+    FROM goods_sku a WHERE a.status = 1
+    AND NOT EXISTS (SELECT 1 FROM goods_sku_price b WHERE b.sku_id = a.id AND b.status = 1)
+    UNION ALL SELECT sku_id,goods_num,price FROM goods_sku_price WHERE status = 1) a,
+    goods_info b,buyer_seller c,user_info d,goods_sku e
+    WHERE a.goods_num = b.num AND a.sku_id = e.id AND d.deleted_at IS NULL AND e.deleted_at IS NULL
+    AND b.seller_id = c.seller_id AND b.seller_id = d.id AND c.buyer_id = ?
+
+#获取商品、规格、价格信息
 findGoodsInfo:
-  SELECT a.id goods_id,a.num goods_num,a.main_pic_url,a.name goods_name,a.producer,a.ingredient,b.id sku_id,b.name sku_name,b.status,ifnull(c.price,b.list_price) price,d.id seller_id,d.nickname seller_name
+  SELECT b.id goods_id,b.num goods_num,b.main_pic_url,b.name goods_name,b.producer,b.ingredient,
+    b.seller_id,a.price,d.nickname seller_name,e.id sku_id,e.name sku_name
+    FROM (SELECT id sku_id,goods_num,list_price price FROM goods_sku a WHERE a.status = 1
+    AND NOT EXISTS (SELECT 1 FROM goods_sku_price b WHERE b.sku_id = a.id AND b.status = 1)
+    UNION ALL SELECT sku_id,goods_num,price FROM goods_sku_price WHERE status = 1) a,
+    goods_info b,buyer_seller c,user_info d,goods_sku e
+    WHERE a.goods_num = b.num AND a.sku_id = e.id AND d.deleted_at IS NULL AND e.deleted_at IS NULL
+    AND b.seller_id = c.seller_id AND b.seller_id = d.id AND c.buyer_id = ?
+
+
+#获取商品信息
+findGoods:
+  SELECT a.id goods_id,a.name goods_name,a.num goods_num,a.category_id,a.details,a.form_id,a.generic_name,a.ingredient,a.seller_id,a.license_num,a.main_pic_url,a.pic_url_list,a.producer,a.standard,a.seller_id,b.name form_name
     FROM goods_info a
-    INNER JOIN goods_sku b ON a.num = b.goods_num
-    LEFT JOIN goods_sku_price c ON b.id = c.sku_id
-    INNER JOIN user_info d ON a.seller_id = d.id
-    INNER JOIN buyer_seller e ON a.seller_id = e.seller_id
-    WHERE a.deleted_at is null AND b.deleted_at is null AND b.status = 1 AND e.buyer_id = ?
+    LEFT JOIN goods_form b ON a.form_id = b.id WHERE a.id=?

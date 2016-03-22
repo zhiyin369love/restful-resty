@@ -38,7 +38,6 @@ public class GoodsResource extends BuyerResource {
     @GET
     public HashMap goods(String goods_name, Integer category_id,
                          Integer page_start, Integer page_step, Integer sort) {
-        HashMap resultMap = new HashMap();
         /*
         判断是否有分页信息，如果没有，给定默认值
          */
@@ -48,59 +47,36 @@ public class GoodsResource extends BuyerResource {
         if (page_step == null) {
             page_step = ConstantsUtils.DEFAULT_PAGE_STEP;  //默认返回10条
         }
-        String goodsNumSql = "SELECT DISTINCT b.num goods_num "+
-                "FROM (SELECT id sku_id,goods_num,list_price price FROM goods_sku a WHERE a.status = 1 " +
-                "AND NOT EXISTS (SELECT 1 FROM goods_sku_price b WHERE b.sku_id = a.id AND b.status = 1) " +
-                "UNION ALL SELECT sku_id,goods_num,price FROM goods_sku_price WHERE status = 1) a," +
-                "goods_info b,buyer_seller c,user_info d,goods_sku e " +
-                "WHERE a.goods_num = b.num AND a.sku_id = e.id " +
-                "AND b.seller_id = c.seller_id AND b.seller_id = d.id AND c.buyer_id = ?";
-
-
-        String sql = "SELECT b.id goods_id,b.num goods_num,b.main_pic_url,b.name goods_name,b.producer,b.ingredient,"+
-                "b.seller_id,a.price,d.nickname seller_name,e.id sku_id,e.name sku_name " +
-                "FROM (SELECT id sku_id,goods_num,list_price price FROM goods_sku a WHERE a.status = 1 " +
-                "AND NOT EXISTS (SELECT 1 FROM goods_sku_price b WHERE b.sku_id = a.id AND b.status = 1) " +
-                "UNION ALL SELECT sku_id,goods_num,price FROM goods_sku_price WHERE status = 1) a," +
-                "goods_info b,buyer_seller c,user_info d,goods_sku e " +
-                "WHERE a.goods_num = b.num AND a.sku_id = e.id " +
-                "AND b.seller_id = c.seller_id AND b.seller_id = d.id AND c.buyer_id = ?";
-
-//        String countSql = "SELECT DISTINCT b.id goods_id "+
-//                "FROM (SELECT id sku_id,goods_num,list_price price FROM goods_sku a WHERE a.status = 1 " +
-//                "AND NOT EXISTS (SELECT 1 FROM goods_sku_price b WHERE b.sku_id = a.id AND b.status = 1) " +
-//                "UNION ALL SELECT sku_id,goods_num,price FROM goods_sku_price WHERE status = 1) a," +
-//                "goods_info b,buyer_seller c,user_info d,goods_sku e " +
-//                "WHERE a.goods_num = b.num AND a.sku_id = e.id AND b.seller_id = c.seller_id AND b.seller_id = d.id AND c.buyer_id = ?";
-
+        //查询商品编号
+        String goodsNumSql = YamlRead.getSQL("findGoodsNum","buyer/goods");
+        //查询商品、规格、价格
+        String goodsSql = YamlRead.getSQL("findGoodsInfo","buyer/goods");
          /*
         判断是否根据分类查找商品
          */
         if (category_id != null && category_id > 0) {
-//            sql = sql + " AND b.category_id=" + category_id;
-//            countSql = countSql + " AND b.category_id=" + category_id;
             goodsNumSql = goodsNumSql + " AND b.category_id=" + category_id;
         }
         /*
         判断是否根据商品名称模糊搜索
          */
         if (goods_name != null && !"".equals(goods_name)) {
-//            sql = sql + " AND b.name like '%" + goods_name + "%'";
-//            countSql = countSql + " AND b.name like '%" + goods_name + "%'";
             goodsNumSql = goodsNumSql + " AND b.name like '%" + goods_name + "%'";
         }
         if (sort != null) {
             //是否按新品排序 目前是否为新品都是根据上架时间倒序查询
             if (sort == ConstantsUtils.SORT_NEW) {
-                sql = sql + " ORDER BY e.release_date DESC";
+                goodsSql = goodsSql + " ORDER BY e.release_date DESC";
             } else {
-                sql = sql + " ORDER BY e.release_date DESC";
+                goodsSql = goodsSql + " ORDER BY e.release_date DESC";
             }
         }
         String goodsNum = "";
-        FullPage<goods_info> goodsList = goods_info.dao.fullPaginate(page_start / page_step + 1,page_step, goodsNumSql, buyer_id);
-        if (goodsList!=null && goodsList.getList().size()>0){
-             for(goods_info goods:goodsList.getList()){
+        //查询商品编号
+        FullPage<goods_info> goodsNumList = goods_info.dao.fullPaginate(page_start / page_step + 1,page_step, goodsNumSql, buyer_id);
+        //非空判断
+        if (goodsNumList!=null && goodsNumList.getList().size()>0){
+             for(goods_info goods:goodsNumList.getList()){
                  if("".equals(goodsNum)){
                      goodsNum = goods.get("goods_num").toString();
                  } else {
@@ -109,17 +85,17 @@ public class GoodsResource extends BuyerResource {
              }
         }
         List<goods_info> list = null;
+        //如果商品编号不为空时查询商品、规格、价格信息
         if (!"".equals(goodsNum)){
-            sql = sql + " AND b.num in ("+goodsNum+")";
-            list = goods_info.dao.find(sql,buyer_id);
+            goodsSql = goodsSql + "  AND b.num in ("+goodsNum+")";
+            list = goods_info.dao.find(goodsSql,buyer_id);
         }
-//        FullPage<goods_info> list = goods_info.dao.fullPaginate(page_start / page_step + 1,
-//                page_step, sql, buyer_id);
-//        List countList = goods_info.dao.find(countSql,buyer_id);
         HashMap<Long,GoodsInfo> map = new HashMap<Long, GoodsInfo>();
+        //非空判断
         if (list!=null && list.size()>0) {
             for (goods_info info:list){
                 GoodsInfo goodsInfo = map.get(info.get("goods_id"));
+                //如果商品为空，新建商品
                 if(goodsInfo==null){
                     goodsInfo = new GoodsInfo();
                     goodsInfo.setGoods_id(info.<Long>get("goods_id"));
@@ -132,34 +108,28 @@ public class GoodsResource extends BuyerResource {
                     goodsInfo.setIngredient(info.get("ingredient").toString());
                     goodsInfo.setSeller_id(info.<Long>get("seller_id"));
                     goodsInfo.setSeller_name(info.get("seller_name").toString());
-
-                    List<GoodsSku> skuList = (List)goodsInfo.getGoods_sku_list();
-                    if(skuList==null){
-                        skuList = new ArrayList<GoodsSku>();
-                    }
-                    GoodsSku goodsSku = new GoodsSku();
-                    goodsSku.setSku_id(info.<Long>get("sku_id"));
-                    goodsSku.setSku_name(info.get("sku_name").toString());
-                    goodsSku.setPrice(info.<BigDecimal>get("price"));
-                    skuList.add(goodsSku);
-
-                    goodsInfo.setGoods_sku_list(skuList);
-                }else{
-                    List<GoodsSku> skuList = (List)goodsInfo.getGoods_sku_list();
-                    if(skuList==null){
-                        skuList = new ArrayList<GoodsSku>();
-                    }
-                    GoodsSku goodsSku = new GoodsSku();
-                    goodsSku.setSku_id(info.<Long>get("sku_id"));
-                    goodsSku.setSku_name(info.get("sku_name").toString());
-                    goodsSku.setPrice(info.<BigDecimal>get("price"));
-                    skuList.add(goodsSku);
-
-                    goodsInfo.setGoods_sku_list(skuList);
                 }
+
+                //商品规格及价格信息
+                List<GoodsSku> skuList = (List)goodsInfo.getGoods_sku_list();
+                /*
+                商品规格价格集合为空时，新建商品规格价格集合
+                将查询的商品规格及价格信息存入集合中
+                 */
+                if(skuList==null){
+                    skuList = new ArrayList<GoodsSku>();
+                }
+                GoodsSku goodsSku = new GoodsSku();
+                goodsSku.setSku_id(info.<Long>get("sku_id"));
+                goodsSku.setSku_name(info.get("sku_name").toString());
+                goodsSku.setPrice(info.<BigDecimal>get("price"));
+                skuList.add(goodsSku);
+                goodsInfo.setGoods_sku_list(skuList);
+                //将商品存入map中
                 map.put(info.<Long>get("goods_id"),goodsInfo);
             }
         }
+        //将商品Map转为商品List
         List<GoodsInfo> goodsInfoList = new ArrayList<GoodsInfo>();
         if(map!=null && map.size()>0){
             for(Long goodsId:map.keySet()){
@@ -169,9 +139,9 @@ public class GoodsResource extends BuyerResource {
                 }
             }
         }
-        resultMap.put("goods_list",goodsInfoList);
-        resultMap.put("total_count", goodsList.getTotalRow());
-
+        HashMap resultMap = new HashMap();
+        resultMap.put("goods_list",goodsInfoList);//商品信息
+        resultMap.put("total_count", goodsNumList.getTotalRow());//商品总条数
         return resultMap;
     }
 
