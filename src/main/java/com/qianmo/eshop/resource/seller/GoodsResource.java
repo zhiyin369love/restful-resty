@@ -499,7 +499,7 @@ public class GoodsResource extends SellerResource {
      * @return 图片名称
      */
     @POST("/upload/main")
-    @FILE(dir = ConstantsUtils.GOODS_MAIN_PIC, overwrite = true, allows = {"image/png", "image/jpg", "image/gif", "image/bmp","image/jpeg"})
+    @FILE(dir = ConstantsUtils.GOODS_MAIN_PIC, overwrite = false, allows = {"image/png", "image/jpg", "image/gif", "image/bmp","image/jpeg"})
     public HashMap mainPic(UploadedFile main_pic) {
         String mainPicUrl = this.getRequest().getBaseUri() + ConstantsUtils.GOODS_MAIN_PIC + main_pic.getFileName();
         HashMap resultMap = new HashMap();
