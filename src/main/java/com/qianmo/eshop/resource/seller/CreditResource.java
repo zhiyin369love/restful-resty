@@ -66,6 +66,7 @@ public class CreditResource extends SellerResource {
             sqlbuyer_info = sqlbuyer_info + " and c.status = ?";
             // order_users_list = credit.dao.find(sqlbuyer_info, seller_id, status);
             creditFullPagelist = credit.dao.fullPaginate(pageNumber, page_step, sqlbuyer_info, seller_id, status);
+
            /* } else {
                 creditFullPagelist = credit.dao.paginate(pageNumber, page_step, sqlbuyer_info, seller_id); //获取一个卖家对应的所有买家
             }*/

@@ -200,6 +200,20 @@ public class CartResource extends BuyerResource {
     }*/
     }
 
+
+
+    /**
+     * 获取用户购物车信息列表
+     */
+    @GET("/skuCount")
+    public Map getCartSkuCount() {
+        HashMap resultMap = new HashMap();
+        String sql = "select count(*) cn from cart where buyer_id = ? ";
+        Long count = cart.dao.findFirst(sql,buyer_id).<Long>get("cn");
+        resultMap.put("count",count == null ? 0 : count);
+        return resultMap;
+    }
+
     private void getGoodsInfo(long buyer_id, JSONObject goods, cart tempCart, goods_sku_price goodsSkuPriceModel) {
         goods_info goods_infotemp = goods_info.dao.findFirstBy("num = ?", tempCart.get("goods_num"));
         JSONObject jsonObject = new JSONObject();

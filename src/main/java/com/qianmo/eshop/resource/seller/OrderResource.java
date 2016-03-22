@@ -1,7 +1,6 @@
 package com.qianmo.eshop.resource.seller;
 
 import cn.dreampie.orm.page.FullPage;
-import cn.dreampie.orm.page.Page;
 import cn.dreampie.route.annotation.API;
 import cn.dreampie.route.annotation.GET;
 import cn.dreampie.route.annotation.PUT;
@@ -65,48 +64,48 @@ public class OrderResource extends SellerResource {
     }
 
     /**
-     * @param order_num     订单ID
-     * @param op     操作状态
-     * @param remark 备注
+     * @param order_num 订单ID
+     * @param op        操作状态
+     * @param remark    备注
      * @return
      */
     @PUT
     public Map opOrder(Long order_num, int op, String remark) {
         boolean isSuccess = false;
-        order_user orderUser = order_user.dao.findFirstBy(" order_num = ?",order_num);
+        order_user orderUser = order_user.dao.findFirstBy(" order_num = ?", order_num);
         if (op == ConstantsUtils.SELLER_ORDER_OP_PAY_TYPE) {
             //收到货款
-            isSuccess = order_info.dao.update("update order_info set status = ?,  pay_status = ?  where num = ? ",ConstantsUtils.ORDER_INFO_STATUS_WAIT_RECEIVE, ConstantsUtils.ORDER_PAYMENT_STATUS_RECEIVED, order_num);
+            isSuccess = order_info.dao.update("update order_info set status = ?,  pay_status = ?  where num = ? ", ConstantsUtils.ORDER_INFO_STATUS_WAIT_RECEIVE, ConstantsUtils.ORDER_PAYMENT_STATUS_RECEIVED, order_num);
         } else if (op == ConstantsUtils.SELLER_ORDER_OP_FAHUO) {
             //发货
             isSuccess = order_info.dao.update("update order_info set status = ?  where num = ? ", ConstantsUtils.ORDER_INFO_STATUS_ALREADY, order_num);
-            new order_remark().set("order_num", order_num).set("op", op).set("details", remark==null?"":remark).set("area_id",ConstantsUtils.ALL_AREA_ID).set("user_id",orderUser.get("seller_id")).save();
+            new order_remark().set("order_num", order_num).set("op", op).set("details", remark == null ? "" : remark).set("area_id", ConstantsUtils.ALL_AREA_ID).set("user_id", orderUser.get("seller_id")).save();
         } else if (op == ConstantsUtils.SELLER_ORDER_OP_PAY_STATUS) {
             //取消
-            order_info orderInfo = order_info.dao.findFirstBy("num = ?",order_num);
+            order_info orderInfo = order_info.dao.findFirstBy("num = ?", order_num);
 
-            isSuccess = orderInfo.set("status",ConstantsUtils.ORDER_INFO_STATUS_CANCEL).update();
+            isSuccess = orderInfo.set("status", ConstantsUtils.ORDER_INFO_STATUS_CANCEL).update();
             //order_info.dao.update("update order_info set status = ?  where id = ? ", ConstantsUtils.ORDER_INFO_STATUS_CANCEL, id);
             //isSuccess = new order_remark().set("order_num", order_num).set("op", op).set("details", remark).set("reason", "").set("user_id", orderUser.get("seller_id")).set("area_id",ConstantsUtils.ALL_AREA_ID).save();
             //new order_remark().set("order_num", order_num).set("op", op).set("reason", value).set("user_id", buyer_id).set("area_id",ConstantsUtils.ALL_AREA_ID).set("details","").save();
         } else if (op == ConstantsUtils.SELLER_ORDER_OP_PAY_GOODS) {
             //卖家备注订单
-            isSuccess = new order_remark().set("order_num", order_num).set("op", op).set("details", remark).set("user_id", orderUser.get("seller_id")).set("area_id",ConstantsUtils.ALL_AREA_ID).save();
+            isSuccess = new order_remark().set("order_num", order_num).set("op", op).set("details", remark).set("user_id", orderUser.get("seller_id")).set("area_id", ConstantsUtils.ALL_AREA_ID).save();
         } else if (op == ConstantsUtils.SELLER_ORDER_OP_PAY_CELL) {
             //当卖家同意买家赊账时
             HashMap result3 = new HashMap();
             String creditorder = YamlRead.getSQL("getFileCreditOrderUserAll", "seller/order");
             order_user o = order_user.dao.findFirst(creditorder, order_num);
-            isSuccess = order_info.dao.update("update order_info set status = ?, pay_status = ?  where num = ? ",ConstantsUtils.ORDER_INFO_STATUS_WAIT_RECEIVE, ConstantsUtils.ORDER_PAYMENT_STATUS_RECEIVED, order_num);
+            isSuccess = order_info.dao.update("update order_info set status = ?, pay_status = ?  where num = ? ", ConstantsUtils.ORDER_INFO_STATUS_WAIT_RECEIVE, ConstantsUtils.ORDER_PAYMENT_STATUS_RECEIVED, order_num);
             isSuccess = new credit().set("area_id", ConstantsUtils.ALL_AREA_ID).set("order_num", order_num).set("status", 0).set("buyer_id", o.get("buyer_id")).set("seller_id", o.get("seller_id")).save();
         } else {
             //当卖家不同意买家赊账时订单取消 op==5时
-            isSuccess = order_info.dao.update("update order_info set status = ?, pay_status = ?  where num = ? ", ConstantsUtils.ORDER_INFO_STATUS_CANCEL,ConstantsUtils.ORDER_PAYMENT_STATUS_CANCALED, order_num);    //注：除了要删除订单主表之外，可能还要删除其他关联表，“待开发”
+            isSuccess = order_info.dao.update("update order_info set status = ?, pay_status = ?  where num = ? ", ConstantsUtils.ORDER_INFO_STATUS_CANCEL, ConstantsUtils.ORDER_PAYMENT_STATUS_CANCALED, order_num);    //注：除了要删除订单主表之外，可能还要删除其他关联表，“待开发”
         }
-        if(isSuccess) {
-            return CommonUtils.getCodeMessage(true,"操作订单成功");
+        if (isSuccess) {
+            return CommonUtils.getCodeMessage(true, "操作订单成功");
         } else {
-            return CommonUtils.getCodeMessage(false,"操作订单失败");
+            return CommonUtils.getCodeMessage(false, "操作订单失败");
         }
     }
 
@@ -126,7 +125,8 @@ public class OrderResource extends SellerResource {
         //通过session获取当前登录用户
         long seller_id = SessionUtil.getUserId();
         //查找订单信息sql
-        String orderInfoSql = "select * from order_info a where 1=1 ";
+        String orderInfoSql = "select * from order_info a LEFT JOIN order_user b ON a.num = b.order_num where 1=1 ";
+
         boolean isOrderNum = false;
         //是否存在buyer_name_num
         boolean exitsBuyerNameNum = false;
@@ -134,7 +134,7 @@ public class OrderResource extends SellerResource {
             exitsBuyerNameNum = true;
             isOrderNum = buyer_name_num.matches("[0-9]+");
             if (isOrderNum == true) {
-               // System.out.println("该字符串是订单号");
+                // System.out.println("该字符串是订单号");
                 orderInfoSql += " and a.num like  ? ";
             } else {
                 //System.out.println("该字符串是买家名称");
@@ -143,25 +143,25 @@ public class OrderResource extends SellerResource {
             }
         }
         //当天开始时间
-        if (StringUtils.isEmpty(data_start) ) {
+        if (StringUtils.isEmpty(data_start)) {
             orderInfoSql += " and a.created_at >= date(sysdate())";
         } else {
-            if(data_start.equals(data_end)) {
-                orderInfoSql += " and Date(a.created_at) = Date('" + data_start +"')";
+            if (data_start.equals(data_end)) {
+                orderInfoSql += " and Date(a.created_at) = Date('" + data_start + "')";
             } else {
-                orderInfoSql += " and a.created_at >=  Date('" +data_start + "')";
+                orderInfoSql += " and a.created_at >=  Date('" + data_start + "')";
             }
 
         }
-        //当天结束时间 TODO 当天开始时间和结束时间是同一天时，前台怎么传值，是传同一天的数据吗？
-        if (StringUtils.isEmpty(data_end) ) {
+        //当天结束时间
+        if (StringUtils.isEmpty(data_end)) {
             orderInfoSql += " and a.created_at <= DATE_ADD(DATE(SYSDATE()), INTERVAL 1 DAY)";
         } else {
             if (data_end.equals(data_start)) {
-                orderInfoSql += " and Date(a.created_at) = Date('" + data_start +"')";
+                orderInfoSql += " and Date(a.created_at) = Date('" + data_start + "')";
                 //orderInfoSql += " and Date(a.created_at) = " + DateUtils.formatDate(data_start, DateUtils.format_yyyyMMdd);
             } else {
-                orderInfoSql += " and a.created_at <=  Date('" +data_end + "')";
+                orderInfoSql += " and a.created_at <=  Date('" + data_end + "')";
                 //orderInfoSql += " and a.created_at <=" + DateUtils.formatDate(data_end, DateUtils.format_yyyyMMdd);
             }
         }
@@ -169,6 +169,9 @@ public class OrderResource extends SellerResource {
         if (order_status != null) {
             orderInfoSql += " and a.status =  " + order_status;
         }
+
+        orderInfoSql += "  and b.seller_id = ? ";
+
         if (page_start == null || page_start == 0) {
             page_start = ConstantsUtils.DEFAULT_PAGE_START;
         }
@@ -180,10 +183,10 @@ public class OrderResource extends SellerResource {
         List<order_info> order_userList;
         //判断buyer_name_num是订单号还是商家名称
         if (exitsBuyerNameNum) {
-            orderUserPage = order_info.dao.fullPaginate(pageNumber, page_step, orderInfoSql, "%" + buyer_name_num + "%");
+            orderUserPage = order_info.dao.fullPaginate(pageNumber, page_step, orderInfoSql, "%" + buyer_name_num + "%",seller_id);
             order_userList = orderUserPage == null ? new ArrayList<order_info>() : orderUserPage.getList();
         } else {
-            orderUserPage = order_info.dao.fullPaginate(pageNumber, page_step, orderInfoSql);
+            orderUserPage = order_info.dao.fullPaginate(pageNumber, page_step, orderInfoSql,seller_id);
             order_userList = orderUserPage == null ? new ArrayList<order_info>() : orderUserPage.getList();
         }
         //订单实体
@@ -200,15 +203,15 @@ public class OrderResource extends SellerResource {
             order_info orderInfo = new order_info();
 
             //今日订单数
-            long orderNum =  orderInfo.getDayTotalOrder(seller_id);
+            /*long orderNum = orderInfo.getDayTotalOrder(seller_id);
             //今日交易额
-            BigDecimal totalPrice = orderInfo.getDayTotalPrice(seller_id);
+            BigDecimal totalPrice = orderInfo.getDayTotalPrice(seller_id);*/
             /*long orderNum = order_info.dao.findFirst("select count(*) cn from order_info where seller_id = ?  and status != ? and date(created_at) = date(sysdate())", seller_id, ConstantsUtils.ORDER_INFO_STATUS_CANCEL).<Integer>get("cn");
             //今日交易额
             BigDecimal totalPrice = new BigDecimal(order_info.dao.findFirst("select sum(total_price) cn from order_info where seller_id = ?  and status != ? and date(created_at) = date(sysdate())", seller_id, ConstantsUtils.ORDER_INFO_STATUS_CANCEL).<Integer>get("cn"));*/
             //double totalPrice = order_info.dao.findFirst("select sum(total_price) cn from order_info where seller_id = ?  and status != ? and date(created_at) = date(sysdate())", seller_id, ConstantsUtils.ORDER_INFO_STATUS_CANCEL).<Integer>get("cn");
-            resulfinal.put("count", orderNum);
-            resulfinal.put("total_price", totalPrice==null?0:totalPrice);
+            /*resulfinal.put("count", orderNum);
+            resulfinal.put("total_price", totalPrice == null ? 0 : totalPrice);*/
             resulfinal.put("order_list", resultMapList);
             resulfinal.put("total_count", orderUserPage.getTotalRow());
         }
@@ -226,7 +229,6 @@ public class OrderResource extends SellerResource {
         order_info num = order_info.dao.findFirst("select num from order_info where id = ? ", id);
         //商品分类
         String sqlGoodType = YamlRead.getSQL("getFieldGoodsTypeALL", "seller/order");
-
         Map goodsResult = new HashMap();
         List<goods_info> goods_infoList = goods_info.dao.find(sqlGoodInfo, id);
         List<HashMap> resultMap = new ArrayList<HashMap>();
@@ -243,4 +245,113 @@ public class OrderResource extends SellerResource {
         }
         return resultMap;
     }
+
+    //获取卖家订单状态数量
+    @GET("/orderCount")
+    public Map getOrderCount(String buyer_name_num, String data_end, String data_start) {
+        //通过session获取当前登录用户
+        long seller_id = SessionUtil.getUserId();
+        return getOrderStatus(buyer_name_num, data_end, data_start, seller_id);
+
+    }
+
+    private Map getOrderStatus(String buyer_name_num, String data_end, String data_start, long seller_id) {
+        //查找订单信息sql
+        String orderInfoSql = "select count(*) from order_info a  LEFT JOIN order_user b ON a.num = b.order_num where 1=1 ";
+        Map resulfinal = new HashMap();
+        boolean isOrderNum = false;
+        //是否存在buyer_name_num
+        boolean exitsBuyerNameNum = false;
+        if (!StringUtils.isEmpty(buyer_name_num)) {
+            exitsBuyerNameNum = true;
+            isOrderNum = buyer_name_num.matches("[0-9]+");
+            if (isOrderNum == true) {
+                // System.out.println("该字符串是订单号");
+                orderInfoSql += " and a.num like  ? ";
+            } else {
+                //System.out.println("该字符串是买家名称");
+                orderInfoSql = " SELECT a.* FROM order_info a LEFT JOIN order_user b ON a.num = b.order_num " +
+                        "    LEFT JOIN user_info c ON b.buyer_id = c.id where c.nickname like ? ";
+            }
+        }
+        //当天开始时间
+        if (StringUtils.isEmpty(data_start)) {
+            orderInfoSql += " and a.created_at >= date(sysdate())";
+        } else {
+            if (data_start.equals(data_end)) {
+                orderInfoSql += " and Date(a.created_at) = Date('" + data_start + "')";
+            } else {
+                orderInfoSql += " and a.created_at >=  Date('" + data_start + "')";
+            }
+        }
+        //当天结束时间
+        if (StringUtils.isEmpty(data_end)) {
+            orderInfoSql += " and a.created_at <= DATE_ADD(DATE(SYSDATE()), INTERVAL 1 DAY)";
+        } else {
+            if (data_end.equals(data_start)) {
+                orderInfoSql += " and Date(a.created_at) = Date('" + data_start + "')";
+                //orderInfoSql += " and Date(a.created_at) = " + DateUtils.formatDate(data_start, DateUtils.format_yyyyMMdd);
+            } else {
+                orderInfoSql += " and a.created_at <=  Date('" + data_end + "')";
+                //orderInfoSql += " and a.created_at <=" + DateUtils.formatDate(data_end, DateUtils.format_yyyyMMdd);
+            }
+        }
+        orderInfoSql += " and a.status = ? ";
+        orderInfoSql += " and b.seller_id = ?";
+        FullPage<order_info> orderUserPage;
+        List<order_info> order_userList;
+        //判断buyer_name_num是订单号还是商家名称
+        //待付款
+        long waitPay = 0;
+        //待发货
+        long waitSend = 0;
+        //待收货
+        long waitReceive = 0;
+        //已完成
+        long finished = 0;
+        //取消
+        long cancel = 0;
+        if (exitsBuyerNameNum) {
+            waitPay = getOrderCount(orderInfoSql, buyer_name_num, ConstantsUtils.ORDER_INFO_STATUS_CREATED,seller_id);
+            waitSend = getOrderCount(orderInfoSql, buyer_name_num, ConstantsUtils.ORDER_INFO_STATUS_WAIT_RECEIVE,seller_id);
+            waitReceive = getOrderCount(orderInfoSql, buyer_name_num, ConstantsUtils.ORDER_INFO_STATUS_ALREADY,seller_id);
+            finished = getOrderCount(orderInfoSql, buyer_name_num, ConstantsUtils.ORDER_INFO_STATUS_FINISHED,seller_id);
+            cancel = getOrderCount(orderInfoSql, buyer_name_num, ConstantsUtils.ORDER_INFO_STATUS_CANCEL,seller_id);
+        } else {
+            waitPay = getOrderCount(orderInfoSql, ConstantsUtils.ORDER_INFO_STATUS_CREATED,seller_id);
+            waitSend = getOrderCount(orderInfoSql, ConstantsUtils.ORDER_INFO_STATUS_WAIT_RECEIVE,seller_id);
+            waitReceive = getOrderCount(orderInfoSql, ConstantsUtils.ORDER_INFO_STATUS_ALREADY,seller_id);
+            finished = getOrderCount(orderInfoSql, ConstantsUtils.ORDER_INFO_STATUS_FINISHED,seller_id);
+            cancel = getOrderCount(orderInfoSql, ConstantsUtils.ORDER_INFO_STATUS_CANCEL,seller_id);
+           /* orderUserPage = order_info.dao.fullPaginate(pageNumber, page_step, orderInfoSql);
+            order_userList = orderUserPage == null ? new ArrayList<order_info>() : orderUserPage.getList();*/
+        }
+        //订单实体
+        //返回订单列表
+        order_info orderInfo = new order_info();
+        //今日订单数
+        long orderNum = orderInfo.getDayTotalOrder(seller_id);
+        //今日交易额
+        BigDecimal totalPrice = orderInfo.getDayTotalPrice(seller_id);
+
+        resulfinal.put("count", orderNum);
+        resulfinal.put("total_price", totalPrice == null ? 0 : totalPrice);
+        resulfinal.put("waitPay", waitPay);
+        resulfinal.put("waitSend", waitSend);
+        resulfinal.put("waitReceive", waitReceive);
+        resulfinal.put("finished", finished);
+        resulfinal.put("cancel", cancel);
+        return resulfinal;
+    }
+
+    /*   //通过手机号或者名称获取订单数量
+       private Long getOrderCountByName(String buyer_name_num, String orderInfoSql,int status) {
+           return order_info.dao.findFirst(orderInfoSql, "%" + buyer_name_num + "%", status).<Long>get("cn");
+       }
+   */
+    //获取订单数量
+    private Long getOrderCount(String orderInfoSql, Object... objects) {
+        return order_info.dao.findFirst(orderInfoSql, objects).<Long>get("cn");
+    }
+
 }
