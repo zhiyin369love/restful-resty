@@ -257,7 +257,7 @@ public class OrderResource extends SellerResource {
 
     private Map getOrderStatus(String buyer_name_num, String data_end, String data_start, long seller_id) {
         //查找订单信息sql
-        String orderInfoSql = "select count(1) from order_info a  LEFT JOIN order_user b ON a.num = b.order_num where 1=1 ";
+        String orderInfoSql = "select count(1) cn from order_info a  LEFT JOIN order_user b ON a.num = b.order_num where 1=1 ";
         Map resulfinal = new HashMap();
         boolean isOrderNum = false;
         //是否存在buyer_name_num
