@@ -180,7 +180,7 @@ public class GoodsResource extends SellerResource {
         goods_info goodsInfo = goods_info.dao.findFirst(YamlRead.getSQL("findGoods", "seller/goods"), id);
 
         //判断当前登录用户是否有查看该商品的权限
-        if (seller_id == goodsInfo.<Long>get("seller_id")) {
+        if (seller_id == goodsInfo.<Long>get("seller_id") && goodsInfo!=null) {
             resultMap.put("goods_info", goodsInfo);
             List<goods_sku> list = goods_sku.dao.find(YamlRead.getSQL("findGoodsSku", "seller/goods"),
                     goodsInfo.get("goods_num"));
