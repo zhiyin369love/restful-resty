@@ -114,8 +114,7 @@ public class OrderResource extends BuyerResource {
         Map result = new HashMap();
         switch (op) {
             case ConstantsUtils.ORDER_OP_PAY_TYPE:
-
-                //1：银行汇款 2：货到付款  3：在线支付 4：赊账
+                //1：银行汇款 2：货到付款 3：赊账 4：在线支付
                 if ("1".equals(value)) {                               // 当支付方式选择银行支付的时候
                     if (bank_id != null) {
                         isSuccess = order_info.dao.update("update order_info set pay_type_id = ?  where num = ? ", Long.valueOf(value), order_num);
