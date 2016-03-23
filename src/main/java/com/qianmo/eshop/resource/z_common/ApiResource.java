@@ -45,7 +45,7 @@ public class ApiResource extends Resource {
             Subject.login(username, pwd, remember_me);
         }
         catch (Exception ex){
-            result = CommonUtils.getCodeMessage(true,"用户名密码错误");
+            result = CommonUtils.getCodeMessage(false,"用户名密码错误");
             return result;
         }
         //获取缓存是否有用户信息来判断是否登录成功
