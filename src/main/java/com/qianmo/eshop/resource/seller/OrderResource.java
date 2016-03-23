@@ -30,7 +30,6 @@ public class OrderResource extends SellerResource {
      * 查看单个订单详情
      *
      * @param id 订单ID
-     * @return
      */
     @GET("/:id")
     public HashMap getOrderDetail(Long id) {
@@ -67,11 +66,10 @@ public class OrderResource extends SellerResource {
      * @param order_num 订单ID
      * @param op        操作状态
      * @param remark    备注
-     * @return
      */
     @PUT
     public Map opOrder(Long order_num, int op, String remark) {
-        boolean isSuccess = false;
+        boolean isSuccess ;
         order_user orderUser = order_user.dao.findFirstBy(" order_num = ?", order_num);
         if (op == ConstantsUtils.SELLER_ORDER_OP_PAY_TYPE) {
             //收到货款
@@ -96,7 +94,7 @@ public class OrderResource extends SellerResource {
             HashMap result3 = new HashMap();
             String creditorder = YamlRead.getSQL("getFileCreditOrderUserAll", "seller/order");
             order_user o = order_user.dao.findFirst(creditorder, order_num);
-            isSuccess = order_info.dao.update("update order_info set status = ?, pay_status = ?  where num = ? ", ConstantsUtils.ORDER_INFO_STATUS_WAIT_RECEIVE, ConstantsUtils.ORDER_PAYMENT_STATUS_RECEIVED, order_num);
+            order_info.dao.update("update order_info set status = ?, pay_status = ?  where num = ? ", ConstantsUtils.ORDER_INFO_STATUS_WAIT_RECEIVE, ConstantsUtils.ORDER_PAYMENT_STATUS_RECEIVED, order_num);
             isSuccess = new credit().set("area_id", ConstantsUtils.ALL_AREA_ID).set("order_num", order_num).set("status", 0).set("buyer_id", o.get("buyer_id")).set("seller_id", o.get("seller_id")).save();
         } else {
             //当卖家不同意买家赊账时订单取消 op==5时
@@ -127,7 +125,7 @@ public class OrderResource extends SellerResource {
         //查找订单信息sql
         String orderInfoSql = "select a.* from order_info a LEFT JOIN order_user b ON a.num = b.order_num where 1=1 ";
 
-        boolean isOrderNum = false;
+        boolean isOrderNum ;
         //是否存在buyer_name_num
         boolean exitsBuyerNameNum = false;
         if (!StringUtils.isEmpty(buyer_name_num)) {
@@ -200,7 +198,6 @@ public class OrderResource extends SellerResource {
                 resultMapList.add(orderMap);
                 // resulfinal.put("order_total", count2);  //4
             }
-            order_info orderInfo = new order_info();
 
             //今日订单数
             /*long orderNum = orderInfo.getDayTotalOrder(seller_id);
