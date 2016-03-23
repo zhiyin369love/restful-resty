@@ -44,7 +44,7 @@ getFieldSellerBankAll:
   select sb.account_address,sb.account_name,sb.account_num,sb.name from seller_bank sb where sb.seller_id = ?
 
 getSellPayList:
-    SELECT id pay_id,name pay_name,seller_id,details,status FROM seller_pay where status = 1 and seller_id = ?
+    SELECT id,pay_id,name pay_name,seller_id,details,status FROM seller_pay where status = 1 and seller_id = ?
 
 getOrderNumByStatus:
   select a.id,a.area_id,a.num,a.status,a.pay_status,a.pay_type_id,a.total_price,a.buyer_receive_id,a.created_at,a.updated_at,a.deleted_at from order_info a

@@ -57,7 +57,7 @@ getAccountList:
   WHERE a.type = 1 and a.pid = ?
 
 getPayList:
-  select id,name,status,details from seller_pay where seller_id = ?
+  select id,pay_id,name,status,details from seller_pay where seller_id = ?
 
 getBankList:
   select account_name,account_num,account_address,name bank_name, id from seller_bank where seller_id = ?

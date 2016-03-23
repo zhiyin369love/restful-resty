@@ -58,8 +58,9 @@ public class OrderPayResouce extends BuyerResource {
                 sellPayMap.put("details", sellPay.get("details"));
                 sellPayMap.put("pay_id", sellPay.get("pay_id"));
                 sellPayMap.put("pay_name", sellPay.get("pay_name"));
-                //如果是在线支付，那么需要查找银行列表
-                if (ConstantsUtils.PAY_TYPE_NAME_OFFLINE.equals(sellPay.get("pay_name"))) {
+                //如果是银行汇款，那么需要查找银行列表
+                //if (ConstantsUtils.PAY_TYPE_INT_OFFLINE.equals(sellPay.get("pay_name"))) {
+                if (ConstantsUtils.PAY_TYPE_INT_BANK.equals(sellPay.get("pay_id"))) {
                     List<seller_bank> sellerBankList = seller_bank.dao.find(getPayBankList, seller_id);
                     sellPayMap.put("pay_bank_list", sellerBankList);
                 }
