@@ -176,7 +176,7 @@ public class OrderResource extends BuyerResource {
      * @return
      */
     @GET
-    public HashMap getOrderList(Integer order_status, Integer page_start, Integer page_step) {
+    public HashMap getOrderList(String order_status, Integer page_start, Integer page_step) {
         //根据循环获取买家Id
         long buyerId = SessionUtil.getUserId();
         //根据买家id获取订单号列表
@@ -191,14 +191,14 @@ public class OrderResource extends BuyerResource {
         int pageNumber = page_start / page_step + 1;
         FullPage<order_info> orderUserPage = null;
         String getOrderNumByStatusSql = YamlRead.getSQL("getOrderNumByStatus", "buyer/order");
-        if (order_status != null) {
-            getOrderNumByStatusSql = getOrderNumByStatusSql + "  and a.status = ?";
-            orderUserPage = order_info.dao.fullPaginate(pageNumber, page_step, getOrderNumByStatusSql, buyerId, order_status);
-            orderUserList = orderUserPage == null ? new ArrayList<order_info>() : orderUserPage.getList();
-        } else {
+        if (!StringUtils.isEmpty(order_status)) {
+            getOrderNumByStatusSql = getOrderNumByStatusSql + "  and a.status in ( " + order_status + " ) ";
+        } /*else {
             orderUserPage = order_info.dao.fullPaginate(pageNumber, page_step, getOrderNumByStatusSql, buyerId);
             orderUserList = orderUserPage == null ? new ArrayList<order_info>() : orderUserPage.getList();
-        }
+        }*/
+        orderUserPage = order_info.dao.fullPaginate(pageNumber, page_step, getOrderNumByStatusSql, buyerId);
+        orderUserList = orderUserPage == null ? new ArrayList<order_info>() : orderUserPage.getList();
         //订单实体
 
         //返回订单列表
@@ -384,15 +384,15 @@ public class OrderResource extends BuyerResource {
         long cancel = 0;
         if (exitsBuyerNameNum) {
             waitPay = getOrderCount(orderInfoSql, buyer_name_num, ConstantsUtils.ORDER_INFO_STATUS_CREATED,buyer_id);
-            //waitSend = getOrderCount(orderInfoSql, buyer_name_num, ConstantsUtils.ORDER_INFO_STATUS_WAIT_RECEIVE,buyer_id);
+            waitSend = getOrderCount(orderInfoSql, buyer_name_num, ConstantsUtils.ORDER_INFO_STATUS_WAIT_RECEIVE,buyer_id);
             waitReceive = getOrderCount(orderInfoSql, buyer_name_num, ConstantsUtils.ORDER_INFO_STATUS_ALREADY,buyer_id);
-            //finished = getOrderCount(orderInfoSql, buyer_name_num, ConstantsUtils.ORDER_INFO_STATUS_FINISHED,buyer_id);
+            finished = getOrderCount(orderInfoSql, buyer_name_num, ConstantsUtils.ORDER_INFO_STATUS_FINISHED,buyer_id);
             cancel = getOrderCount(orderInfoSql, buyer_name_num, ConstantsUtils.ORDER_INFO_STATUS_CANCEL,buyer_id);
         } else {
             waitPay = getOrderCount(orderInfoSql, ConstantsUtils.ORDER_INFO_STATUS_CREATED,buyer_id);
-            //waitSend = getOrderCount(orderInfoSql, ConstantsUtils.ORDER_INFO_STATUS_WAIT_RECEIVE,buyer_id);
+            waitSend = getOrderCount(orderInfoSql, ConstantsUtils.ORDER_INFO_STATUS_WAIT_RECEIVE,buyer_id);
             waitReceive = getOrderCount(orderInfoSql, ConstantsUtils.ORDER_INFO_STATUS_ALREADY,buyer_id);
-            //finished = getOrderCount(orderInfoSql, ConstantsUtils.ORDER_INFO_STATUS_FINISHED,buyer_id);
+            finished = getOrderCount(orderInfoSql, ConstantsUtils.ORDER_INFO_STATUS_FINISHED,buyer_id);
             cancel = getOrderCount(orderInfoSql, ConstantsUtils.ORDER_INFO_STATUS_CANCEL,buyer_id);
            /* orderUserPage = order_info.dao.fullPaginate(pageNumber, page_step, orderInfoSql);
             order_userList = orderUserPage == null ? new ArrayList<order_info>() : orderUserPage.getList();*/
@@ -409,8 +409,8 @@ public class OrderResource extends BuyerResource {
         resulfinal.put("total_price", totalPrice == null ? 0 : totalPrice);
         resulfinal.put("waitPay", waitPay);
         //resulfinal.put("waitSend", waitSend);
-        resulfinal.put("waitReceive", waitReceive);
-        //resulfinal.put("finished", finished);
+        resulfinal.put("waitReceive", waitReceive + waitSend);
+        resulfinal.put("finished", finished);
         resulfinal.put("cancel", cancel);
         return resulfinal;
     }
