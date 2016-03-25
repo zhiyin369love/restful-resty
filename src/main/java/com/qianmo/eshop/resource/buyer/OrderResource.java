@@ -189,7 +189,7 @@ public class OrderResource extends BuyerResource {
             page_step = ConstantsUtils.DEFAULT_PAGE_STEP;
         }
         int pageNumber = page_start / page_step + 1;
-        FullPage<order_info> orderUserPage = null;
+        FullPage<order_info> orderUserPage ;
         String getOrderNumByStatusSql = YamlRead.getSQL("getOrderNumByStatus", "buyer/order");
         if (!StringUtils.isEmpty(order_status)) {
             getOrderNumByStatusSql = getOrderNumByStatusSql + "  and a.status in ( " + order_status + " ) ";
@@ -321,13 +321,13 @@ public class OrderResource extends BuyerResource {
 
     //获取买家订单状态数量
     @GET("/orderCount")
-    public Map getOrderCount(String buyer_name_num, String data_end, String data_start) {
+    public Map getOrderCount(String buyer_name_num) {
         //通过session获取当前登录用户
         long buyer_id = SessionUtil.getUserId();
-        return getOrderStatus(buyer_name_num, data_end, data_start, buyer_id);
+        return getOrderStatus(buyer_name_num, buyer_id);
     }
 
-    private Map getOrderStatus(String buyer_name_num, String data_end, String data_start, long buyer_id) {
+    private Map getOrderStatus(String buyer_name_num, long buyer_id) {
         //查找订单信息sql
         String orderInfoSql = "select count(1) cn from order_info a LEFT JOIN order_user b ON a.num = b.order_num where 1=1 ";
         Map resulfinal = new HashMap();
@@ -346,7 +346,7 @@ public class OrderResource extends BuyerResource {
                         "    LEFT JOIN user_info c ON b.buyer_id = c.id where c.nickname like ? ";
             }
         }
-        //当天开始时间
+     /*   //当天开始时间
         if (StringUtils.isEmpty(data_start)) {
             orderInfoSql += " and a.created_at >= date(sysdate())";
         } else {
@@ -367,7 +367,7 @@ public class OrderResource extends BuyerResource {
                 orderInfoSql += " and a.created_at <=  Date('" + data_end + "')";
                 //orderInfoSql += " and a.created_at <=" + DateUtils.formatDate(data_end, DateUtils.format_yyyyMMdd);
             }
-        }
+        }*/
         orderInfoSql += " and a.status = ?  and b.buyer_id = ?";
         FullPage<order_info> orderUserPage;
         List<order_info> order_userList;
@@ -401,9 +401,9 @@ public class OrderResource extends BuyerResource {
         //返回订单列表
         order_info orderInfo = new order_info();
         //今日订单数
-        long orderNum = orderInfo.getDayTotalOrder(buyer_id);
+        long orderNum = orderInfo.getBuyerDayTotalOrder(buyer_id);
         //今日交易额
-        BigDecimal totalPrice = orderInfo.getDayTotalPrice(buyer_id);
+        BigDecimal totalPrice = orderInfo.getBuyerDayTotalPrice(buyer_id);
 
         resulfinal.put("count", orderNum);
         resulfinal.put("total_price", totalPrice == null ? 0 : totalPrice);
