@@ -34,7 +34,7 @@
 
     <init-param>
       <param-name>loginPassword</param-name>
-      <param-value>ahqianmo</param-value>
+      <param-value>ahqianmo_anz</param-value>
     </init-param>
   </servlet>
 
@@ -65,7 +65,7 @@
   </filter-mapping>
 
   <welcome-file-list>
-    <welcome-file>login.html</welcome-file>
+    <welcome-file>build/login.html</welcome-file>
   </welcome-file-list>
   <!--设置超时时间，1代表1分钟 -->
   <session-config>
