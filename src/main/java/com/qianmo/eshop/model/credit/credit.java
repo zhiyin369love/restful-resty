@@ -20,4 +20,8 @@ public class credit extends Model<credit> {
         sql = YamlRead.getSQL("getTotalPriceBySellerIdStatus","seller/seller");
         return credit.dao.findFirst(sql, sellerId, status);
     }
+
+    public long getCountByUserIdAndStatus(String sql,Long userId, int status) {
+        return credit.dao.findFirst(sql, userId, status).<Long>get("cn");
+    }
 }

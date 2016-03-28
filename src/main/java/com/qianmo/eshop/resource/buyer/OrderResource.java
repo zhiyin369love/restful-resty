@@ -197,6 +197,7 @@ public class OrderResource extends BuyerResource {
             orderUserPage = order_info.dao.fullPaginate(pageNumber, page_step, getOrderNumByStatusSql, buyerId);
             orderUserList = orderUserPage == null ? new ArrayList<order_info>() : orderUserPage.getList();
         }*/
+        getOrderNumByStatusSql += "  order by a.created_at desc ";
         orderUserPage = order_info.dao.fullPaginate(pageNumber, page_step, getOrderNumByStatusSql, buyerId);
         orderUserList = orderUserPage == null ? new ArrayList<order_info>() : orderUserPage.getList();
         //订单实体

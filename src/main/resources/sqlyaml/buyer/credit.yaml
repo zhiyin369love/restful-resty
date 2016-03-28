@@ -47,3 +47,6 @@ getFirldOrderRemarkAll:
    select order_remark.created_at, order_remark.details,order_remark.op,order_remark.order_num,order_remark.reason,order_remark.user_id
     from order_remark
     LEFT JOIN order_info on order_remark.order_num = order_info.num LEFT JOIN credit c on order_info.num = c.order_num where c.buyer_id = ?
+
+getCreditCount:
+   SELECT count(1) cn FROM credit WHERE buyer_id = ? and status = ?

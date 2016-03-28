@@ -32,4 +32,22 @@ public class order_info extends Model<order_info> {
 
 
 
+    /**
+     * 根据买家id获取当日交易总金额
+     * @param buyer_id
+     */
+    public BigDecimal getBuyerDayTotalPrice(long buyer_id) {
+        return order_info.dao.findFirst("select sum(total_price) totalPice from order_info oi left join order_user ou on oi.num = ou.order_num where ou.buyer_id = ?  and oi.status != ? and date(oi.created_at) = date(sysdate())",buyer_id, ConstantsUtils.ORDER_INFO_STATUS_CANCEL).<BigDecimal>get("totalPice");
+    }
+
+    /**
+     * 根据mai买家id获取当日总订单数
+     * @param buyer_id
+     */
+    public long getBuyerDayTotalOrder(long buyer_id) {
+        return  order_info.dao.findFirst("select count(*) cn from order_info oi left join order_user ou on oi.num = ou.order_num where ou.buyer_id = ?   and date(oi.created_at) = date(sysdate())", buyer_id).<Long>get("cn");
+    }
+
+
+
 }

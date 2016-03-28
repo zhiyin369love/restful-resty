@@ -59,7 +59,6 @@ public class OrderResource extends SellerResource {
         result.put("order_info", order_info.dao.findFirst(sqlOrderInfo, id));
         result.put("order_remark_list", order_remark.dao.find(sqlOrderRemark, id));
         return result;
-
     }
 
     /**
@@ -176,6 +175,7 @@ public class OrderResource extends SellerResource {
         if (page_step == null || page_step == 0) {
             page_step = ConstantsUtils.DEFAULT_PAGE_STEP;
         }
+        orderInfoSql += "  order by a.created_at desc ";
         int pageNumber = page_start / page_step + 1;
         FullPage<order_info> orderUserPage;
         List<order_info> order_userList;

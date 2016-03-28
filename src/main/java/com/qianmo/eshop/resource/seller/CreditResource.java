@@ -140,7 +140,7 @@ public class CreditResource extends SellerResource {
                     long orderId = orderInfoId.get("id");
                     OrderResource resource = new OrderResource();
                     List<HashMap> resultMapGood = resource.getOrderHashMaps(orderId);
-                    result_goods_order.put("goods_list", resultMapGood);                         //1
+                    result_goods_order.put("goods_list", resultMapGood);
                     //买家信息实体
                     //String sql_buyer_info = YamlRead.getSQL("getFieldBuyerInfoAll", "seller/order");
                     String sql_buyer_receive = YamlRead.getSQL("getFieldBuyerReceiveAll", "seller/order");
@@ -158,7 +158,6 @@ public class CreditResource extends SellerResource {
                     //订单备注
                     String sqlOrderRemark = YamlRead.getSQL("getFirldOrderRemarkAll", "seller/order");
                     result_goods_order.put("order_remark_list", order_remark.dao.find(sqlOrderRemark, orderId));  //4
-
                     //多个订单实体
                     result_buyer_credit.put("order", result_goods_order);
                     result_buyer_credit.put("credit_id", String.valueOf(id));
@@ -188,6 +187,26 @@ public class CreditResource extends SellerResource {
             }
         }
         return CommonUtils.getCodeMessage(true, "操作销账成功");
+    }
+
+    /**
+     * 获取赊账总数
+     * @return Map
+     */
+    @GET("/creditCount")
+    public Map getCreditCount() {
+        long seller_id = SessionUtil.getUserId();
+        Map resulttall_count = new HashMap();
+        credit creditModel = new credit();
+        //赊账实体
+        String creditCountSql = YamlRead.getSQL("getCreditCount","seller/credit");
+        //已销账金额
+        long alreadyPayCount = creditModel.getCountByUserIdAndStatus(creditCountSql,seller_id,ConstantsUtils.CREDIT_ALREADY_STATUS);
+        //未销账金额
+        long borrowPayCount = creditModel.getCountByUserIdAndStatus(creditCountSql,seller_id,ConstantsUtils.CREDIT_CANCEL_STATUS);
+        resulttall_count.put("alreadyPayCount",alreadyPayCount);
+        resulttall_count.put("borrowPayCount",borrowPayCount);
+        return resulttall_count;
     }
 }
 

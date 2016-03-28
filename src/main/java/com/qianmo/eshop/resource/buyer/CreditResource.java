@@ -22,6 +22,7 @@ import com.qianmo.eshop.resource.z_common.ApiResource;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 获取赊账信息
@@ -30,17 +31,16 @@ import java.util.List;
 
 @API("/credit")
 public class CreditResource extends BuyerResource {
+
     /**
      * @param page_start  第几条开始
      * @param page_step 返回多少条
      * @return
      */
     @GET
-    public HashMap getCredit(Integer page_start,Integer page_step) {
+    public HashMap getCredit(Integer creditStatus, Integer page_start,Integer page_step) {
             long buyer_id = SessionUtil.getUserId();
             HashMap resulttall_count = new HashMap();
-
-
             //赊账实体
             String sqlCredit = YamlRead.getSQL("getCreditByBuyerId","buyer/credit");
             //订单实体
@@ -49,7 +49,6 @@ public class CreditResource extends BuyerResource {
             //订单备注列表
             String sqlOrderRemark = YamlRead.getSQL("getFirldOrderRemarkAll","buyer/order");
             //商品信息
-
            //分页
             List<HashMap> creditsList = new ArrayList<HashMap>();
             FullPage<credit> creditOrderList = null;
@@ -61,7 +60,14 @@ public class CreditResource extends BuyerResource {
                 page_step = ConstantsUtils.DEFAULT_PAGE_STEP;
             }
             int pageNumber = page_start/page_step + 1;
-            creditOrderList  =  credit.dao.fullPaginate(pageNumber,page_step,sqlCredit,buyer_id);
+            if(creditStatus != null) {
+                sqlCredit += " and status = ? " ;
+                sqlCredit += " order by created_at desc";
+                creditOrderList  =  credit.dao.fullPaginate(pageNumber,page_step,sqlCredit,buyer_id,creditStatus);
+            } else {
+                sqlCredit += " order by created_at desc";
+                creditOrderList  =  credit.dao.fullPaginate(pageNumber,page_step,sqlCredit,buyer_id);
+            }
             //List<HashMap> resultMap = new ArrayList<HashMap>();
 
             if(creditOrderList.getList() != null && creditOrderList.getList().size() >0) {
@@ -105,9 +111,27 @@ public class CreditResource extends BuyerResource {
             //分页信息
             resulttall_count.put("total_count",creditOrderList.getTotalRow());
             resulttall_count.put("credit_list",creditsList);
-
             return resulttall_count;
+    }
 
+    /**
+     * 获取赊账总数
+     * @return Map
+     */
+    @GET("/creditCount")
+    public Map getCreditCount() {
+        long buyer_id = SessionUtil.getUserId();
+        Map resulttall_count = new HashMap();
+        //赊账实体
+        String creditCountSql = YamlRead.getSQL("getCreditCount","buyer/credit");
+        credit creditModel = new credit();
+        //已销账金额
+        long alreadyPayCount = creditModel.getCountByUserIdAndStatus(creditCountSql,buyer_id,ConstantsUtils.CREDIT_ALREADY_STATUS);
+        //未销账金额
+        long borrowPayCount = creditModel.getCountByUserIdAndStatus(creditCountSql,buyer_id,ConstantsUtils.CREDIT_CANCEL_STATUS);
+        resulttall_count.put("alreadyPayCount",alreadyPayCount);
+        resulttall_count.put("borrowPayCount",borrowPayCount);
+        return resulttall_count;
     }
 }
 
