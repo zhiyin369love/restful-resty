@@ -34,7 +34,7 @@
 
     <init-param>
       <param-name>loginPassword</param-name>
-      <param-value>admin</param-value>
+      <param-value>ahqianmo</param-value>
     </init-param>
   </servlet>
 
@@ -61,11 +61,11 @@
   </filter>
   <filter-mapping>
     <filter-name>RestyFilter</filter-name>
-    <url-pattern>/*</url-pattern>
+    <url-pattern>/api/*</url-pattern>
   </filter-mapping>
 
   <welcome-file-list>
-    <welcome-file>/index.html</welcome-file>
+    <welcome-file>login.html</welcome-file>
   </welcome-file-list>
   <!--设置超时时间，1代表1分钟 -->
   <session-config>
