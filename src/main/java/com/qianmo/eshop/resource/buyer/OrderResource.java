@@ -120,7 +120,12 @@ public class OrderResource extends BuyerResource {
                         isSuccess = order_info.dao.update("update order_info set pay_type_id = ?  where num = ? ", Long.valueOf(value), order_num);
                     }
                 } else {
-                    isSuccess = order_info.dao.update("update order_info set pay_type_id = ?  where num = ? ", Long.valueOf(value), order_num);
+                    if("2".equals(value) || "3".equals(value)) {
+                        isSuccess = order_info.dao.update("update order_info set pay_status = ? , pay_type_id = ?  where num = ? ",ConstantsUtils.ORDER_PAYMENT_STATUS_WAITE_TRUE, Long.valueOf(value), order_num);
+                    } else {
+                        isSuccess = order_info.dao.update("update order_info set pay_type_id = ?  where num = ? ", Long.valueOf(value), order_num);
+                    }
+
                 }
                 break;
             case ConstantsUtils.ORDER_OP_BANK:
