@@ -63,7 +63,6 @@ public class CreditResource extends SellerResource {
             int pageNumber = page_start / page_step + 1;
 
             //if (status != null) {
-            sqlbuyer_info = sqlbuyer_info + " and c.status = ?";
             // order_users_list = credit.dao.find(sqlbuyer_info, seller_id, status);
             creditFullPagelist = credit.dao.fullPaginate(pageNumber, page_step, sqlbuyer_info, seller_id, status);
 
@@ -81,7 +80,7 @@ public class CreditResource extends SellerResource {
                     if (order_name_list != null && order_name_list.size() > 0) {
                         o = order_name_list.get(0);
                     }*/
-                    result_buyerinfo.put("buyer_nickname", o.get("name"));
+                    result_buyerinfo.put("buyer_nickname", o.get("nickname"));
                     result_buyerinfo.put("buyer_id", buyer_id_list);
                     //resultMapBuyer.add(result_buyerinfo);
 
@@ -120,7 +119,7 @@ public class CreditResource extends SellerResource {
             int pageNumber = page_start / page_step + 1;
             String sqlcre = YamlRead.getSQL("getFirldSellerCreditAll", "seller/credit");
             //if (status != null) {   //判断订单赊账是否
-            sqlcre = sqlcre + " and  c.status = ?";
+            sqlcre  += " and  c.status = ?  order by c.created_at desc";
             //creditOrderList = credit.dao.find(sqlcre, seller_id, status);
             creditFullPagelist = credit.dao.fullPaginate(pageNumber, page_step, sqlcre, seller_id, status);
             /*} else {

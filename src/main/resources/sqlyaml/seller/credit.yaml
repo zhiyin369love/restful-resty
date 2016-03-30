@@ -5,12 +5,12 @@ getFieldActivityAll:
   where a.fieldid = ?
 
 getFieldBuyerInfoAll:
-   select distinct c.buyer_id from credit c,user_info b where c.buyer_id = b.id and  c.seller_id = ?  order by b.name
+   SELECT b.id buyer_id FROM user_info b  LEFT JOIN  (SELECT DISTINCT buyer_id FROM credit c WHERE c.seller_id = ? AND c.status = ? ) a ON  b.id = a.buyer_id   WHERE  1= 1 AND a.buyer_id IS NOT NULL  ORDER BY b.nickname desc
 getFirldOrderUserCreditAll:
    select id,area_id,order_num,buyer_id,seller_id,created_at,updated_at,deleted_at from order_user where buyer_id = ?
 
 getFirldSellerCreditAll:
-   select c.id,c.area_id,c.order_num,c.status,c.buyer_id,c.seller_id from credit c  where  c.seller_id = ?  order by c.created_at desc
+   select c.id,c.area_id,c.order_num,c.status,c.buyer_id,c.seller_id from credit c  where  c.seller_id = ?
 
 getFirldCountOrderUserAll:
    select count(c.order_num) as num from credit c where c.status = ? and c.buyer_id = ? and c.seller_id = ?
@@ -32,7 +32,7 @@ getFieldOrderInfoAll:
 getFirldCreditAll:
   select c.id,c.status from credit c where c.seller_id = ?
 getFieldUserInfoAll:
-   select name from user_info where id = ?
+   select nickname from user_info where id = ?
 getFirldOrderRemarkAll:
   select a.created_at,a.details,a.op,a.order_num,a.reason,a.user_id
    from order_remark a

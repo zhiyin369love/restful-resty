@@ -114,7 +114,7 @@ public class IndexResource extends ApiResource {
         //客服号码   如果买家关联多个卖家，那么客服电话怎么展示
         //String phone = user_info.dao.findById(buyer_id).<String>get("phone");
         //上级经销商
-        List<buyer_seller> sellerlist = buyer_seller.dao.findBy("buyer_id = ? and status = 0 ", buyer_id);
+        List<buyer_seller> sellerlist = buyer_seller.dao.findBy("buyer_id = ? and status = ?", buyer_id,ConstantsUtils.BUYER_SELLER_STATUS_BIDING);
         List<HashMap> resultSellerList = new ArrayList<HashMap>();
         //循环截取所需的字段
         if (sellerlist != null && sellerlist.size() > 0) {
@@ -136,12 +136,12 @@ public class IndexResource extends ApiResource {
             //待付款订单
             long payWait = order_info.dao.findFirst("SELECT COUNT(*) cn FROM order_info a  LEFT JOIN order_user b" +
                     "                ON a.num = b.order_num" +
-                    "                WHERE  a.pay_status = ? and b.order_num IS NOT NULL AND b.buyer_id = ? AND b.area_id = ?", ConstantsUtils.ORDER_PAYMENT_STATUS_WAITE, buyer_id, ConstantsUtils.ALL_AREA_ID).<Long>get("cn");
+                    "                WHERE  a.status = ? and b.order_num IS NOT NULL AND b.buyer_id = ? ", ConstantsUtils.ORDER_INFO_STATUS_CREATED, buyer_id).<Long>get("cn");
 
             //待收货订单
             long receiveWait = order_info.dao.findFirst("SELECT COUNT(*) cn FROM order_info a  LEFT JOIN order_user b" +
                     "                ON a.num = b.order_num" +
-                    "                WHERE  a.status = ? and b.order_num IS NOT NULL AND b.buyer_id = ? AND b.area_id = ?", ConstantsUtils.ORDER_INFO_STATUS_WAIT_RECEIVE, buyer_id, ConstantsUtils.ALL_AREA_ID).<Long>get("cn");
+                    "                WHERE  a.status = ? and b.order_num IS NOT NULL AND b.buyer_id = ? ", ConstantsUtils.ORDER_INFO_STATUS_WAIT_RECEIVE, buyer_id).<Long>get("cn");
             total.put("todo_pay_count", payWait);
             total.put("todo_receive_count", receiveWait);
             resultMap.put("total", total);
