@@ -4,8 +4,10 @@ import cn.dreampie.orm.Model;
 import cn.dreampie.orm.annotation.Table;
 import cn.dreampie.security.Subject;
 import com.qianmo.eshop.common.ConstantsUtils;
+import com.qianmo.eshop.common.DateUtils;
 import com.qianmo.eshop.model.user.user_info;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -17,7 +19,7 @@ public class buyer_receive_address extends Model<buyer_receive_address> {
 
     //获取收货地址列表
     public List<buyer_receive_address> list(Object BuyerId) {
-        List<buyer_receive_address> receiveAddressList = dao.findBy("buyer_id = ?", BuyerId);
+        List<buyer_receive_address> receiveAddressList = dao.findBy("buyer_id = ? and deleted_at is null", BuyerId);
         return receiveAddressList;
     }
 
@@ -58,14 +60,17 @@ public class buyer_receive_address extends Model<buyer_receive_address> {
     }
 
     //删除收货地址
-    public boolean delete(long id) {
-        boolean result;
-        if (dao.deleteById(id)) {
+    public  boolean delete(long id) {
+        //boolean result;
+        boolean isUpdate = buyer_receive_address.dao.findById(id).update("deleted_at = sysdate()");
+
+
+      /*  if (dao.deleteById(id)) {
             result = true;
         } else {
             result = false;
-        }
-        return result;
+        }*/
+        return isUpdate;
     }
 
     //将user_info转成buyer_receive_address model
