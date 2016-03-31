@@ -218,7 +218,16 @@ public class RetailerResource extends ApiResource {
             if(!StringUtils.isEmpty(phone)) {
                 sql += " and a.phone like '%" + phone + "%'";
             }*/
-            inviteCodeList = invite_verify_code.dao.fullPaginate(pageNumber, page_step, sql, seller_id, seller_id, ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE);
+            if(status !=null ) {
+                //查找已注册
+                if(status == ConstantsUtils.ONE) {
+                    inviteCodeList = invite_verify_code.dao.fullPaginate(pageNumber, page_step, sql, seller_id);
+                } else {
+                    inviteCodeList = invite_verify_code.dao.fullPaginate(pageNumber, page_step, sql, seller_id, ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE);
+                }
+            } else {
+                inviteCodeList = invite_verify_code.dao.fullPaginate(pageNumber, page_step, sql, seller_id, seller_id, ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE);
+            }
             inviteVerifyCodes = inviteCodeList.getList();
             resultMap.put("page_size", page_step);
             resultMap.put("total_count", inviteCodeList.getTotalRow());
