@@ -71,7 +71,7 @@ public class IndexResource extends ApiResource {
      * @param bind_code 绑定码
      */
     @GET("/seller")
-    public Map getSellerInfoByVerifyCode(int bind_code) {
+    public Map getSellerInfoByVerifyCode(Integer bind_code) {
         HashMap resultMap = new HashMap();
         //try {
         //通过验证码找卖家id
