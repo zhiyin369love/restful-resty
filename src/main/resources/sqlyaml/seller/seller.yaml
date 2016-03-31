@@ -109,16 +109,16 @@ getNoRegisterUserList:
    SELECT
              count(1) cn
      FROM
-             invite_verify_code d
+             invite_verify_code a
      WHERE
-             d.user_id = ?
-             AND d.type = ?
+             a.user_id = ?
+             AND a.type = ?
              AND NOT EXISTS
                    (  SELECT
                            1
                              FROM
                                   user_info c
-                            WHERE d.phone = c.username )
+                            WHERE a.phone = c.username )
 getRegisterUserList:
       SELECT
              count(1) cn
@@ -171,4 +171,5 @@ getMyNoRegisterRetailer:
                              FROM
                                   user_info c
                             WHERE d.phone = c.username )) a
+        where 1 = 1
 
