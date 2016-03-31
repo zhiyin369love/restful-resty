@@ -173,7 +173,7 @@ public class RetailerResource extends ApiResource {
      * @param phone      手机号
      */
     @GET
-    public HashMap getRetailerList(String buyer_name, String name, Integer page_start, Integer page_step, String phone) {
+    public HashMap getRetailerList(String buyer_name, String name, Integer page_start, Integer page_step, String phone,Integer status) {
         HashMap<String,Object> resultMap = new HashMap<String,Object>();
         List<invite_verify_code> inviteVerifyCodes = new ArrayList<invite_verify_code>();
         List<HashMap> buyerSellerResultList = new ArrayList<HashMap>();
@@ -187,7 +187,21 @@ public class RetailerResource extends ApiResource {
             }
             int pageNumber = page_start / page_step + 1;
             FullPage<invite_verify_code> inviteCodeList = null;
-            String sql = YamlRead.getSQL("getMyRetailer","seller/seller");
+            String sql;
+            if(status !=null ) {
+                //查找已注册
+                if(status == ConstantsUtils.ONE) {
+                    sql = YamlRead.getSQL("getMyRegisterRetailer","seller/seller");
+                } else {
+                    //查找未注册
+                    sql = YamlRead.getSQL("getMyNoRegisterRetailer","seller/seller");
+                }
+            } else {
+                //如果不传，默认查询所有
+               sql = YamlRead.getSQL("getMyRetailer","seller/seller");
+            }
+
+
             if(!StringUtils.isEmpty(buyer_name)) {
                 //是否手机号码
                 boolean isOrderNum = buyer_name.matches("[0-9]+");
@@ -379,7 +393,7 @@ public class RetailerResource extends ApiResource {
      *
      * @param buyer_name 零售商名称
      */
-    @GET("/registerCount")
+    @GET("/retailerCount")
     public Map getRetailerList(String buyer_name) {
         Map resultMap = new HashMap();
         //try {

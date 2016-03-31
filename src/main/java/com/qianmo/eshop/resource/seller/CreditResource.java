@@ -119,7 +119,7 @@ public class CreditResource extends SellerResource {
             int pageNumber = page_start / page_step + 1;
             String sqlcre = YamlRead.getSQL("getFirldSellerCreditAll", "seller/credit");
             //if (status != null) {   //判断订单赊账是否
-            sqlcre  += " and  c.status = ?  order by c.created_at desc";
+            sqlcre += " and  c.status = ?  order by c.created_at desc";
             //creditOrderList = credit.dao.find(sqlcre, seller_id, status);
             creditFullPagelist = credit.dao.fullPaginate(pageNumber, page_step, sqlcre, seller_id, status);
             /*} else {
@@ -190,6 +190,7 @@ public class CreditResource extends SellerResource {
 
     /**
      * 获取赊账总数
+     *
      * @return Map
      */
     @GET("/creditCount")
@@ -198,13 +199,13 @@ public class CreditResource extends SellerResource {
         Map resulttall_count = new HashMap();
         credit creditModel = new credit();
         //赊账实体
-        String creditCountSql = YamlRead.getSQL("getCreditCount","seller/credit");
+        String creditCountSql = YamlRead.getSQL("getCreditCount", "seller/credit");
         //已销账金额
-        long alreadyPayCount = creditModel.getCountByUserIdAndStatus(creditCountSql,seller_id,ConstantsUtils.CREDIT_ALREADY_STATUS);
+        long alreadyPayCount = creditModel.getCountByUserIdAndStatus(creditCountSql, seller_id, ConstantsUtils.CREDIT_ALREADY_STATUS);
         //未销账金额
-        long borrowPayCount = creditModel.getCountByUserIdAndStatus(creditCountSql,seller_id,ConstantsUtils.CREDIT_CANCEL_STATUS);
-        resulttall_count.put("alreadyPayCount",alreadyPayCount);
-        resulttall_count.put("borrowPayCount",borrowPayCount);
+        long borrowPayCount = creditModel.getCountByUserIdAndStatus(creditCountSql, seller_id, ConstantsUtils.CREDIT_CANCEL_STATUS);
+        resulttall_count.put("alreadyPayCount", alreadyPayCount);
+        resulttall_count.put("borrowPayCount", borrowPayCount);
         return resulttall_count;
     }
 }

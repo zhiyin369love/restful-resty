@@ -62,9 +62,7 @@ public class buyer_receive_address extends Model<buyer_receive_address> {
     //删除收货地址
     public  boolean delete(long id) {
         //boolean result;
-        boolean isUpdate = buyer_receive_address.dao.findById(id).update("deleted_at = CURRENT_TIMESTAMP ");
-
-
+        boolean isUpdate = buyer_receive_address.dao.update("update buyer_receive_address set deleted_at = CURRENT_TIMESTAMP  where id = ?",id);
       /*  if (dao.deleteById(id)) {
             result = true;
         } else {
