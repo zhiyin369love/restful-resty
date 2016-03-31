@@ -186,4 +186,5 @@ public class GoodsResource extends BuyerResource {
         resultMap.put("goods_sku_list", skuList);
         return resultMap;
     }
+
 }
