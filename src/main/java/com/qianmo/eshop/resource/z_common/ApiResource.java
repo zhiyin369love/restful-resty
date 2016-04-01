@@ -117,7 +117,7 @@ public class ApiResource extends Resource {
      * @param op    操作
      */
     @POST("/send/code")
-    public WebResult sendCode(String phone, String op) throws IOException {
+    public WebResult sendCode(String phone, Integer op) throws IOException {
         String content;
         String sign;
 
