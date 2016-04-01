@@ -66,7 +66,7 @@ public class RetailerResource extends ApiResource {
                             .set("expire_time", DateUtils.getDateString(afterOneDay, DateUtils.format_yyyyMMddHHmmss)).set("remark", remark).set("phone", phone).save();
                 } else {
                     //如果邀请码在一天有效期内，暂时就不给发
-                    if (DateUtils.formatDate(verifyCode.get("expire_time").toString(), DateUtils.format_yyyyMMddHHmmss).getTime() < System.currentTimeMillis()) {
+                    if (DateUtils.formatDate(verifyCode.get("expire_time").toString(), DateUtils.format_yyyyMMddHHmmss).getTime() > System.currentTimeMillis()) {
                         return  CommonUtils.getCodeMessage(false,"邀请码在一天有效期内暂时不发送");
                     } else {
                         //如果在一天有效期外，那么就需要发送，并且update  invite_verify_code这张表
@@ -411,9 +411,11 @@ public class RetailerResource extends ApiResource {
             FullPage<invite_verify_code> inviteCodeList = null;
             String noRegistersql = YamlRead.getSQL("getNoRegisterUserList", "seller/seller");
             String registersql = YamlRead.getSQL("getRegisterUserList", "seller/seller");
+            long noRegisterCount = 0l;
+            boolean isNum = true;
             if(!StringUtils.isEmpty(buyer_name)) {
                 //是否手机号码
-                boolean isNum = buyer_name.matches("[0-9]+");
+                isNum = buyer_name.matches("[0-9]+");
                 if(isNum) {
                     noRegistersql += " and a.phone like '%" + buyer_name + "%'";
                     registersql += "  and a.phone like '%" + buyer_name + "%'";
@@ -421,7 +423,12 @@ public class RetailerResource extends ApiResource {
                     registersql += " and (a.nickname like '%" + buyer_name + "%'" + " or a.name like '%" + buyer_name + "%' )";
                 }
             }
-            long noRegisterCount = invite_verify_code.dao.findFirst(noRegistersql,seller_id,ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE).<Long>get("cn");
+            //如果是按名称搜索的话，那么直接将未注册设为0
+            if(!isNum) {
+                noRegisterCount = 0l;
+            } else {
+                noRegisterCount = invite_verify_code.dao.findFirst(noRegistersql,seller_id,ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE).<Long>get("cn");
+            }
             long registerCount = invite_verify_code.dao.findFirst(registersql,seller_id).<Long>get("cn");
             resultMap.put("noRegisterCount", noRegisterCount);
             resultMap.put("registerCount", registerCount);
