@@ -132,7 +132,7 @@ public class ApiResource extends Resource {
             invite_verify_code.dao.set("area_id", ConstantsUtils.ALL_AREA_ID).set("code", code).set("type", op)
                     .set("expire_time", DateUtils.getDateString(ExpireTime, DateUtils.format_yyyyMMddHHmmss)).set("phone", phone).save();
             if (returnResult.get("msg") == null || (returnResult.get("msg") != null && !"OK".equals(returnResult.get("msg")))) {
-                resultContent += phone + "短信发送失败;";
+                resultContent += phone + "短信发送失败";
             }
             if (!"".equals(resultContent)) {
                 return new WebResult(HttpStatus.OK, resultContent);
