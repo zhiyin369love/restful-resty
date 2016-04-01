@@ -59,10 +59,10 @@ public class RetailerResource extends ApiResource {
                     //如果没有发送过邀请码，那么第一次需要保存
                     if (verifyCode == null) {
                         returnResult = (JSONObject) JSON.parse(SmsApi.sendSms(SmsApi.APIKEY, content + code, phone));
-                        if (returnResult.get("msg") != null && "OK".equals(returnResult.get("msg"))) {
+                        //if (returnResult.get("msg") != null && "OK".equals(returnResult.get("msg"))) {
                             invite_verify_code.dao.set("area_id", ConstantsUtils.ALL_AREA_ID).set("code", code).set("user_id", seller_id).set("type", ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE).set("status", ConstantsUtils.INVITE_CODE_STATUS_EXPIRED)
                                     .set("expire_time", DateUtils.getDateString(afterOneDay, DateUtils.format_yyyyMMddHHmmss)).set("remark", remark).set("phone", phone).save();
-                        }
+                       // }
                     } else {
                         //如果邀请码在一天有效期内，暂时就不给发
                         if (DateUtils.formatDate(verifyCode.get("expire_time").toString(), DateUtils.format_yyyyMMddHHmmss).getTime() > System.currentTimeMillis()) {
@@ -70,9 +70,9 @@ public class RetailerResource extends ApiResource {
                         } else {
                             //如果在一天有效期外，那么就需要发送，并且update  invite_verify_code这张表
                             returnResult = (JSONObject) JSON.parse(SmsApi.sendSms(SmsApi.APIKEY, content + code, phone));
-                            if (returnResult.get("msg") != null && "OK".equals(returnResult.get("msg"))) {
+                            //if (returnResult.get("msg") != null && "OK".equals(returnResult.get("msg"))) {
                                 verifyCode.set("code", code).set("expire_time", DateUtils.getDateString(afterOneDay, DateUtils.format_yyyyMMddHHmmss)).update();
-                            }
+                            //}
                         }
                     }
                     if (returnResult.get("msg") == null || !"OK".equals(returnResult.get("msg"))) {

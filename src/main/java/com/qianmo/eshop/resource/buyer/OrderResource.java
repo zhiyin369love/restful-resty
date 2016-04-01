@@ -185,7 +185,7 @@ public class OrderResource extends BuyerResource {
         //根据循环获取买家Id
         long buyerId = SessionUtil.getUserId();
         //根据买家id获取订单号列表
-        List<order_info> orderUserList = null;
+        List<order_info> orderUserList;
         //如果状态不为空，则需要根据状态去找order list
         if (page_start == null || page_start == 0) {
             page_start = ConstantsUtils.DEFAULT_PAGE_START;
@@ -206,7 +206,6 @@ public class OrderResource extends BuyerResource {
         orderUserPage = order_info.dao.fullPaginate(pageNumber, page_step, getOrderNumByStatusSql, buyerId);
         orderUserList = orderUserPage == null ? new ArrayList<order_info>() : orderUserPage.getList();
         //订单实体
-
         //返回订单列表
         List<HashMap> resultMapList = new ArrayList<HashMap>();
         if (orderUserList != null && orderUserList.size() > 0) {
