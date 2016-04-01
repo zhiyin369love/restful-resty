@@ -47,49 +47,49 @@ public class RetailerResource extends ApiResource {
         JSONObject returnResult = new JSONObject();
         Date afterOneDay = new Date(System.currentTimeMillis() + 24 * 60 * 60 * 1000);
         if (seller_id == 0l) {
-            return CommonUtils.getCodeMessage(false,"输入参数有误");
+            return CommonUtils.getCodeMessage(false, "输入参数有误");
         }
         if (accounts != null && accounts.size() > 0) {
-            for (JSONObject userInfo : accounts) {
-                phone = (String) userInfo.get("phone");
-                remark = (String) userInfo.get("remark");
-                code = CommonUtils.getRandNum(6);
-                invite_verify_code verifyCode = invite_verify_code.dao.findFirstBy(" user_id = ? and phone = ? and type = ?  ", seller_id, phone, ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE);
-                //如果没有发送过邀请码，那么第一次需要保存
-                if (verifyCode == null) {
-                    try {
+            try {
+                for (JSONObject userInfo : accounts) {
+                    phone = (String) userInfo.get("phone");
+                    remark = (String) userInfo.get("remark");
+                    code = CommonUtils.getRandNum(6);
+                    invite_verify_code verifyCode = invite_verify_code.dao.findFirstBy(" user_id = ? and phone = ? and type = ?  ", seller_id, phone, ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE);
+                    //如果没有发送过邀请码，那么第一次需要保存
+                    if (verifyCode == null) {
                         returnResult = (JSONObject) JSON.parse(SmsApi.sendSms(SmsApi.APIKEY, content + code, phone));
-                    } catch (IOException e) {
-                        // e.printStackTrace();
-                    }
-                    invite_verify_code.dao.set("area_id", ConstantsUtils.ALL_AREA_ID).set("code", code).set("user_id", seller_id).set("type", ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE).set("status", ConstantsUtils.INVITE_CODE_STATUS_EXPIRED)
-                            .set("expire_time", DateUtils.getDateString(afterOneDay, DateUtils.format_yyyyMMddHHmmss)).set("remark", remark).set("phone", phone).save();
-                } else {
-                    //如果邀请码在一天有效期内，暂时就不给发
-                    if (DateUtils.formatDate(verifyCode.get("expire_time").toString(), DateUtils.format_yyyyMMddHHmmss).getTime() > System.currentTimeMillis()) {
-                        return  CommonUtils.getCodeMessage(false,"邀请码在一天有效期内暂时不发送");
+                        if (returnResult.get("msg") != null && "OK".equals(returnResult.get("msg"))) {
+                            invite_verify_code.dao.set("area_id", ConstantsUtils.ALL_AREA_ID).set("code", code).set("user_id", seller_id).set("type", ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE).set("status", ConstantsUtils.INVITE_CODE_STATUS_EXPIRED)
+                                    .set("expire_time", DateUtils.getDateString(afterOneDay, DateUtils.format_yyyyMMddHHmmss)).set("remark", remark).set("phone", phone).save();
+                        }
                     } else {
-                        //如果在一天有效期外，那么就需要发送，并且update  invite_verify_code这张表
-                        verifyCode.set("code", code).set("expire_time", DateUtils.getDateString(afterOneDay, DateUtils.format_yyyyMMddHHmmss)).update();
-                        try {
+                        //如果邀请码在一天有效期内，暂时就不给发
+                        if (DateUtils.formatDate(verifyCode.get("expire_time").toString(), DateUtils.format_yyyyMMddHHmmss).getTime() > System.currentTimeMillis()) {
+                            return CommonUtils.getCodeMessage(false, "邀请码在一天有效期内暂时不发送");
+                        } else {
+                            //如果在一天有效期外，那么就需要发送，并且update  invite_verify_code这张表
                             returnResult = (JSONObject) JSON.parse(SmsApi.sendSms(SmsApi.APIKEY, content + code, phone));
-                        } catch (IOException e) {
-                            // e.printStackTrace();
+                            if (returnResult.get("msg") != null && "OK".equals(returnResult.get("msg"))) {
+                                verifyCode.set("code", code).set("expire_time", DateUtils.getDateString(afterOneDay, DateUtils.format_yyyyMMddHHmmss)).update();
+                            }
                         }
                     }
+                    if (returnResult.get("msg") == null || !"OK".equals(returnResult.get("msg"))) {
+                        resultContent += phone + "短信发送失败;";
+                    }
                 }
-                if (returnResult.get("msg") == null || !"OK".equals(returnResult.get("msg"))) {
-                    resultContent += phone + "短信发送失败;";
-                }
+            } catch (IOException e) {
+
             }
             if (!"".equals(resultContent)) {
-                result = CommonUtils.getCodeMessage(false,resultContent);
+                result = CommonUtils.getCodeMessage(false, resultContent);
                 //return result;
             } else {
                 result = setResult("短信发送成功");
             }
         } else {
-            result = CommonUtils.getCodeMessage(false,"输入参数有误");
+            result = CommonUtils.getCodeMessage(false, "输入参数有误");
         }
         return result;
     }
@@ -102,10 +102,10 @@ public class RetailerResource extends ApiResource {
      */
     @PUT("/remark")
     @Transaction
-    public Map saveOrEditSendCode(Map<String,Object> remarks) {
-        Map result = CommonUtils.getCodeMessage(true,"操作成功");
+    public Map saveOrEditSendCode(Map<String, Object> remarks) {
+        Map result = CommonUtils.getCodeMessage(true, "操作成功");
         if (seller_id == 0l) {
-            result = CommonUtils.getCodeMessage(false,"输入参数有误");
+            result = CommonUtils.getCodeMessage(false, "输入参数有误");
         }
         if (remarks != null) {
             //for (JSONObject userInfo : remarks) {
@@ -114,11 +114,11 @@ public class RetailerResource extends ApiResource {
             //并未对remark做非空判断，这项判断应该在前台点确定之前给个提醒
             String remark = (String) remarks.get("remark");
             if (buyerId != null) {
-               user_info userInfo = user_info.dao.findById(buyerId);
-                if(userInfo != null) {
-                    userInfo.set("remark",remark).update();
+                user_info userInfo = user_info.dao.findById(buyerId);
+                if (userInfo != null) {
+                    userInfo.set("remark", remark).update();
                 } else {
-                    result = CommonUtils.getCodeMessage(false,"输入零售商id有误");
+                    result = CommonUtils.getCodeMessage(false, "输入零售商id有误");
                 }
             } else {
                 //code = CommonUtils.getRandNum(6);
@@ -131,7 +131,7 @@ public class RetailerResource extends ApiResource {
                 }
             }
         } else {
-            result = CommonUtils.getCodeMessage(false,"输入参数有误");
+            result = CommonUtils.getCodeMessage(false, "输入参数有误");
         }
         return result;
     }
@@ -148,7 +148,7 @@ public class RetailerResource extends ApiResource {
     public Map cooperation(Long id, Long op) {
         //try {
         if ((id == null || id == 0l) || op == null || seller_id == 0l) {
-            return CommonUtils.getCodeMessage(false,"输入参数有误");
+            return CommonUtils.getCodeMessage(false, "输入参数有误");
         }
         buyer_seller buyerSeller = buyer_seller.dao.findFirstBy("buyer_id = ? and seller_id = ?", id, seller_id);
         if (buyerSeller == null) {
@@ -156,7 +156,7 @@ public class RetailerResource extends ApiResource {
         } else {
             buyerSeller.set("status", op).update();
         }
-        return CommonUtils.getCodeMessage(true,"修改成功");
+        return CommonUtils.getCodeMessage(true, "修改成功");
        /* } catch (Exception e) {
             return new WebResult(HttpStatus.EXPECTATION_FAILED, "异常错误");
         }*/
@@ -173,8 +173,8 @@ public class RetailerResource extends ApiResource {
      * @param phone      手机号
      */
     @GET
-    public HashMap getRetailerList(String buyer_name, String name, Integer page_start, Integer page_step, String phone,Integer status) {
-        HashMap<String,Object> resultMap = new HashMap<String,Object>();
+    public HashMap getRetailerList(String buyer_name, String name, Integer page_start, Integer page_step, String phone, Integer status) {
+        HashMap<String, Object> resultMap = new HashMap<String, Object>();
         List<invite_verify_code> inviteVerifyCodes = new ArrayList<invite_verify_code>();
         List<HashMap> buyerSellerResultList = new ArrayList<HashMap>();
         Map pageInfo = new HashMap();
@@ -188,24 +188,24 @@ public class RetailerResource extends ApiResource {
             int pageNumber = page_start / page_step + 1;
             FullPage<invite_verify_code> inviteCodeList = null;
             String sql;
-            if(status !=null ) {
+            if (status != null) {
                 //查找已注册
-                if(status == ConstantsUtils.ONE) {
-                    sql = YamlRead.getSQL("getMyRegisterRetailer","seller/seller");
+                if (status == ConstantsUtils.ONE) {
+                    sql = YamlRead.getSQL("getMyRegisterRetailer", "seller/seller");
                 } else {
                     //查找未注册
-                    sql = YamlRead.getSQL("getMyNoRegisterRetailer","seller/seller");
+                    sql = YamlRead.getSQL("getMyNoRegisterRetailer", "seller/seller");
                 }
             } else {
                 //如果不传，默认查询所有
-               sql = YamlRead.getSQL("getMyRetailer","seller/seller");
+                sql = YamlRead.getSQL("getMyRetailer", "seller/seller");
             }
 
 
-            if(!StringUtils.isEmpty(buyer_name)) {
+            if (!StringUtils.isEmpty(buyer_name)) {
                 //是否手机号码
                 boolean isOrderNum = buyer_name.matches("[0-9]+");
-                if(isOrderNum) {
+                if (isOrderNum) {
                     sql += " and a.phone like '%" + buyer_name + "%'";
                 } else {
                     sql += " and (a.nickname like '%" + buyer_name + "%'" + " or a.name like '%" + buyer_name + "%' )";
@@ -218,9 +218,9 @@ public class RetailerResource extends ApiResource {
             if(!StringUtils.isEmpty(phone)) {
                 sql += " and a.phone like '%" + phone + "%'";
             }*/
-            if(status !=null ) {
+            if (status != null) {
                 //查找已注册
-                if(status == ConstantsUtils.ONE) {
+                if (status == ConstantsUtils.ONE) {
                     inviteCodeList = invite_verify_code.dao.fullPaginate(pageNumber, page_step, sql, seller_id);
                 } else {
                     inviteCodeList = invite_verify_code.dao.fullPaginate(pageNumber, page_step, sql, seller_id, ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE);
@@ -270,7 +270,7 @@ public class RetailerResource extends ApiResource {
                 }
             }
             if (!"".equals(content)) {
-                resultMap = CommonUtils.getCodeMessage(false,content);
+                resultMap = CommonUtils.getCodeMessage(false, content);
             } else {
                 resultMap = setResult("批量修改价格成功");
             }
@@ -340,7 +340,6 @@ public class RetailerResource extends ApiResource {
     }
 
 
-
     /**
      * 获取用户商品购买不可购买总数
      *
@@ -390,11 +389,10 @@ public class RetailerResource extends ApiResource {
 
     private Map setResult(String message) {
         Map resultMap = new HashMap();
-        resultMap.put("code",ConstantsUtils.HTTP_STATUS_OK_200);
-        resultMap.put("message",message);
+        resultMap.put("code", ConstantsUtils.HTTP_STATUS_OK_200);
+        resultMap.put("message", message);
         return resultMap;
     }
-
 
 
     /**
@@ -413,10 +411,10 @@ public class RetailerResource extends ApiResource {
             String registersql = YamlRead.getSQL("getRegisterUserList", "seller/seller");
             long noRegisterCount = 0l;
             boolean isNum = true;
-            if(!StringUtils.isEmpty(buyer_name)) {
+            if (!StringUtils.isEmpty(buyer_name)) {
                 //是否手机号码
                 isNum = buyer_name.matches("[0-9]+");
-                if(isNum) {
+                if (isNum) {
                     noRegistersql += " and a.phone like '%" + buyer_name + "%'";
                     registersql += "  and a.phone like '%" + buyer_name + "%'";
                 } else {
@@ -424,12 +422,12 @@ public class RetailerResource extends ApiResource {
                 }
             }
             //如果是按名称搜索的话，那么直接将未注册设为0
-            if(!isNum) {
+            if (!isNum) {
                 noRegisterCount = 0l;
             } else {
-                noRegisterCount = invite_verify_code.dao.findFirst(noRegistersql,seller_id,ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE).<Long>get("cn");
+                noRegisterCount = invite_verify_code.dao.findFirst(noRegistersql, seller_id, ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE).<Long>get("cn");
             }
-            long registerCount = invite_verify_code.dao.findFirst(registersql,seller_id).<Long>get("cn");
+            long registerCount = invite_verify_code.dao.findFirst(registersql, seller_id).<Long>get("cn");
             resultMap.put("noRegisterCount", noRegisterCount);
             resultMap.put("registerCount", registerCount);
         }
