@@ -1,5 +1,6 @@
 package com.qianmo.eshop.resource.seller;
 
+import cn.dreampie.log.Logger;
 import cn.dreampie.orm.page.FullPage;
 import cn.dreampie.orm.transaction.Transaction;
 import cn.dreampie.route.annotation.API;
@@ -13,6 +14,7 @@ import com.qianmo.eshop.model.buyer.buyer_seller;
 import com.qianmo.eshop.model.goods.goods_sku;
 import com.qianmo.eshop.model.goods.goods_sku_price;
 import com.qianmo.eshop.model.user.invite_verify_code;
+import com.qianmo.eshop.model.user.sms_template;
 import com.qianmo.eshop.model.user.user_info;
 import com.qianmo.eshop.resource.z_common.ApiResource;
 
@@ -26,6 +28,7 @@ import java.util.*;
  */
 @API("/seller/retailer")
 public class RetailerResource extends ApiResource {
+    private static final Logger logger = Logger.getLogger(RetailerResource.class);
     private long seller_id = SessionUtil.getUserId();
 
     /**
@@ -39,7 +42,7 @@ public class RetailerResource extends ApiResource {
         //try {
         //从property文件中获取属性
         Map result = new HashMap();
-        String content = PropertyUtil.getProperty("sms.content");
+        //String content = PropertyUtil.getProperty("sms.content");
         String phone = "";
         String remark = "";
         String code = "";
@@ -51,6 +54,10 @@ public class RetailerResource extends ApiResource {
         }
         if (accounts != null && accounts.size() > 0) {
             try {
+                sms_template model = sms_template.dao.findById(ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE);
+                String templateContent = model.get("content");
+                String sign = model.get("sign");
+                String content = sign + templateContent;
                 for (JSONObject userInfo : accounts) {
                     phone = (String) userInfo.get("phone");
                     remark = (String) userInfo.get("remark");
@@ -58,7 +65,7 @@ public class RetailerResource extends ApiResource {
                     invite_verify_code verifyCode = invite_verify_code.dao.findFirstBy(" user_id = ? and phone = ? and type = ?  ", seller_id, phone, ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE);
                     //如果没有发送过邀请码，那么第一次需要保存
                     if (verifyCode == null) {
-                        returnResult = (JSONObject) JSON.parse(SmsApi.sendSms(SmsApi.APIKEY, content + code, phone));
+                        returnResult = (JSONObject) JSON.parse(SmsApi.sendSms(SmsApi.APIKEY, content.replace("?",code), phone));
                         //if (returnResult.get("msg") != null && "OK".equals(returnResult.get("msg"))) {
                             invite_verify_code.dao.set("area_id", ConstantsUtils.ALL_AREA_ID).set("code", code).set("user_id", seller_id).set("type", ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE).set("status", ConstantsUtils.INVITE_CODE_STATUS_EXPIRED)
                                     .set("expire_time", DateUtils.getDateString(afterOneDay, DateUtils.format_yyyyMMddHHmmss)).set("remark", remark).set("phone", phone).save();
@@ -69,13 +76,14 @@ public class RetailerResource extends ApiResource {
                             return CommonUtils.getCodeMessage(false, "邀请码在一天有效期内暂时不发送");
                         } else {
                             //如果在一天有效期外，那么就需要发送，并且update  invite_verify_code这张表
-                            returnResult = (JSONObject) JSON.parse(SmsApi.sendSms(SmsApi.APIKEY, content + code, phone));
+                            returnResult = (JSONObject) JSON.parse(SmsApi.sendSms(SmsApi.APIKEY, content.replace("?",code), phone));
                             //if (returnResult.get("msg") != null && "OK".equals(returnResult.get("msg"))) {
                                 verifyCode.set("code", code).set("expire_time", DateUtils.getDateString(afterOneDay, DateUtils.format_yyyyMMddHHmmss)).update();
                             //}
                         }
                     }
                     if (returnResult.get("msg") == null || !"OK".equals(returnResult.get("msg"))) {
+                        logger.info(returnResult.toString());
                         resultContent += phone + "短信发送失败;";
                     }
                 }
@@ -83,7 +91,7 @@ public class RetailerResource extends ApiResource {
 
             }
             if (!"".equals(resultContent)) {
-                result = CommonUtils.getCodeMessage(false, resultContent);
+                result = CommonUtils.getCodeMessage(false, resultContent.substring(0,resultContent.length()-1));
                 //return result;
             } else {
                 result = setResult("短信发送成功");
