@@ -117,18 +117,26 @@ public class ApiResource extends Resource {
      * @param op    操作
      */
     @POST("/send/code")
-    public WebResult sendCode(String phone, String op) throws IOException {
+    public WebResult sendCode(String phone, Integer op) throws IOException {
         String content;
+        String sign;
+
         if (op.equals(ConstantsUtils.INVITE_VERIFY_CODE_TYPE_REGISTER)) {
-            content = sms_template.dao.findById(ConstantsUtils.INVITE_VERIFY_CODE_TYPE_REGISTER).get("content");
-        } else content = sms_template.dao.findById(ConstantsUtils.INVITE_VERIFY_CODE_TYPE_RESET).get("content");
+            sms_template model = sms_template.dao.findById(ConstantsUtils.INVITE_VERIFY_CODE_TYPE_REGISTER);
+            content = model.get("content");
+            sign = model.get("sign");
+        } else {
+            sms_template model = sms_template.dao.findById(ConstantsUtils.INVITE_VERIFY_CODE_TYPE_RESET);
+            content = model.get("content");
+            sign = model.get("sign");
+        }
         String code;
         String resultContent = "";
         JSONObject returnResult;
         if (phone != null) {
             code = CommonUtils.getRandNum(ConstantsUtils.SIX);
             Date ExpireTime = new Date(System.currentTimeMillis() + 15 * 60 * 1000); //十五分钟
-            returnResult = (JSONObject) JSON.parse(SmsApi.sendSms(SmsApi.APIKEY, content.replace("?", code), phone));
+            returnResult = (JSONObject) JSON.parse(SmsApi.sendSms(SmsApi.APIKEY, sign + content.replace("?", code), phone));
             invite_verify_code.dao.set("area_id", ConstantsUtils.ALL_AREA_ID).set("code", code).set("type", op)
                     .set("expire_time", DateUtils.getDateString(ExpireTime, DateUtils.format_yyyyMMddHHmmss)).set("phone", phone).save();
             if (returnResult.get("msg") == null || (returnResult.get("msg") != null && !"OK".equals(returnResult.get("msg")))) {
