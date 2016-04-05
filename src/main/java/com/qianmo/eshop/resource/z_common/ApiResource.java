@@ -28,7 +28,7 @@ import java.util.Set;
  * 公用方法
  * Created by ccq on 16-2-20.
  */
-@API("/api/v1.0")
+@API("/api/v2.0.1")
 public class ApiResource extends Resource {
 
     //登录
