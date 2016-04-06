@@ -158,7 +158,7 @@ public class OrderResource extends SellerResource {
                 orderInfoSql += " and Date(a.created_at) = Date('" + data_start + "')";
                 //orderInfoSql += " and Date(a.created_at) = " + DateUtils.formatDate(data_start, DateUtils.format_yyyyMMdd);
             } else {
-                orderInfoSql += " and a.created_at <=  Date('" + data_end + "')";
+                orderInfoSql += " and a.created_at  <=  DATE_ADD(Date('" + data_end + "'),INTERVAL 1 DAY)";
                 //orderInfoSql += " and a.created_at <=" + DateUtils.formatDate(data_end, DateUtils.format_yyyyMMdd);
             }
         }
@@ -289,7 +289,7 @@ public class OrderResource extends SellerResource {
                 orderInfoSql += " and Date(a.created_at) = Date('" + data_start + "')";
                 //orderInfoSql += " and Date(a.created_at) = " + DateUtils.formatDate(data_start, DateUtils.format_yyyyMMdd);
             } else {
-                orderInfoSql += " and a.created_at <=  Date('" + data_end + "')";
+                orderInfoSql += " and a.created_at <=  DATE_ADD(Date('" + data_end + "'), INTERVAL 1 DAY)";
                 //orderInfoSql += " and a.created_at <=" + DateUtils.formatDate(data_end, DateUtils.format_yyyyMMdd);
             }
         }
