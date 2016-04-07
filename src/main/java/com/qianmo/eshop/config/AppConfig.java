@@ -32,7 +32,7 @@ public class AppConfig extends Config {
   }
 
   public void configInterceptor(InterceptorLoader interceptorLoader) {
-    interceptorLoader.add(new CacheInterceptor());
+    //interceptorLoader.add(new CacheInterceptor());
     //权限拦截器 limit 为最大登录session数
     //interceptorLoader.add(new SecurityInterceptor(new MyAuthenticateService()));
     //http session失效时间为24小时
