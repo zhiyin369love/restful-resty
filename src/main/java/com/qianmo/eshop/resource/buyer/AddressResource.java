@@ -1,10 +1,12 @@
 package com.qianmo.eshop.resource.buyer;
 
+import cn.dreampie.orm.transaction.Transaction;
 import cn.dreampie.route.annotation.*;
 import cn.dreampie.security.Subject;
 import com.qianmo.eshop.common.CommonUtils;
 import com.qianmo.eshop.common.SessionUtil;
 import com.qianmo.eshop.model.buyer.buyer_receive_address;
+import com.qianmo.eshop.model.user.user_info;
 
 
 import java.util.HashMap;
@@ -58,5 +60,25 @@ public class AddressResource extends BuyerResource {
         return result;
     }
 
-
+    /**
+     * 将收获地址设为默认地址
+     * @param id
+     * @return
+     */
+    @PUT("/default/:id")
+    @Transaction
+    public HashMap isdefault(long id){
+        HashMap result = CommonUtils.getCodeMessage(false, "设置默认地址失败");
+        try {
+            user_info userInfo = SessionUtil.getUser();
+            String updateSql = "UPDATE buyer_receive_address SET isdefault = 1 WHERE id = ? AND buyer_id = ?";
+            buyer_receive_address.dao.update(updateSql,id,userInfo.get("id"));
+            updateSql = "UPDATE buyer_receive_address SET isdefault = 0 WHERE id != ? AND buyer_id = ?";
+            buyer_receive_address.dao.update(updateSql,id,userInfo.get("id"));
+            result = CommonUtils.getCodeMessage(true, "设置默认地址成功");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
 }

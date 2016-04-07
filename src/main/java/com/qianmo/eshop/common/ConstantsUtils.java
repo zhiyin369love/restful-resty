@@ -170,6 +170,8 @@ public class ConstantsUtils {
 	public final static String GOODS_MAIN_PIC = "/upload/goods/";
 	/**商品详情图片存储目录**/
 	public final static String GOODS_DETAIL_PIC = "/upload/detail/";
+	/**用户身份证他营业执照图片存储目录**/
+	public final static String USER_PIC = "/upload/user";
 	/******************************************************************/
 
 	/****************************分页*****************************/

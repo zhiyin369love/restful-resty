@@ -170,7 +170,7 @@ public class GoodsResource extends BuyerResource {
         goods_info goodsInfo = goods_info.dao.findFirst(YamlRead.getSQL("findGoods", "buyer/goods"), id);
         resultMap.put("goods_info", goodsInfo);
 
-        String skuSql = "SELECT a.id sku_id,a.name sku_name, IFNULL(b.price,a.list_price) price, " +
+        String skuSql = "SELECT a.id sku_id,a.name sku_name, a.list_price,b.price, " +
                 "IFNULL(b.status,1) status FROM goods_sku a " +
                 "LEFT JOIN goods_sku_price b ON a.id = b.sku_id AND b.buyer_id = ? " +
                 "WHERE a.goods_num = ? AND a.status = 1";
@@ -184,6 +184,27 @@ public class GoodsResource extends BuyerResource {
             }
         }
         resultMap.put("goods_sku_list", skuList);
+        return resultMap;
+    }
+
+    /**
+     * 根据关键字联想商品名称
+     * @param goods_name
+     * @return
+     */
+    @GET("/name")
+    public HashMap goodsName(String goods_name) {
+        HashMap resultMap = new HashMap();
+        String goodsNameSql = YamlRead.getSQL("findGoodsName","buyer/goods");
+        if(goods_name!=null && !"".equals(goods_name)){
+            goodsNameSql = goodsNameSql + " AND b.name like '%"+goods_name+"%'";
+        }
+        int page_start = ConstantsUtils.DEFAULT_PAGE_START; //默认从第1条开始
+        int page_step = ConstantsUtils.DEFAULT_PAGE_STEP;  //默认返回10条
+        FullPage<goods_info> goodsNameList = goods_info.dao.fullPaginate(page_start / page_step + 1,page_step, goodsNameSql, buyer_id);
+        if (goodsNameList != null){
+            resultMap.put("goods_name_list", goodsNameList.getList());
+        }
         return resultMap;
     }
 

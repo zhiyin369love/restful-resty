@@ -1,8 +1,10 @@
 package com.qianmo.eshop.resource.seller;
 
 
+import cn.dreampie.common.http.UploadedFile;
 import cn.dreampie.orm.page.Page;
 import cn.dreampie.route.annotation.*;
+import cn.dreampie.route.core.multipart.FILE;
 import com.qianmo.eshop.common.CommonUtils;
 import com.qianmo.eshop.common.ConstantsUtils;
 import com.qianmo.eshop.common.SessionUtil;
@@ -103,5 +105,35 @@ public class AccountResource extends SellerResource {
             result = CommonUtils.DelreturnCodeMessage(true);
         }
         return result;
+    }
+
+    /**
+     * 上传用户身份证图片
+     *
+     * @param id_pic 身份证图片
+     * @return 图片名称
+     */
+    @POST("/upload/user")
+    @FILE(dir = ConstantsUtils.USER_PIC, overwrite = false, allows = {"image/png", "image/jpg", "image/gif", "image/bmp","image/jpeg"})
+    public HashMap userPic(UploadedFile id_pic) {
+        String idPicUrl = this.getRequest().getBaseUri() + ConstantsUtils.USER_PIC + id_pic.getFileName();
+        HashMap resultMap = new HashMap();
+        resultMap.put("id_pic_url",idPicUrl);
+        return resultMap;
+    }
+
+    /**
+     * 上传用户营业执照-图片
+     *
+     * @param business_pic 营业执照图片
+     * @return 图片名称
+     */
+    @POST("/upload/business")
+    @FILE(dir = ConstantsUtils.USER_PIC, overwrite = false, allows = {"image/png", "image/jpg", "image/gif", "image/bmp","image/jpeg"})
+    public HashMap businessPic(UploadedFile business_pic) {
+        String businessPicUrl = this.getRequest().getBaseUri() + ConstantsUtils.USER_PIC + business_pic.getFileName();
+        HashMap resultMap = new HashMap();
+        resultMap.put("business_pic_url",businessPicUrl);
+        return resultMap;
     }
 }
