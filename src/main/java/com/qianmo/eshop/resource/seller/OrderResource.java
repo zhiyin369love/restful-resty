@@ -267,7 +267,7 @@ public class OrderResource extends SellerResource {
                 orderInfoSql += " and a.num like  ? ";
             } else {
                 //System.out.println("该字符串是买家名称");
-                orderInfoSql = " SELECT a.* FROM order_info a LEFT JOIN order_user b ON a.num = b.order_num " +
+                orderInfoSql = " SELECT count(1) cn  FROM order_info a LEFT JOIN order_user b ON a.num = b.order_num " +
                         "    LEFT JOIN user_info c ON b.buyer_id = c.id where c.nickname like ? ";
             }
         }
