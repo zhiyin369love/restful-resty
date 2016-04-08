@@ -36,7 +36,7 @@ public class GoodsResource extends BuyerResource {
      * @return
      */
     @GET
-    public HashMap goods(String goods_name, Integer category_id,
+    public HashMap goods(String goods_name, Integer category_id,Integer parent_category_id,
                          Integer page_start, Integer page_step, Integer sort) {
         /*
         判断是否有分页信息，如果没有，给定默认值
@@ -57,6 +57,11 @@ public class GoodsResource extends BuyerResource {
         if (category_id != null && category_id > 0) {
             goodsNumSql = goodsNumSql + " AND b.category_id=" + category_id;
         }
+        if (parent_category_id!=null && parent_category_id>0){
+            goodsNumSql = goodsNumSql + " AND b.category_id in (SELECT id from goods_category where pid="+parent_category_id+")";
+        }
+
+
         /*
         判断是否根据商品名称模糊搜索
          */
