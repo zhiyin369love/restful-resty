@@ -165,11 +165,11 @@ public class ConstantsUtils {
 
 	/**************************图片存储目录*****************************/
 	/**图片存储总目录**/
-	public final static String PIC_DIR = "/upload";
+	public final static String PIC_DIR = "http://114.55.10.27/upload";
 	/**商品主图存储目录**/
-	public final static String GOODS_MAIN_PIC = "/upload/goods/";
+	public final static String GOODS_MAIN_PIC = "http://114.55.10.27/upload/goods/";
 	/**商品详情图片存储目录**/
-	public final static String GOODS_DETAIL_PIC = "/upload/detail/";
+	public final static String GOODS_DETAIL_PIC = "http://114.55.10.27/upload/detail/";
 	/******************************************************************/
 
 	/****************************分页*****************************/

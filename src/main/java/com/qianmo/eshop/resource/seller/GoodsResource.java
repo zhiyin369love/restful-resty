@@ -501,7 +501,7 @@ public class GoodsResource extends SellerResource {
     @POST("/upload/main")
     @FILE(dir = ConstantsUtils.GOODS_MAIN_PIC, overwrite = false, allows = {"image/png", "image/jpg", "image/gif", "image/bmp","image/jpeg"})
     public HashMap mainPic(UploadedFile main_pic) {
-        String mainPicUrl = this.getRequest().getBaseUri() + ConstantsUtils.GOODS_MAIN_PIC + main_pic.getFileName();
+        String mainPicUrl = ConstantsUtils.GOODS_MAIN_PIC + main_pic.getFileName();
         HashMap resultMap = new HashMap();
         resultMap.put("main_pic_url",mainPicUrl);
         return resultMap;
@@ -516,7 +516,7 @@ public class GoodsResource extends SellerResource {
     @POST("/upload/detail")
     @FILE(dir = ConstantsUtils.GOODS_DETAIL_PIC, overwrite = true, allows = {"image/png", "image/jpg", "image/gif", "image/bmp","image/jpeg"})
     public HashMap detailPic(Map<String, UploadedFile> picMap) {
-        String baseUri = this.getRequest().getBaseUri() + ConstantsUtils.GOODS_DETAIL_PIC;
+        String baseUri = ConstantsUtils.GOODS_DETAIL_PIC;
         String fileUrl = "";
         if (picMap != null && picMap.size() > 0) {
             for (String key : picMap.keySet()) {
