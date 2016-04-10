@@ -268,21 +268,30 @@ public class RetailerResource extends ApiResource {
         Map resultMap = new HashMap();
         String content = "";
         int i = 0;
-        //try {
-        if (store_price_list != null && store_price_list.size() > 0) {
-            for (JSONObject skuPrice : store_price_list) {
-                i += 1;
-                if (skuPrice.get("goods_id") != null && skuPrice.get("goods_sku_id") != null && skuPrice.get("buyer_id") != null && skuPrice.get("seller_id") != null) {
-                    goods_sku_price.dao.findFirstBy("goods_num = ? and sku_id = ? and buyer_id = ? and seller_id = ?", skuPrice.get("goods_id"), skuPrice.get("goods_sku_id"), skuPrice.get("buyer_id"),
-                            skuPrice.get("seller_id")).set("price", skuPrice.get("goods_price")).set("status", skuPrice.get("goods_price_status")).update();
-                } else {
-                    content += "第" + i + "行输入参数中有为空的;";
+        if (seller_id != 0l) {
+            //try {
+            if (store_price_list != null && store_price_list.size() > 0) {
+                for (JSONObject skuPrice : store_price_list) {
+                    i += 1;
+                    if (skuPrice.get("goods_id") != null && skuPrice.get("goods_sku_id") != null && skuPrice.get("buyer_id") != null) {
+                        goods_sku_price goodsSkuPrice = goods_sku_price.dao.findFirstBy("goods_num = ? and sku_id = ? and buyer_id = ? and seller_id = ?", skuPrice.get("goods_id"), skuPrice.get("goods_sku_id"), skuPrice.get("buyer_id"),
+                                seller_id);
+                        if(goodsSkuPrice == null) {
+                            new goods_sku_price().set("price", skuPrice.get("goods_price")).set("status", skuPrice.get("goods_price_status")).
+                                    set("goods_num",skuPrice.get("goods_id")).set("sku_id",skuPrice.get("goods_sku_id")).set("area_id",ConstantsUtils.ALL_AREA_ID).
+                                    set("buyer_id",skuPrice.get("buyer_id")).set("type",0).set("seller_id",seller_id).save();
+                        } else {
+                            goodsSkuPrice.set("price", skuPrice.get("goods_price")).set("status", skuPrice.get("goods_price_status")).update();
+                        }
+                    } else {
+                        content += "第" + i + "行输入参数中有为空的;";
+                    }
                 }
-            }
-            if (!"".equals(content)) {
-                resultMap = CommonUtils.getCodeMessage(false, content);
-            } else {
-                resultMap = setResult("批量修改价格成功");
+                if (!"".equals(content)) {
+                    resultMap = CommonUtils.getCodeMessage(false, content.substring(0, content.length() - 1));
+                } else {
+                    resultMap = setResult("批量修改价格成功");
+                }
             }
         }
         return resultMap;
