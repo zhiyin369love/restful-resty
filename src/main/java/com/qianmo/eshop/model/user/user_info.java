@@ -137,7 +137,7 @@ public class user_info extends Model<user_info> {
             invite_verify_code inviteVerifyCode = invite_verify_code.dao.findFirstBy("token = ?", token);
             if (inviteVerifyCode.get("phone") != null) {
                 //根据id获取用户信息,判断是否存在此用户
-                user_info UserInfo = user_info.dao.findFirstBy("username", inviteVerifyCode.get("phone"));
+                user_info UserInfo = user_info.dao.findFirstBy("username = ?", inviteVerifyCode.get("phone"));
                 if (UserInfo == null) {
                     return false;
                 } else {
