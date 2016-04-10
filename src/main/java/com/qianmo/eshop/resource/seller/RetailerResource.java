@@ -9,6 +9,7 @@ import cn.dreampie.route.annotation.PUT;
 import com.alibaba.druid.util.StringUtils;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.qianmo.eshop.bean.user.UserInfo;
 import com.qianmo.eshop.common.*;
 import com.qianmo.eshop.model.buyer.buyer_seller;
 import com.qianmo.eshop.model.goods.goods_sku;
@@ -19,6 +20,7 @@ import com.qianmo.eshop.model.user.user_info;
 import com.qianmo.eshop.resource.z_common.ApiResource;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.*;
 
 
@@ -304,9 +306,6 @@ public class RetailerResource extends ApiResource {
     public Map getRetailerPriceList(Long goods_id, Long goos_sku_id, Long id, Integer page_start, Integer page_step, Integer type) {
 
         HashMap resultMap = new HashMap();
-        List<goods_sku_price> goodsSkuPrices = new ArrayList<goods_sku_price>();
-        List<goods_sku_price> goodsSkuPriceResultList = new ArrayList<goods_sku_price>();
-        Map pageInfo = new HashMap();
         //try {
         if (seller_id != 0l) {
             //需要判断是否已注册,如果没有注册过，那么返回结果中is_invited是0
@@ -315,32 +314,22 @@ public class RetailerResource extends ApiResource {
                 page_step = ConstantsUtils.DEFAULT_PAGE_STEP;
             }
             int pageNumber = page_start / page_step + 1;
+            if(type == null) {
+                type = 1;
+            }
             FullPage<goods_sku> goodsSkuFullPageList;
+            String getRetailPriceSql = YamlRead.getSQL("getRetailerPrice", "seller/seller");
+            if(goods_id != null) {
+                getRetailPriceSql += " and b.num = " + goods_id ;
+            }
+            if(goos_sku_id != null) {
+                getRetailPriceSql += " and c.id = " + goos_sku_id ;
+            }
             //如果商品编号不为空的话
-            if (goods_id != null) {
-                goodsSkuFullPageList = goods_sku.dao.fullPaginateBy(pageNumber, page_step, "seller_id = ? and status = ? and goods_num = ?", seller_id, ConstantsUtils.ONE, goods_id);
-            } else {
-                goodsSkuFullPageList = goods_sku.dao.fullPaginateBy(pageNumber, page_step, "seller_id = ? and status = ? ", seller_id, ConstantsUtils.ONE);
-            }
+
+            goodsSkuFullPageList = goods_sku.dao.fullPaginate(pageNumber, page_step, getRetailPriceSql, type, seller_id, type, seller_id,id);
             List<goods_sku> goodsSkuList = goodsSkuFullPageList == null ? null : goodsSkuFullPageList.getList();
-            String getRetailerSkuPriceSql = YamlRead.getSQL("getRetailerSkuPrice", "seller/seller");
-            if (goodsSkuList != null && goodsSkuList.size() > 0) {
-                //HashMap result = new HashMap();
-                for (goods_sku goodsSku : goodsSkuList) {
-                    //如果商品型号id不为空
-                    if (goos_sku_id != null) {
-                        getRetailerSkuPriceSql += " and b.sku_id =  " + goos_sku_id;
-                    }
-                    //如果类别不为空
-                    if (type != null) {
-                        getRetailerSkuPriceSql += " and b.type =  " + type;
-                    }
-                    long goodsNum = goodsSku.get("goods_num");
-                    goods_sku_price goodsSkuPrice = goods_sku_price.dao.findFirst(getRetailerSkuPriceSql, id, seller_id, goodsNum);
-                    goodsSkuPriceResultList.add(goodsSkuPrice);
-                }
-            }
-            resultMap.put("buyer_price_list", goodsSkuPriceResultList);
+            resultMap.put("buyer_price_list", goodsSkuList);
             resultMap.put("total_count", goodsSkuFullPageList.getTotalRow());
             resultMap.put("page_size", page_step);
         }
@@ -359,9 +348,9 @@ public class RetailerResource extends ApiResource {
     public Map getRetailerList(Long buyer_id, Long goods_num, String goods_name) {
         Map resultMap = new HashMap();
         //可购买总数
-        long couldBuy = 0l;
+        long couldBuy;
         //不可购买总数
-        long couldNotBuy = 0l;
+        long couldNotBuy;
         //try {
         String sql = "SELECT COUNT(*) cn FROM goods_sku_price a LEFT JOIN goods_info b " +
                 "  ON a.goods_num = b.num  where a.buyer_id = ? and b.seller_id = ? and a.status = ? ";
