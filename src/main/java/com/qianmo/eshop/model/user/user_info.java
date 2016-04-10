@@ -24,7 +24,7 @@ public class user_info extends Model<user_info> {
     public boolean save() {
         boolean result;
         if (super.save()) {
-            String roleId = sec_user_role.dao.findFirstBy("name = ?","买家").get("id");
+            String roleId = sec_role.dao.findFirstBy("name = ?","买家").get("id").toString();
             sec_user_role ur = new sec_user_role().set("user_id", this.get("id")).set("role_id", roleId);
             result = ur.save();
         } else {
