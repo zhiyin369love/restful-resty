@@ -104,7 +104,7 @@ public class ApiResource extends Resource {
     public WebResult checkCode(String code, String phone) {
         String token = user_info.dao.checkCode(code, phone);
         if (token != null) {
-            return new WebResult<Map<String, Object>>(HttpStatus.OK, Maper.<String, Object>of("code", HttpStatus.OK, "message", "验证成功", "token", token));
+            return new WebResult<Map<String, Object>>(HttpStatus.OK, Maper.<String, Object>of("code", HttpStatus.OK.getCode(), "message", "验证成功", "token", token));
         } else {
             return new WebResult<Map<String, Object>>(HttpStatus.OK, Maper.<String, Object>of("code", HttpStatus.INTERNAL_SERVER_ERROR.getCode(), "message", "验证失败"));
         }
