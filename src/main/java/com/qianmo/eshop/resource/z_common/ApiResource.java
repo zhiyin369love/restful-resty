@@ -91,8 +91,7 @@ public class ApiResource extends Resource {
     //重置密码
     @PUT("/reset_pwd")
     public WebResult resetPwd(String confirm_pwd, String pwd, String token) {
-        Long id = SessionUtil.getUserId();
-        if (user_info.dao.resetPwd(id, confirm_pwd, pwd, token)) {
+        if (user_info.dao.resetPwd(confirm_pwd, pwd, token)) {
             return new WebResult<Map<String, Object>>(HttpStatus.OK, Maper.<String, Object>of("code", HttpStatus.OK, "message", "修改成功"));
         } else {
             return new WebResult<Map<String, Object>>(HttpStatus.OK, Maper.<String, Object>of("code", HttpStatus.INTERNAL_SERVER_ERROR.getCode(), "message", "修改失败"));
