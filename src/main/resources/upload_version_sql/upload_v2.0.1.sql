@@ -19,3 +19,18 @@ CREATE TABLE `help_center` (
   `deleted_at` timestamp NULL DEFAULT NULL COMMENT '删除时间',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+<!--创建app版本表-->
+DROP TABLE IF EXISTS `app_version`;
+CREATE TABLE `app_version` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `version` varchar(20) NOT NULL COMMENT '版本',
+  `url` varchar(100) DEFAULT NULL COMMENT '文件地址',
+  `type` int(2) NOT NULL COMMENT 'APP类型 1：android 2：ios',
+  `status` tinyint(1) DEFAULT NULL COMMENT '状态（保留字段）',
+  `content` varchar(255) DEFAULT NULL COMMENT '版本说明',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `updated_at` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  `deleted_at` timestamp NULL DEFAULT NULL COMMENT '删除时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
