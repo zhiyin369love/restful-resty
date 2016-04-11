@@ -129,10 +129,18 @@ public class ApiResource extends Resource {
             content = model.get("content");
             sign = model.get("sign");
         }
+
+
         String code;
         String resultContent = "";
         JSONObject returnResult;
         if (phone != null) {
+            //判断手机号是否存在后,判断是否已注册
+            if(user_info.dao.findBy("username = ? ", phone).size() > 0){
+                if(op.equals(ConstantsUtils.INVITE_VERIFY_CODE_TYPE_REGISTER)){
+                    return new WebResult(HttpStatus.OK, CommonUtils.getCodeMessage(false,"该号码已注册"));
+                }
+            }
             code = CommonUtils.getRandNum(ConstantsUtils.SIX);
             Date ExpireTime = new Date(System.currentTimeMillis() + 15 * 60 * 1000); //十五分钟
             returnResult = (JSONObject) JSON.parse(SmsApi.sendSms(SmsApi.APIKEY, sign + content.replace("?", code), phone));
