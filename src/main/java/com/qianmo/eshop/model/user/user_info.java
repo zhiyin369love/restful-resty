@@ -2,6 +2,7 @@ package com.qianmo.eshop.model.user;
 
 import cn.dreampie.orm.Model;
 import cn.dreampie.orm.annotation.Table;
+import cn.dreampie.orm.transaction.Transaction;
 import cn.dreampie.security.*;
 import com.alibaba.fastjson.annotation.JSONField;
 import com.qianmo.eshop.common.CommonUtils;
@@ -127,10 +128,11 @@ public class user_info extends Model<user_info> {
     }
 
     //重置密码
+    @Transaction
     public boolean resetPwd(String confirm_pwd, String pwd, String token) {
         try {
             //判断新旧密码是否一致
-            if (confirm_pwd != pwd) {
+            if (!confirm_pwd.equals(pwd)) {
                 return false;
             }
             //判断用户的token是否正确
@@ -142,7 +144,10 @@ public class user_info extends Model<user_info> {
                     return false;
                 } else {
                     //正确则更新密码
-                    UserInfo.set("password", DefaultPasswordService.instance().crypto(pwd)).save();
+                    if(UserInfo.set("password", DefaultPasswordService.instance().crypto(pwd)).update())
+                    {
+                        inviteVerifyCode.delete();
+                    }
                 }
             } else {
                 return false;

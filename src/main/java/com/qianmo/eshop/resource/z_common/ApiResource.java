@@ -162,6 +162,7 @@ public class ApiResource extends Resource {
      * @return
      */
     @POST("/register")
+    @Transaction
     public WebResult add(String username, String code, String confirm_pwd, String new_pwd) {
         Map<String, Object> result;
         //result 用来保存返回结果 code,message
@@ -181,12 +182,18 @@ public class ApiResource extends Resource {
                             .set("isbuyer", 0);
                     if (saveUserInfo.save()) {
                         //result写入注册成功信息
-                        result = CommonUtils.AddreturnCodeMessage(true);
+                        if(invite_verify_code.dao.deleteBy("phone = ? and code = ? and type = 1",username,code))
+                        {
+                            result = CommonUtils.getCodeMessage(true,"注册成功");
+                        }
                     }
                 }
             }
         }
-        return new WebResult<Map<String, Object>>(HttpStatus.CREATED, result);
+        else{
+            result = CommonUtils.getCodeMessage(false,"该用户已注册!");
+        }
+        return new WebResult<Map<String, Object>>(HttpStatus.OK, result);
     }
 
     /**
