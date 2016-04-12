@@ -85,7 +85,8 @@ public class buyer_receive_address extends Model<buyer_receive_address> {
                 .set("town_id", model.get("town_id"))
                 .set("town_name", model.get("town_name"))
                 .set("address", model.get("address"))
-                .set("buyer_id", model.get("id"));
+                .set("buyer_id", model.get("id"))
+                .set("area_id",ConstantsUtils.ALL_AREA_ID);
         return result;
     }
 }
