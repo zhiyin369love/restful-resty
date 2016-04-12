@@ -280,6 +280,7 @@ public class RetailerResource extends ApiResource {
                             new goods_sku_price().set("price", skuPrice.get("goods_price")).set("status", skuPrice.get("goods_price_status")).
                                     set("goods_num",skuPrice.get("goods_id")).set("sku_id",skuPrice.get("goods_sku_id")).set("area_id",ConstantsUtils.ALL_AREA_ID).
                                     set("buyer_id",skuPrice.get("buyer_id")).set("type",0).set("seller_id",seller_id).save();
+                             /*goods_sku.dao.findFirstBy("goods_num = ? and sku_id = ?",)*/
                         } else {
                             goodsSkuPrice.set("price", skuPrice.get("goods_price")).set("status", skuPrice.get("goods_price_status")).update();
                         }
