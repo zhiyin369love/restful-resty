@@ -236,7 +236,7 @@ public class RetailerResource extends ApiResource {
                 if (status == ConstantsUtils.ONE) {
                     inviteCodeList = invite_verify_code.dao.fullPaginate(pageNumber, page_step, sql, seller_id);
                 } else {
-                    inviteCodeList = invite_verify_code.dao.fullPaginate(pageNumber, page_step, sql, seller_id, ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE);
+                    inviteCodeList = invite_verify_code.dao.fullPaginate(pageNumber, page_step, sql, seller_id, ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE, seller_id);
                 }
             } else {
                 inviteCodeList = invite_verify_code.dao.fullPaginate(pageNumber, page_step, sql, seller_id, seller_id, ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE);
@@ -434,7 +434,7 @@ public class RetailerResource extends ApiResource {
             if (!isNum) {
                 noRegisterCount = 0l;
             } else {
-                noRegisterCount = invite_verify_code.dao.findFirst(noRegistersql, seller_id, ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE).<Long>get("cn");
+                noRegisterCount = invite_verify_code.dao.findFirst(noRegistersql, seller_id, ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE, seller_id).<Long>get("cn");
             }
             long registerCount = invite_verify_code.dao.findFirst(registersql, seller_id).<Long>get("cn");
             resultMap.put("noRegisterCount", noRegisterCount);

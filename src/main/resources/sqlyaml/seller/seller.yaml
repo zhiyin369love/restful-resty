@@ -115,10 +115,10 @@ getNoRegisterUserList:
              AND a.type = ?
              AND NOT EXISTS
                    (  SELECT
-                           1
-                             FROM
-                                  user_info c
-                            WHERE a.phone = c.username )
+                                              1
+                                                FROM
+                                                     user_info c left join buyer_seller e on c.id = e.buyer_id
+                                               WHERE  e.seller_id = ? and  a.phone = c.username)
 getRegisterUserList:
       SELECT
              count(1) cn
@@ -169,8 +169,8 @@ getMyNoRegisterRetailer:
                    (  SELECT
                            1
                              FROM
-                                  user_info c
-                            WHERE d.phone = c.username )) a
+                                  user_info c left join buyer_seller e on c.id = e.buyer_id
+                            WHERE  e.seller_id = ? and  d.phone = c.username )) a
         where 1 = 1
 
 getRetailerPrice:
