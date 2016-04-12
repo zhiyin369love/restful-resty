@@ -67,20 +67,23 @@ public class RetailerResource extends ApiResource {
                     invite_verify_code verifyCode = invite_verify_code.dao.findFirstBy(" user_id = ? and phone = ? and type = ?  ", seller_id, phone, ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE);
                     //如果没有发送过邀请码，那么第一次需要保存
                     if (verifyCode == null) {
-                        returnResult = (JSONObject) JSON.parse(SmsApi.sendSms(SmsApi.APIKEY, content.replace("?",code), phone));
+                        returnResult = (JSONObject) JSON.parse(SmsApi.sendSms(SmsApi.APIKEY, content.replace("?", code), phone));
                         //if (returnResult.get("msg") != null && "OK".equals(returnResult.get("msg"))) {
-                            invite_verify_code.dao.set("area_id", ConstantsUtils.ALL_AREA_ID).set("code", code).set("user_id", seller_id).set("type", ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE).set("status", ConstantsUtils.INVITE_CODE_STATUS_EXPIRED)
-                                    .set("expire_time", DateUtils.getDateString(afterOneDay, DateUtils.format_yyyyMMddHHmmss)).set("remark", remark).set("phone", phone).save();
-                       // }
+                        invite_verify_code.dao.set("area_id", ConstantsUtils.ALL_AREA_ID).set("code", code).set("user_id", seller_id).set("type", ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE).set("status", ConstantsUtils.INVITE_CODE_STATUS_SUCCESSED)
+                                .set("expire_time", DateUtils.getDateString(afterOneDay, DateUtils.format_yyyyMMddHHmmss)).set("remark", remark).set("phone", phone).save();
+                        // }
                     } else {
                         //如果邀请码在一天有效期内，暂时就不给发
                         if (DateUtils.formatDate(verifyCode.get("expire_time").toString(), DateUtils.format_yyyyMMddHHmmss).getTime() > System.currentTimeMillis()) {
                             return CommonUtils.getCodeMessage(false, "邀请码在一天有效期内暂时不发送");
                         } else {
                             //如果在一天有效期外，那么就需要发送，并且update  invite_verify_code这张表
-                            returnResult = (JSONObject) JSON.parse(SmsApi.sendSms(SmsApi.APIKEY, content.replace("?",code), phone));
+                            returnResult = (JSONObject) JSON.parse(SmsApi.sendSms(SmsApi.APIKEY, content.replace("?", code), phone));
                             //if (returnResult.get("msg") != null && "OK".equals(returnResult.get("msg"))) {
-                                verifyCode.set("code", code).set("expire_time", DateUtils.getDateString(afterOneDay, DateUtils.format_yyyyMMddHHmmss)).update();
+                            verifyCode.set("code", code)
+                                    .set("expire_time", DateUtils.getDateString(afterOneDay, DateUtils.format_yyyyMMddHHmmss))
+                                    .set("status", ConstantsUtils.INVITE_CODE_STATUS_SUCCESSED)
+                                    .update();
                             //}
                         }
                     }
@@ -93,7 +96,7 @@ public class RetailerResource extends ApiResource {
 
             }
             if (!"".equals(resultContent)) {
-                result = CommonUtils.getCodeMessage(false, resultContent.substring(0,resultContent.length()-1));
+                result = CommonUtils.getCodeMessage(false, resultContent.substring(0, resultContent.length() - 1));
                 //return result;
             } else {
                 result = setResult("短信发送成功");
@@ -276,11 +279,10 @@ public class RetailerResource extends ApiResource {
                     if (skuPrice.get("goods_id") != null && skuPrice.get("goods_sku_id") != null && skuPrice.get("buyer_id") != null) {
                         goods_sku_price goodsSkuPrice = goods_sku_price.dao.findFirstBy("goods_num = ? and sku_id = ? and buyer_id = ? and seller_id = ?", skuPrice.get("goods_id"), skuPrice.get("goods_sku_id"), skuPrice.get("buyer_id"),
                                 seller_id);
-                        if(goodsSkuPrice == null) {
+                        if (goodsSkuPrice == null) {
                             new goods_sku_price().set("price", skuPrice.get("goods_price")).set("status", skuPrice.get("goods_price_status")).
-                                    set("goods_num",skuPrice.get("goods_id")).set("sku_id",skuPrice.get("goods_sku_id")).set("area_id",ConstantsUtils.ALL_AREA_ID).
-                                    set("buyer_id",skuPrice.get("buyer_id")).set("type",0).set("seller_id",seller_id).save();
-                             /*goods_sku.dao.findFirstBy("goods_num = ? and sku_id = ?",)*/
+                                    set("goods_num", skuPrice.get("goods_id")).set("sku_id", skuPrice.get("goods_sku_id")).set("area_id", ConstantsUtils.ALL_AREA_ID).
+                                    set("buyer_id", skuPrice.get("buyer_id")).set("type", 0).set("seller_id", seller_id).save();
                         } else {
                             goodsSkuPrice.set("price", skuPrice.get("goods_price")).set("status", skuPrice.get("goods_price_status")).update();
                         }
@@ -324,20 +326,20 @@ public class RetailerResource extends ApiResource {
                 page_step = ConstantsUtils.DEFAULT_PAGE_STEP;
             }
             int pageNumber = page_start / page_step + 1;
-            if(type == null) {
+            if (type == null) {
                 type = 1;
             }
             FullPage<goods_sku> goodsSkuFullPageList;
             String getRetailPriceSql = YamlRead.getSQL("getRetailerPrice", "seller/seller");
-            if(goods_id != null) {
-                getRetailPriceSql += " and b.num = " + goods_id ;
+            if (goods_id != null) {
+                getRetailPriceSql += " and b.num = " + goods_id;
             }
-            if(goos_sku_id != null) {
-                getRetailPriceSql += " and c.id = " + goos_sku_id ;
+            if (goos_sku_id != null) {
+                getRetailPriceSql += " and c.id = " + goos_sku_id;
             }
             //如果商品编号不为空的话
 
-            goodsSkuFullPageList = goods_sku.dao.fullPaginate(pageNumber, page_step, getRetailPriceSql, type, seller_id, type, seller_id,id);
+            goodsSkuFullPageList = goods_sku.dao.fullPaginate(pageNumber, page_step, getRetailPriceSql, type, seller_id, type, seller_id, id);
             List<goods_sku> goodsSkuList = goodsSkuFullPageList == null ? null : goodsSkuFullPageList.getList();
             resultMap.put("buyer_price_list", goodsSkuList);
             resultMap.put("total_count", goodsSkuFullPageList.getTotalRow());

@@ -17,7 +17,7 @@ public class MyAuthenticateService extends AuthenticateService {
 
 
   public Principal getPrincipal(String username) {
-    user_info user = user_info.dao.findFirstBy("username=? AND deleted_at IS NULL", username);
+    user_info user = user_info.dao.unCache().findFirstBy("username=? AND deleted_at IS NULL", username);
     if (user != null)
       return new Principal<user_info>(username, user.<String>get("password"), user.getPermissionValues(), user);
     else

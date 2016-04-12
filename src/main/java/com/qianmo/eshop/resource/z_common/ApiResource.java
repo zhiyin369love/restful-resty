@@ -91,8 +91,7 @@ public class ApiResource extends Resource {
     //重置密码
     @PUT("/reset_pwd")
     public WebResult resetPwd(String confirm_pwd, String pwd, String token) {
-        Long id = SessionUtil.getUserId();
-        if (user_info.dao.resetPwd(id, confirm_pwd, pwd, token)) {
+        if (user_info.dao.resetPwd(confirm_pwd, pwd, token)) {
             return new WebResult<Map<String, Object>>(HttpStatus.OK, Maper.<String, Object>of("code", HttpStatus.OK, "message", "修改成功"));
         } else {
             return new WebResult<Map<String, Object>>(HttpStatus.OK, Maper.<String, Object>of("code", HttpStatus.INTERNAL_SERVER_ERROR.getCode(), "message", "修改失败"));
@@ -130,10 +129,18 @@ public class ApiResource extends Resource {
             content = model.get("content");
             sign = model.get("sign");
         }
+
+
         String code;
         String resultContent = "";
         JSONObject returnResult;
         if (phone != null) {
+            //判断手机号是否存在后,判断是否已注册
+            if(user_info.dao.findBy("username = ? ", phone).size() > 0){
+                if(op.equals(ConstantsUtils.INVITE_VERIFY_CODE_TYPE_REGISTER)){
+                    return new WebResult(HttpStatus.OK, CommonUtils.getCodeMessage(false,"该号码已注册"));
+                }
+            }
             code = CommonUtils.getRandNum(ConstantsUtils.SIX);
             Date ExpireTime = new Date(System.currentTimeMillis() + 15 * 60 * 1000); //十五分钟
             returnResult = (JSONObject) JSON.parse(SmsApi.sendSms(SmsApi.APIKEY, sign + content.replace("?", code), phone));
@@ -163,6 +170,7 @@ public class ApiResource extends Resource {
      * @return
      */
     @POST("/register")
+    @Transaction
     public WebResult add(String username, String code, String confirm_pwd, String new_pwd) {
         Map<String, Object> result;
         //result 用来保存返回结果 code,message
@@ -182,12 +190,18 @@ public class ApiResource extends Resource {
                             .set("isbuyer", 0);
                     if (saveUserInfo.save()) {
                         //result写入注册成功信息
-                        result = CommonUtils.AddreturnCodeMessage(true);
+                        if(invite_verify_code.dao.deleteBy("phone = ? and code = ? and type = 1",username,code))
+                        {
+                            result = CommonUtils.getCodeMessage(true,"注册成功");
+                        }
                     }
                 }
             }
         }
-        return new WebResult<Map<String, Object>>(HttpStatus.CREATED, result);
+        else{
+            result = CommonUtils.getCodeMessage(false,"该用户已注册!");
+        }
+        return new WebResult<Map<String, Object>>(HttpStatus.OK, result);
     }
 
     /**
