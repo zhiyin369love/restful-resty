@@ -77,7 +77,9 @@ public class BuyerResource extends ApiResource {
         if (userInfo != null) {
             boolean isBind = true;
             user.set("id", id);
-            user.set("phone", userInfo.get("username"));
+            if(CommonUtils.isEmpty(user.get("phone"))){
+                user.set("phone", userInfo.get("username"));
+            }
             if (!CommonUtils.isEmpty(bind_code)) {
                 //判断此次是否填写绑定码,若是则调用绑定方法
                 if (!buyer_seller.dao.bindSeller(bind_code, id)) {
