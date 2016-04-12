@@ -51,7 +51,7 @@ public class OrderResource extends SellerResource {
             o = order_user.dao.find(sqlBuyerInfo, id).get(0);
         }*/
         resultBuyerAll.put("buyer_id", o.get("buyer_id"));
-        resultBuyerAll.put("buyer_name", o.get("name"));
+        resultBuyerAll.put("buyer_name", o.get("nickname"));
         resultBuyerAll.put("buyer_receive", buyer_receive_address.dao.findFirst(sqlBuyerReceive, id));
         //返回json
         result.put("buyer_info", resultBuyerAll);

@@ -82,7 +82,7 @@ public class CartResource extends BuyerResource {
                     long seller_id = Long.valueOf(good.get("seller_id").toString());
                     tempCart.set("seller_id", seller_id);
                     //卖家name
-                    tempCart.set("seller_name", user_info.dao.findById(seller_id).get("name"));
+                    tempCart.set("seller_name", user_info.dao.findById(seller_id).get("nickname"));
                     goods_sku goodsSku = goods_sku.dao.findById(good.get("goods_sku_id"));
                     //商品规格状态
                     tempCart.set("status", goodsSku.get("status"));
