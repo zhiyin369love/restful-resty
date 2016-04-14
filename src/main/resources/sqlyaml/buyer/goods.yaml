@@ -19,6 +19,7 @@ findGoodsNum:
     goods_info b,buyer_seller c,user_info d,goods_sku e
     WHERE a.goods_num = b.num AND a.sku_id = e.id AND d.deleted_at IS NULL AND e.deleted_at IS NULL
     AND b.seller_id = c.seller_id AND b.seller_id = d.id AND c.status = 1 AND c.buyer_id = ?
+    AND e.status = 1
 
 #获取商品、规格、价格信息
 findGoodsInfo:
