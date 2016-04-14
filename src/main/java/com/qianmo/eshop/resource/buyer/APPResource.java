@@ -29,14 +29,15 @@ public class APPResource extends BuyerResource {
             appVersion = list.get(0);
         }
         if(appVersion==null || version.equals(appVersion.get("version"))){
-            resultMap.put("code",0);
+            resultMap.put("version_code",0);
             resultMap.put("message","当前版本为最新版本，无需更新");
         }else{
-            resultMap.put("code",1);
-            resultMap.put("message","请安装最新版本"+appVersion.get("version"));
+            resultMap.put("version_code",1);
+            resultMap.put("message",appVersion.get("version"));
             resultMap.put("content",appVersion.get("content"));
             resultMap.put("url",appVersion.get("url"));
         }
         return resultMap;
+
     }
 }

@@ -62,4 +62,21 @@ public class SessionUtil {
         }
         return pid;
     }
+
+    /**
+     * 获取卖家登录用户最高权限用户
+     * @return
+     */
+    public static user_info getAdminUser(){
+        user_info userInfo = null;
+        try {
+            userInfo = getUser();
+            if (Integer.parseInt(userInfo.get("type").toString()) == 1){
+                userInfo = user_info.dao.findById(userInfo.get("pid"));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return userInfo;
+    }
 }

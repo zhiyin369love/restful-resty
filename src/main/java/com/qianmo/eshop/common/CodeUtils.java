@@ -36,6 +36,7 @@ public class CodeUtils {
         }
         code = Long.parseLong(df.format(code));
         model.set("code", code);
+        model.set("pre_num",codeNum);
         model.update();
         num = codeNum + df.format(code);
         return num;
