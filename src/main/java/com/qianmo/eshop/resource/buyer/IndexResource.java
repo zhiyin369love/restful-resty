@@ -3,6 +3,8 @@ package com.qianmo.eshop.resource.buyer;
 
 import cn.dreampie.route.annotation.API;
 import cn.dreampie.route.annotation.GET;
+import cn.dreampie.route.annotation.POST;
+import com.qianmo.eshop.common.CommonUtils;
 import com.qianmo.eshop.common.ConstantsUtils;
 import com.qianmo.eshop.common.SessionUtil;
 import com.qianmo.eshop.model.buyer.buyer_seller;
@@ -34,35 +36,16 @@ public class IndexResource extends ApiResource {
      *
      * @param bind_code 绑定码
      */
-//    @POST("/bind")
-//    public WebResult addBuyerSeller(int bind_code) {
-//    /*try {*/
-//        //通过验证码找卖家id
-//        invite_verify_code code = getInviteByVerifyCode(bind_code);
-//        if (code != null && buyer_id != 0) {
-//            Long seller_Id = code.<Long>get("user_id");
-//            //查看是否已经绑定过
-//            buyer_seller buyerSeller = buyer_seller.dao.findFirstBy("buyer_id = ? and seller_id = ? ", buyer_id, seller_Id);
-//            if (buyerSeller == null) {
-//                //如果没有绑定，则将买家卖家绑定起来
-//                buyer_seller.dao.set("area_id", ConstantsUtils.ALL_AREA_ID).set("buyer_id", buyer_id).set("seller_id", seller_Id).set("status", ConstantsUtils.BUYER_SELLER_STATUS_BIDING).save();
-//                code.set("status", ConstantsUtils.INVITE_CODE_STATUS_SUCCESSED).save();
-//                user_info.dao.findById(buyer_id).set("isbuyer",ConstantsUtils.YES).update();
-//                //return new WebResult(HttpStatus.CREATED, "绑定成功");
-//            } else {
-//                buyerSeller.set("status",ConstantsUtils.BUYER_SELLER_STATUS_BIDING).update();
-//                //如果已经绑定过，提示已经绑定过
-//            }
-//            //code.set("status",ConstantsUtils.INVITE_CODE_STATUS_SUCCESSED).update();
-//            return new WebResult(HttpStatus.CREATED, "绑定成功");
-//        } else {
-//            //如果找不到，提示验证码错误
-//            return new WebResult(HttpStatus.BAD_REQUEST, "验证码错误");
-//        }
-//    /*} catch (Exception e) {
-//        return new WebResult(HttpStatus.BAD_REQUEST, "验证码错误");
-//    }*/
-//    }
+    @POST("/bind")
+    public Map addBuyerSeller(int bind_code) {
+        long userId = SessionUtil.getUserId();
+        boolean isBind = new buyer_seller().bindSeller(bind_code,userId);
+        if(isBind) {
+            return CommonUtils.getCodeMessage(isBind,"绑定买家成功");
+        } else {
+            return CommonUtils.getCodeMessage(isBind,"绑定买家失败");
+        }
+    }
 
 
     /**

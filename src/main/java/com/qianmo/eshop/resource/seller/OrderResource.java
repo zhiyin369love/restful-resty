@@ -53,7 +53,7 @@ public class OrderResource extends SellerResource {
             o = order_user.dao.find(sqlBuyerInfo, id).get(0);
         }*/
         resultBuyerAll.put("buyer_id", o.get("buyer_id"));
-        resultBuyerAll.put("buyer_name", o.get("name"));
+        resultBuyerAll.put("buyer_name", o.get("nickname"));
         resultBuyerAll.put("buyer_receive", buyer_receive_address.dao.findFirst(sqlBuyerReceive, id));
         //返回json
         result.put("buyer_info", resultBuyerAll);
@@ -166,7 +166,7 @@ public class OrderResource extends SellerResource {
                 orderInfoSql += " and Date(a.created_at) = Date('" + data_start + "')";
                 //orderInfoSql += " and Date(a.created_at) = " + DateUtils.formatDate(data_start, DateUtils.format_yyyyMMdd);
             } else {
-                orderInfoSql += " and a.created_at <=  Date('" + data_end + "')";
+                orderInfoSql += " and a.created_at  <=  DATE_ADD(Date('" + data_end + "'),INTERVAL 1 DAY)";
                 //orderInfoSql += " and a.created_at <=" + DateUtils.formatDate(data_end, DateUtils.format_yyyyMMdd);
             }
         }
@@ -275,7 +275,7 @@ public class OrderResource extends SellerResource {
                 orderInfoSql += " and a.num like  ? ";
             } else {
                 //System.out.println("该字符串是买家名称");
-                orderInfoSql = " SELECT a.* FROM order_info a LEFT JOIN order_user b ON a.num = b.order_num " +
+                orderInfoSql = " SELECT count(1) cn  FROM order_info a LEFT JOIN order_user b ON a.num = b.order_num " +
                         "    LEFT JOIN user_info c ON b.buyer_id = c.id where c.nickname like ? ";
             }
         }
@@ -297,7 +297,7 @@ public class OrderResource extends SellerResource {
                 orderInfoSql += " and Date(a.created_at) = Date('" + data_start + "')";
                 //orderInfoSql += " and Date(a.created_at) = " + DateUtils.formatDate(data_start, DateUtils.format_yyyyMMdd);
             } else {
-                orderInfoSql += " and a.created_at <=  Date('" + data_end + "')";
+                orderInfoSql += " and a.created_at <=  DATE_ADD(Date('" + data_end + "'), INTERVAL 1 DAY)";
                 //orderInfoSql += " and a.created_at <=" + DateUtils.formatDate(data_end, DateUtils.format_yyyyMMdd);
             }
         }

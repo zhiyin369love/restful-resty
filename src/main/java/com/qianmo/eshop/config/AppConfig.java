@@ -6,6 +6,7 @@ import cn.dreampie.route.config.*;
 import cn.dreampie.route.handler.cors.CORSHandler;
 import cn.dreampie.route.interceptor.security.SecurityInterceptor;
 import cn.dreampie.route.interceptor.transaction.TransactionInterceptor;
+import cn.dreampie.security.builder.BothSessionBuilder;
 import cn.dreampie.route.cache.CacheInterceptor;
 
 /**
@@ -31,9 +32,11 @@ public class AppConfig extends Config {
   }
 
   public void configInterceptor(InterceptorLoader interceptorLoader) {
-    interceptorLoader.add(new CacheInterceptor());
+    //interceptorLoader.add(new CacheInterceptor());
     //权限拦截器 limit 为最大登录session数
-    interceptorLoader.add(new SecurityInterceptor(new MyAuthenticateService()));
+    //interceptorLoader.add(new SecurityInterceptor(new MyAuthenticateService()));
+    //http session失效时间为24小时
+    interceptorLoader.add(new SecurityInterceptor(new BothSessionBuilder(24 * 60 * 60 * 1000, -1, 7, new MyAuthenticateService())));
     //事务的拦截器 @Transaction
     interceptorLoader.add(new TransactionInterceptor());
     //输入的统一校验

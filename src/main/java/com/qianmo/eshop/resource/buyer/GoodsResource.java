@@ -36,7 +36,7 @@ public class GoodsResource extends BuyerResource {
      * @return
      */
     @GET
-    public HashMap goods(String goods_name, Integer category_id,
+    public HashMap goods(String goods_name, Integer category_id,Integer parent_category_id,
                          Integer page_start, Integer page_step, Integer sort) {
         /*
         判断是否有分页信息，如果没有，给定默认值
@@ -57,6 +57,11 @@ public class GoodsResource extends BuyerResource {
         if (category_id != null && category_id > 0) {
             goodsNumSql = goodsNumSql + " AND b.category_id=" + category_id;
         }
+        if (parent_category_id!=null && parent_category_id>0){
+            goodsNumSql = goodsNumSql + " AND b.category_id in (SELECT id from goods_category where pid="+parent_category_id+")";
+        }
+
+
         /*
         判断是否根据商品名称模糊搜索
          */
@@ -170,7 +175,7 @@ public class GoodsResource extends BuyerResource {
         goods_info goodsInfo = goods_info.dao.findFirst(YamlRead.getSQL("findGoods", "buyer/goods"), id);
         resultMap.put("goods_info", goodsInfo);
 
-        String skuSql = "SELECT a.id sku_id,a.name sku_name, a.list_price,b.price, " +
+        String skuSql = "SELECT a.id sku_id,a.name sku_name, IFNULL(b.price,a.list_price) price, " +
                 "IFNULL(b.status,1) status FROM goods_sku a " +
                 "LEFT JOIN goods_sku_price b ON a.id = b.sku_id AND b.buyer_id = ? " +
                 "WHERE a.goods_num = ? AND a.status = 1";

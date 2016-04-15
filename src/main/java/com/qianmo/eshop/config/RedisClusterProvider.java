@@ -45,8 +45,8 @@ public class RedisClusterProvider extends CacheProvider {
                     nodes.add(new HostAndPort(ipPort.split(":")[0], Integer.valueOf(ipPort.split(":")[1])));
                 }
                 JedisPoolConfig poolConfig = new JedisPoolConfig();
-                poolConfig.setMaxTotal(2000);
-                poolConfig.setMaxIdle(200);
+                //poolConfig.setMaxTotal(2000);
+                //poolConfig.setMaxIdle(200);
 
                 poolConfig.setLifo(config.getBoolean("redis.pool.lifo", BaseObjectPoolConfig.DEFAULT_LIFO));
                 poolConfig.setMaxWaitMillis(config.getLong("redis.pool.maxWaitMillis", 600000l));

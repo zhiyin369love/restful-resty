@@ -58,7 +58,7 @@ public class IndexResource extends SellerResource {
         //待收款订单数
         long waitPayOrders = getOrderInfoBySellingStatus(seller_id, ConstantsUtils.ORDER_INFO_STATUS_CREATED);
         //待出售商品
-        long waitSellGoods = getGoodsBySellIdStatus(seller_id, ConstantsUtils.GOODS_WAIT_SELL);
+        long waitSellGoods = getNoSellGoodsBySellIdStatus(seller_id, ConstantsUtils.GOODS_SELLING);
         //零售商数量
         total.put("buyer_count", cartNum);
         //赊账零售商数量
@@ -92,7 +92,11 @@ public class IndexResource extends SellerResource {
     }
 
     private Long getGoodsBySellIdStatus(long seller_id, int status) {
-        return goods_sku.dao.findFirst("select count(*) cn from goods_sku where seller_id = ? and status = ?", seller_id, status).<Long>get("cn");
+        return goods_sku.dao.findFirst("select count(DISTINCT a.num) cn from goods_info a where 1=1 and EXISTS (select 1 from  goods_sku b where b.goods_num = a.num and  b.seller_id = ? and b.status = ? AND b.deleted_at IS NULL) AND a.deleted_at is null", seller_id, status).<Long>get("cn");
+    }
+
+    private Long getNoSellGoodsBySellIdStatus(long seller_id, int status) {
+        return goods_sku.dao.findFirst("select count(DISTINCT a.num) cn FROM goods_info a LEFT JOIN goods_sku b ON a.num = b.goods_num  where 1=1 and  Not EXISTS (select 1 from  goods_sku b where b.goods_num = a.num and  b.seller_id = ? and b.status = ? AND b.deleted_at IS NULL)  AND b.seller_id = ?  AND a.deleted_at is null", seller_id, status, seller_id).<Long>get("cn");
     }
 
     private Map setResult(String message) {

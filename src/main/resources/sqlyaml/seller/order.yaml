@@ -8,7 +8,8 @@ getFieldOrderInfoAll:
 getFieldBuyerInfoAll:
    SELECT
      ui.id buyer_id,
-     ui.name FROM  user_info ui
+     ui.name,
+     ui.nickname nickname FROM  user_info ui
    WHERE ui.id IN
      (SELECT
        ou.buyer_id
