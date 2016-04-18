@@ -19,7 +19,7 @@ import cn.jpush.api.push.model.audience.AudienceTarget;
  * @author fxg on 16-4-11
  * @version 1.0
  */
-public class JPushClentServer {
+public class JPushClientServer {
 
     private static final String appKey = "4eec9a5096d32823ac5355a3";
     private static final String masterSecret = "f3cc1382cb147982d5b2bb82";

@@ -1,0 +1,9 @@
+<html>
+<head>
+    <title>${help_center.title}</title>
+</head>
+<body>
+    <h1>${help_center.title}</h1>
+    ${help_center.content}
+</body>
+</html>
