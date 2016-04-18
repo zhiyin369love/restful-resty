@@ -1,5 +1,6 @@
 package com.qianmo.eshop.config;
 
+import cn.dreampie.common.http.result.HttpStatus;
 import cn.dreampie.orm.ActiveRecordPlugin;
 import cn.dreampie.orm.provider.druid.DruidDataSourceProvider;
 import cn.dreampie.route.config.*;
@@ -15,6 +16,7 @@ import cn.dreampie.route.cache.CacheInterceptor;
 public class AppConfig extends Config {
   public void configConstant(ConstantLoader constantLoader) {
     //单页应用 避免被resty解析路径
+    constantLoader.addRender("ftl",new com.qianmo.eshop.config.FreemarkerRender());
     constantLoader.setDefaultForward("/");
   }
 

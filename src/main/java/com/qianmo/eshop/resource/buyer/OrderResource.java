@@ -13,6 +13,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.qianmo.eshop.common.*;
 import com.qianmo.eshop.model.buyer.buyer_receive_address;
 import com.qianmo.eshop.model.cart.cart;
+import com.qianmo.eshop.model.credit.credit;
 import com.qianmo.eshop.model.goods.goods_category;
 import com.qianmo.eshop.model.goods.goods_info;
 import com.qianmo.eshop.model.goods.goods_sku;
@@ -143,6 +144,10 @@ public class OrderResource extends BuyerResource {
                 order_info o = order_info.dao.findFirstBy(" num = ?", order_num);
                 if (o.get("status") == ConstantsUtils.ORDER_INFO_STATUS_CREATED
                         || o.get("pay_status") == ConstantsUtils.ORDER_PAYMENT_STATUS_WAITE) {
+                    credit creditDao = credit.dao.findFirstBy(" order_num = ? ", order_num);
+                    if(creditDao != null) {
+                        creditDao.set("status",ConstantsUtils.CREDIT_CANCEL_STATUS).update();
+                    }
                     isSuccess = order_info.dao.update("update order_info set status = ?  where num = ? ", ConstantsUtils.ORDER_INFO_STATUS_CANCEL, order_num);
                     //isSuccess = new order_remark().set("order_num", order_num).set("op", op).set("reason", value).set("user_id", buyer_id).set("area_id", ConstantsUtils.ALL_AREA_ID).set("details", "").save();
                 } else {
