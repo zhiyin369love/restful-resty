@@ -92,7 +92,7 @@ public class ApiResource extends Resource {
     @PUT("/reset_pwd")
     public WebResult resetPwd(String confirm_pwd, String pwd, String token) {
         if (user_info.dao.resetPwd(confirm_pwd, pwd, token)) {
-            return new WebResult<Map<String, Object>>(HttpStatus.OK, Maper.<String, Object>of("code", HttpStatus.OK, "message", "修改成功"));
+            return new WebResult<Map<String, Object>>(HttpStatus.OK, Maper.<String, Object>of("code", HttpStatus.OK.getCode(), "message", "修改成功"));
         } else {
             return new WebResult<Map<String, Object>>(HttpStatus.OK, Maper.<String, Object>of("code", HttpStatus.INTERNAL_SERVER_ERROR.getCode(), "message", "修改失败"));
         }
@@ -138,7 +138,7 @@ public class ApiResource extends Resource {
             //判断手机号是否存在后,判断是否已注册
             if(user_info.dao.findBy("username = ? ", phone).size() > 0){
                 if(op.equals(ConstantsUtils.INVITE_VERIFY_CODE_TYPE_REGISTER)){
-                    return new WebResult(HttpStatus.OK, CommonUtils.getCodeMessage(false,"该号码已注册"));
+                    return new WebResult<HashMap<String,String>>(HttpStatus.OK, CommonUtils.getCodeMessage(false,"该号码已注册"));
                 }
             }
             code = CommonUtils.getRandNum(ConstantsUtils.SIX);
