@@ -65,7 +65,7 @@ getBankList:
 getMyRetailer:
    select * from (
       SELECT
-             a.province_name || a.city_name || a.county_name || a.town_name || a.address address,
+             concat(a.province_name,a.city_name,a.county_name,a.town_name,a.address) address,
              1 is_invited,
              a.name,
              a.nickname,
@@ -130,7 +130,7 @@ getRegisterUserList:
              b.seller_id = ?
 getMyRegisterRetailer:
       SELECT
-             a.province_name || a.city_name || a.county_name || a.town_name || a.address address,
+             concat(a.province_name,a.city_name,a.county_name,a.town_name,a.address) address,
              1 is_invited,
              a.name,
              a.nickname,

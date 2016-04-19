@@ -204,7 +204,7 @@ public final class CommonUtils {
         if (istrue) {
             code = HttpStatus.OK.getCode();
         }
-        result.put("code", code);
+        result.put("code", String.valueOf(code));
         result.put("message", message);
         return result;
     }

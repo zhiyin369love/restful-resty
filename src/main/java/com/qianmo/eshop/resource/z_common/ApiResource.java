@@ -150,12 +150,12 @@ public class ApiResource extends Resource {
                 resultContent += phone + "短信发送失败";
             }
             if (!"".equals(resultContent)) {
-                return new WebResult(HttpStatus.OK, CommonUtils.getCodeMessage(false,resultContent));
+                return new WebResult<HashMap<String,String>>(HttpStatus.OK, CommonUtils.getCodeMessage(false,resultContent));
             } else {
-                return new WebResult(HttpStatus.OK, CommonUtils.getCodeMessage(true,"发送验证码成功"));
+                return new WebResult<HashMap<String,String>>(HttpStatus.OK, CommonUtils.getCodeMessage(true,"发送验证码成功"));
             }
         } else {
-            return new WebResult(HttpStatus.OK, CommonUtils.getCodeMessage(false,"输入参数有误"));
+            return new WebResult<HashMap<String,String>>(HttpStatus.OK, CommonUtils.getCodeMessage(false,"输入参数有误"));
         }
 
     }

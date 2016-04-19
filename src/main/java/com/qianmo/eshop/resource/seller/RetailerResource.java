@@ -89,7 +89,7 @@ public class RetailerResource extends ApiResource {
                     }
                     if (returnResult.get("msg") == null || !"OK".equals(returnResult.get("msg"))) {
                         logger.info(returnResult.toString());
-                        resultContent += phone + "短信发送失败;";
+                        resultContent += phone + "邀请失败;";
                     }
                 }
             } catch (IOException e) {
@@ -99,10 +99,10 @@ public class RetailerResource extends ApiResource {
                 result = CommonUtils.getCodeMessage(false, resultContent.substring(0, resultContent.length() - 1));
                 //return result;
             } else {
-                result = setResult("短信发送成功");
+                result = setResult("邀请成功");
             }
         } else {
-            result = CommonUtils.getCodeMessage(false, "输入参数有误");
+            result = CommonUtils.getCodeMessage(false, "输入有误");
         }
         return result;
     }
@@ -219,9 +219,9 @@ public class RetailerResource extends ApiResource {
                 //是否手机号码
                 boolean isOrderNum = buyer_name.matches("[0-9]+");
                 if (isOrderNum) {
-                    sql += " and a.phone like '%" + buyer_name + "%'";
+                    sql += " and a.phone like '%" + buyer_name.trim() + "%'";
                 } else {
-                    sql += " and (a.nickname like '%" + buyer_name + "%'" + " or a.name like '%" + buyer_name + "%' )";
+                    sql += " and (a.nickname like '%" + buyer_name.trim() + "%'" + " or a.name like '%" + buyer_name.trim() + "%' )";
                 }
 
             }

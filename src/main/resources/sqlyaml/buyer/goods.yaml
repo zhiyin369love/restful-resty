@@ -35,7 +35,7 @@ findGoodsInfo:
   SELECT b.id goods_id,b.num goods_num,b.main_pic_url,b.name goods_name,b.producer,b.ingredient,
     b.seller_id,a.price,d.nickname seller_name,e.id sku_id,e.name sku_name
     FROM (SELECT id sku_id,goods_num,list_price price FROM goods_sku a WHERE a.status = 1
-    AND NOT EXISTS (SELECT 1 FROM goods_sku_price b WHERE b.sku_id = a.id)
+    AND NOT EXISTS (SELECT 1 FROM goods_sku_price b WHERE b.sku_id = a.id AND buyer_id=?)
     UNION ALL SELECT sku_id,goods_num,price FROM goods_sku_price WHERE status = 1 AND buyer_id=?) a,
     goods_info b,buyer_seller c,user_info d,goods_sku e
     WHERE a.goods_num = b.num AND a.sku_id = e.id AND d.deleted_at IS NULL AND e.deleted_at IS NULL

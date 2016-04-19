@@ -25,7 +25,7 @@ public class buyer_seller extends Model<buyer_seller> {
         invite_verify_code code = getInviteByVerifyCode(bind_code);
         if (code != null && buyer_id != 0 && code.<Boolean>get("status") == true) {
             Long seller_Id = code.<Long>get("user_id");
-            String phone = user_info.dao.findById(buyer_id).get("username");;
+            String phone = user_info.dao.findById(buyer_id).get("username");
             if(code.get("phone").equals(phone)) {
             //查看是否已经绑定过
               buyer_seller buyerSeller = buyer_seller.dao.unCache().findFirstBy("buyer_id = ? and seller_id = ? ", buyer_id, seller_Id);

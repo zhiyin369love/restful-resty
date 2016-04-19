@@ -93,7 +93,7 @@ public class GoodsResource extends BuyerResource {
         //如果商品编号不为空时查询商品、规格、价格信息
         if (!"".equals(goodsNum)){
             goodsSql = goodsSql + "  AND b.num in ("+goodsNum+")";
-            list = goods_info.dao.find(goodsSql,buyer_id,buyer_id);
+            list = goods_info.dao.find(goodsSql,buyer_id,buyer_id,buyer_id);
         }
         HashMap<Long,GoodsInfo> map = new HashMap<Long, GoodsInfo>();
         //非空判断

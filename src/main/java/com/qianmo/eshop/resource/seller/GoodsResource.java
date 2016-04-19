@@ -218,6 +218,11 @@ public class GoodsResource extends SellerResource {
     @POST
     @Transaction
     public HashMap add(goods_info goods) {
+        //判断是否填写商品规格,没有填写,不允许添加商品
+        List<JSONObject> list = goods.get("goods_sku_list");
+        if (CommonUtils.isEmpty(list)){
+            return CommonUtils.getCodeMessage(false, "请填写商品规格");
+        }
         //添加商品基本信息
         goods_info goodsInfo = goods.get("goods_info", goods_info.class);
         //生成商品编号
@@ -232,7 +237,6 @@ public class GoodsResource extends SellerResource {
         /*
         添加商品规格信息
          */
-        List<JSONObject> list = goods.get("goods_sku_list");
         List<goods_sku> skuList = new ArrayList<goods_sku>();
         //非空判断
         if (list != null && list.size() > 0) {
@@ -319,6 +323,9 @@ public class GoodsResource extends SellerResource {
 //                    }
 //                    skuList.add(goodsSku);
                 }
+            }
+            else{
+                return CommonUtils.getCodeMessage(false, "请填写商品规格");
             }
 //            goods_sku.dao.save(skuList);
             return CommonUtils.getCodeMessage(true, "修改商品成功");
