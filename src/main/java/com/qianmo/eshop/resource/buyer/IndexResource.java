@@ -43,7 +43,7 @@ public class IndexResource extends ApiResource {
         if(isBind) {
             return CommonUtils.getCodeMessage(isBind,"绑定买家成功");
         } else {
-            return CommonUtils.getCodeMessage(isBind,"绑定买家失败");
+            return CommonUtils.getCodeMessage(isBind,"没有此验证码或验证码失效");
         }
     }
 

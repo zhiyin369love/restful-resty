@@ -2,12 +2,12 @@ getFieldOrderIdAll:
   select id from order_info where num = ?
 
 getFieldOrderInfoAll:
-  select oi.created_at as created_at,oi.id as order_id ,cast(oi.num as CHAR)  order_num ,oi.status as order_status,oi.pay_status as pay_status,oi.pay_type_id as pay_type,oi.total_price as total_price, ou.seller_id as seller_id,ui.name as seller_name,ui.phone as phone
+  select oi.created_at as created_at,oi.id as order_id ,cast(oi.num as CHAR)  order_num ,oi.status as order_status,oi.pay_status as pay_status,oi.pay_type_id as pay_type,oi.total_price as total_price, ou.seller_id as seller_id,ui.nickname as seller_name,ui.phone as phone
   from order_info oi left join order_user ou on oi.num = ou.order_num left join user_info ui on ui.id = ou.seller_id
   where  oi.id = ?
 
 getFieldBuyerInfoAll:
-  select ou.buyer_id,ui.name
+  select ou.buyer_id,ui.name,ui.nickname
   from user_info ui left join order_user ou on ui.id = ou.buyer_id
   left join order_info oi on  ou.order_num = oi.num
   where oi.num is not null and  oi.id = ?
@@ -41,7 +41,7 @@ getFirldOrderRemarkAll:
   SELECT a.created_at,a.details,a.op,a.order_num,a.reason,a.user_id FROM order_remark a INNER JOIN order_info b ON a.order_num = b.num WHERE b.id = ?
 
 getFieldSellerBankAll:
-  select sb.account_address,sb.account_name,sb.account_num,sb.name from seller_bank sb where sb.seller_id = ?
+  select sb.account_address,sb.account_name,sb.account_num,sb.name,sb.id bank_id from seller_bank sb where sb.seller_id = ?
 
 getSellPayList:
     SELECT id,pay_id,name pay_name,seller_id,details,status FROM seller_pay where status = 1 and seller_id = ?

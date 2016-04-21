@@ -39,6 +39,7 @@ public class AppConfig extends Config {
     //interceptorLoader.add(new SecurityInterceptor(new MyAuthenticateService()));
     //http session失效时间为24小时
     interceptorLoader.add(new SecurityInterceptor(new BothSessionBuilder(24 * 60 * 60 * 1000, -1, 7, new MyAuthenticateService())));
+    interceptorLoader.add(new CacheInterceptor());
     //事务的拦截器 @Transaction
     interceptorLoader.add(new TransactionInterceptor());
     //输入的统一校验

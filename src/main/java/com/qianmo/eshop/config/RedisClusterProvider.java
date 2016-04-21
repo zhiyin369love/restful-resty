@@ -96,7 +96,7 @@ public class RedisClusterProvider extends CacheProvider {
          System.out.println(cluster.set("test","11114567777"));
          System.out.println(cluster.get("test"));
      }
- */
+    */
     @Override
     public void addCache(String group, String key, Object cache, int expired) {
 
@@ -112,6 +112,7 @@ public class RedisClusterProvider extends CacheProvider {
                         cluster.expire(jkey, RedisClusterProvider.expired);
                     }
                 }
+                addGroupKey(group,key);
             }
         } catch (Exception e) {
             logger.warn("%s", e, e);
@@ -125,6 +126,7 @@ public class RedisClusterProvider extends CacheProvider {
         String jkey = getRedisKey(group, key);
         try {
             cluster.del(jkey.getBytes());
+            delGroup(group, key);
         } catch (Exception e) {
             logger.warn("%s", e, e);
         }
@@ -137,10 +139,12 @@ public class RedisClusterProvider extends CacheProvider {
             cluster.flushDB();
         } else if (event.getType().equals(CacheEvent.CacheEventType.GROUP)) {
             String groupKeys = event.getGroup() + Constant.CONNECTOR + "keys";
-            List<String> groupKeyList = getGroupKeys(cluster, groupKeys);
+            List<String> groupKeyList = getGroupKeys(groupKeys);
 
             if (groupKeyList != null && groupKeyList.size() > 0) {
-                cluster.del(groupKeyList.toArray(new String[groupKeyList.size()]));
+                for(String key : groupKeyList) {
+                    cluster.del(key);
+                }
             }
         }
 
@@ -151,19 +155,18 @@ public class RedisClusterProvider extends CacheProvider {
     }
 
     private void returnResource(JedisCluster jedis) {
-
     }
 
-    private List<String> getGroupKeys(Object jedis, String groupKeys) {
+    private List<String> getGroupKeys(String groupKeys) {
         byte[] gkey = groupKeys.getBytes();
-        return (List<String>) Serializer.unserialize(((JedisCluster)jedis).get(gkey));
+        return (List<String>) Serializer.unserialize(cluster.get(gkey));
     }
 
-    private void addGroupKey(Object jedis, String group, String key) {
+    private void addGroupKey(String group, String key) {
         String groupKeys = group + Constant.CONNECTOR + "keys";
         byte[] gkey = groupKeys.getBytes();
 
-        List<String> groupKeyList = getGroupKeys(jedis, groupKeys);
+        List<String> groupKeyList = getGroupKeys(groupKeys);
         if (groupKeyList == null) {
             groupKeyList = new ArrayList<String>();
         }
@@ -178,12 +181,12 @@ public class RedisClusterProvider extends CacheProvider {
         }*/
     }
 
-    private void delGroup(JedisCluster jedis, CacheEvent event, String key) {
-        String groupKeys = event.getGroup() + Constant.CONNECTOR + "keys";
+    private void delGroup(String group, String key) {
+        String groupKeys = group + Constant.CONNECTOR + "keys";
         byte[] gkey = groupKeys.getBytes();
 
-        List<String> groupKeyList = getGroupKeys(jedis, groupKeys);
-        if (groupKeyList != null && groupKeyList.contains(event)) {
+        List<String> groupKeyList = getGroupKeys(groupKeys);
+        if (groupKeyList != null && groupKeyList.contains(key)) {
             groupKeyList.remove(key);
             cluster.set(gkey, Serializer.serialize(groupKeyList));
         }

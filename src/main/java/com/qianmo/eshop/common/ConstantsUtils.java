@@ -195,6 +195,7 @@ public class ConstantsUtils {
 	/**************************支付方式名称**************************/
 	/**支付方式名称 **/
 	/**	1：银行汇款 2：货到付款 3：赊账 4：在线支付 **/
+	public final static Integer PAY_TYPE_INT_DEFAULT = -1;
 	public final static Integer PAY_TYPE_INT_BANK = 1;
 	public final static Integer PAY_TYPE_INT_OFFLINE = 2;
 	public final static Integer PAY_TYPE_INT_CREDIT = 3;

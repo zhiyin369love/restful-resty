@@ -4,7 +4,6 @@
          version="2.5">
 
   <display-name>Archetype Created Web Application</display-name>
-
   <!--druid 数据源监控-->
   <filter>
     <filter-name>DruidWebStatFilter</filter-name>
@@ -65,10 +64,10 @@
   </filter-mapping>
 
   <welcome-file-list>
-    <welcome-file>build/login.html</welcome-file>
+    <welcome-file>login.html</welcome-file>
   </welcome-file-list>
   <!--设置超时时间，1代表1分钟 -->
   <session-config>
-    <session-timeout>30</session-timeout>
+    <session-timeout>-1</session-timeout>
   </session-config>
 </web-app>

@@ -55,7 +55,7 @@ public class OrderResource extends BuyerResource {
         String sqlbuyer_receive = YamlRead.getSQL("getFieldBuyerReceiveAll", "buyer/order");
         order_user o = order_user.dao.findFirst(sqlbuyer_info, id);
         result_buyer.put("buyer_id", o.get("buyer_id"));
-        result_buyer.put("buyer_name", o.get("name"));
+        result_buyer.put("buyer_name", o.get("nickname"));
         result_buyer.put("buyer_receive", buyer_receive_address.dao.findFirst(sqlbuyer_receive, id));
 
         //返回json
@@ -123,10 +123,11 @@ public class OrderResource extends BuyerResource {
                 } else {
                     if("2".equals(value) || "3".equals(value)) {
                         isSuccess = order_info.dao.update("update order_info set pay_status = ? , pay_type_id = ?  where num = ? ",ConstantsUtils.ORDER_PAYMENT_STATUS_WAITE_TRUE, Long.valueOf(value), order_num);
+                    } else if(StringUtils.isEmpty(value)) {
+
                     } else {
                         isSuccess = order_info.dao.update("update order_info set pay_type_id = ?  where num = ? ", Long.valueOf(value), order_num);
                     }
-
                 }
                 break;
             case ConstantsUtils.ORDER_OP_BANK:
@@ -185,7 +186,7 @@ public class OrderResource extends BuyerResource {
      * @param page_step
      * @return
      */
-    @GET
+    @GET(cached = true)
     public HashMap getOrderList(String order_status, Integer page_start, Integer page_step) {
         //根据循环获取买家Id
         long buyerId = SessionUtil.getUserId();
@@ -316,7 +317,7 @@ public class OrderResource extends BuyerResource {
             //num = CodeUtils.code(dateFormat.format(date), ConstantsUtils.ORDER_NUM_TYPE);
             cart.dao.deleteBy("id in (" + cart_list + ")");
             new order_user().set("area_id", ConstantsUtils.ALL_AREA_ID).set("order_num", num).set("buyer_id", buyer_id).set("seller_id", seller_id).save();
-            new order_info().set("area_id", ConstantsUtils.ALL_AREA_ID).set("num", num).set("status", ConstantsUtils.ORDER_INFO_STATUS_CREATED).set("pay_status", ConstantsUtils.ORDER_PAYMENT_STATUS_WAITE).set("total_price", total_price).set("buyer_receive_id", buyer_receive_id).set("pay_type_id", ConstantsUtils.ORDER_PAYMENT_STATUS_WAITE).save();
+            new order_info().set("area_id", ConstantsUtils.ALL_AREA_ID).set("num", num).set("status", ConstantsUtils.ORDER_INFO_STATUS_CREATED).set("pay_status", ConstantsUtils.ORDER_PAYMENT_STATUS_WAITE).set("total_price", total_price).set("buyer_receive_id", buyer_receive_id).set("pay_type_id", ConstantsUtils.PAY_TYPE_INT_DEFAULT).save();
         }
         HashMap hash = new HashMap();
         //根据订单编号查订单ID
