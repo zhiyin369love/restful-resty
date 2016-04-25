@@ -8,7 +8,8 @@ import cn.jpush.api.push.model.Message;
 import cn.jpush.api.push.model.Platform;
 import cn.jpush.api.push.model.PushPayload;
 import cn.jpush.api.push.model.audience.Audience;
-import cn.jpush.api.push.model.audience.AudienceTarget;
+import cn.jpush.api.push.model.notification.Notification;
+import cn.jpush.api.push.model.notification.PlatformNotification;
 
 /**
  * Title:
@@ -21,20 +22,19 @@ import cn.jpush.api.push.model.audience.AudienceTarget;
  */
 public class JPushClientServer {
 
-    private static final String appKey = "4eec9a5096d32823ac5355a3";
-    private static final String masterSecret = "f3cc1382cb147982d5b2bb82";
+    private static final String appKey = "90dfa31987a482d15bb32e41";
+    private static final String masterSecret = "03d03b48bd2588846122229b";
 
-    public static void main(String registrationId,String message){
-        send(registrationId, message);
+    public static void pushMassage(String username,String message,String orderNum){
+        send(username, message, orderNum);
     }
 
-    private static void send(String registrationId,String message){
+    private static void send(String username,String message,String orderNum){
         JPushClient jpushClient = new JPushClient(masterSecret,appKey);
-        PushPayload payload = buildPushObject_all_all_alert(registrationId,message);
+        PushPayload payload = buildPushObject(username,message,orderNum);
 
         try {
             PushResult result = jpushClient.sendPush(payload);
-            System.out.println("推送送出");
         } catch (APIConnectionException e) {
             e.printStackTrace();
         } catch (APIRequestException e) {
@@ -43,19 +43,22 @@ public class JPushClientServer {
 
     }
 
-
-
-
-
-    public static PushPayload buildPushObject_all_all_alert(String registrationId,String message) {
+    public static PushPayload buildPushObject(String username,String message,String orderNum) {
         return PushPayload.newBuilder()
                 .setPlatform(Platform.android_ios())
-                .setAudience(Audience.newBuilder()
-                        .addAudienceTarget(AudienceTarget.registrationId(registrationId))
-                        .build())
+                .setAudience(Audience.alias(username))
                 .setMessage(Message.newBuilder()
-                        .setMsgContent(message)
-                        .build())
+                    .setMsgContent(message)
+                    .addExtra("orderNum", orderNum).build())
+                //.setNotification(Notification.alert(message))
+                .build();
+    }
+
+    public static  PushPayload build(String username,String message){
+        return PushPayload.newBuilder()
+                .setPlatform(Platform.all())
+                .setAudience(Audience.alias(username))
+                .setNotification(Notification.alert(message))
                 .build();
     }
 

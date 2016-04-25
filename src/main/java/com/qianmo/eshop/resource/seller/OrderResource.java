@@ -81,9 +81,7 @@ public class OrderResource extends SellerResource {
             //发货
             isSuccess = order_info.dao.update("update order_info set status = ?  where num = ? ", ConstantsUtils.ORDER_INFO_STATUS_ALREADY, order_num);
             String message = "订单"+order_num+"已发货，发货人："+userInfo.get("nickname")+"，联系电话："+userInfo.get("phone");
-            //TODO
-            String id = "";
-            JPushClientServer.main(id,message);
+            JPushClientServer.pushMassage(String.valueOf(SessionUtil.getUser().get("username")),message,String.valueOf(order_num));
             new order_remark().set("order_num", order_num).set("op", op).set("details", remark == null ? "" : remark).set("area_id", ConstantsUtils.ALL_AREA_ID).set("user_id", orderUser.get("seller_id")).save();
         } else if (op == ConstantsUtils.SELLER_ORDER_OP_PAY_STATUS) {
             //取消
