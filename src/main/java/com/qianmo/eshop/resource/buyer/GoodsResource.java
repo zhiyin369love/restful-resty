@@ -78,7 +78,8 @@ public class GoodsResource extends BuyerResource {
         }
         String goodsNum = "";
         //查询商品编号
-        FullPage<goods_info> goodsNumList = goods_info.dao.fullPaginate(page_start / page_step + 1,page_step, goodsNumSql, buyer_id);
+        FullPage<goods_info> goodsNumList = goods_info.dao.fullPaginate(page_start / page_step + 1,page_step,
+                goodsNumSql, buyer_id, buyer_id, buyer_id);
         //非空判断
         if (goodsNumList!=null && goodsNumList.getList().size()>0){
              for(goods_info goods:goodsNumList.getList()){
@@ -206,7 +207,8 @@ public class GoodsResource extends BuyerResource {
         }
         int page_start = ConstantsUtils.DEFAULT_PAGE_START; //默认从第1条开始
         int page_step = ConstantsUtils.DEFAULT_PAGE_STEP;  //默认返回10条
-        FullPage<goods_info> goodsNameList = goods_info.dao.fullPaginate(page_start / page_step + 1,page_step, goodsNameSql, buyer_id);
+        FullPage<goods_info> goodsNameList = goods_info.dao.fullPaginate(page_start / page_step + 1,page_step,
+                goodsNameSql, buyer_id, buyer_id, buyer_id);
         if (goodsNameList != null){
             resultMap.put("goods_name_list", goodsNameList.getList());
         }
