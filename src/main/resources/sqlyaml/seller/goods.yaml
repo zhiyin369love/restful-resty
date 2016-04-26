@@ -53,4 +53,5 @@ findPriceCount:
 
 #查询经销商下所有零售商总数
 findAllUserCount:
-  SELECT count(id) count FROM buyer_seller WHERE seller_id = ? AND deleted_at is null
+  SELECT count(a.id) count FROM buyer_seller a,user_info b WHERE a.seller_id = ?
+    AND a.deleted_at is null AND a.buyer_id = b.id AND b.deleted_at is null
