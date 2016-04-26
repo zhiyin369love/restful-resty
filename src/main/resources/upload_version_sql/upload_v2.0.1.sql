@@ -36,3 +36,21 @@ CREATE TABLE `app_version` (
   `deleted_at` timestamp NULL DEFAULT NULL COMMENT '删除时间',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+<!--创建app导航表-->
+DROP TABLE IF EXISTS `app_home_nav`;
+CREATE TABLE `app_home_nav` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `img` varchar(256) DEFAULT NULL COMMENT '导航图片',
+  `type` varchar(255) DEFAULT NULL COMMENT '类型（保留字段）',
+  `value` varchar(255) DEFAULT NULL COMMENT '值',
+  `custom_val` varchar(255) DEFAULT NULL COMMENT '导航菜单指向',
+  `app_home_nav` int(11) DEFAULT NULL COMMENT '图标分类',
+  `sort` int(11) DEFAULT NULL COMMENT '排序字段',
+  `title` varchar(255) DEFAULT NULL COMMENT '标题',
+  `app_type` int(11) DEFAULT '1' COMMENT 'app类型(1：买家APP 2：卖家APP)',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `updated_at` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  `deleted_at` timestamp NULL DEFAULT NULL COMMENT '删除时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;

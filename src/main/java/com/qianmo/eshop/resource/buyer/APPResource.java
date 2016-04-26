@@ -24,7 +24,7 @@ public class APPResource extends BuyerResource {
     public HashMap list(String version,Integer type){
         app_version appVersion = null;
         HashMap resultMap = new HashMap();
-        List<app_version> list = app_version.dao.findBy("type=?",type);
+        List<app_version> list = app_version.dao.findBy("type=? AND deleted_at is null",type);
         if (list!=null && list.size()>0){
             appVersion = list.get(0);
         }
