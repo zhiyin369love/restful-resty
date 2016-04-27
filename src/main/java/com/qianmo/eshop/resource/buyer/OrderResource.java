@@ -300,11 +300,21 @@ public class OrderResource extends BuyerResource {
 
         BigDecimal total_price = new BigDecimal(0);
         String num = "";
+        String msg = "";
         //遍历购物车
         if (results != null && results.size() > 0) {
-            num = CodeUtils.code(dateFormat.format(date), ConstantsUtils.ORDER_NUM_TYPE);
+            boolean isValid = false;
             for (cart cart : results) {
                 //商品单价
+                long goodsSkuId = cart.get("goods_sku_id");
+                goods_sku goodsSku = goods_sku.dao.findById(goodsSkuId);
+                goods_sku_price goodsSkuPrice = goods_sku_price.dao.findFirstBy( "sku_id =? and buyer_id = ? and seller_id =? ", goodsSkuId,cart.get("buyer_id"),cart.get("seller_id"));
+                if (goodsSku.<Integer>get("status") == ConstantsUtils.GOODS_SKU_PRICE_BUY_DISABLE || (goodsSkuPrice != null && goodsSkuPrice.<Integer>get("status") == ConstantsUtils.GOODS_SKU_PRICE_BUY_DISABLE)) {
+                    msg += goodsSkuId + "已下架或不可购买；";
+                    continue;
+                }
+                isValid = true;
+                num = CodeUtils.code(dateFormat.format(date), ConstantsUtils.ORDER_NUM_TYPE);
                 String sqlprice = YamlRead.getSQL("getBuyerPrice", "buyer/order");
                 goods_sku_price results_goods = goods_sku_price.dao.findFirst(sqlprice, cart.get("buyer_id"), cart.get("seller_id"), cart.get("goods_sku_id"), cart.get("goods_sku_id"));
                 Integer goods_sku_count = cart.get("goods_sku_count");
@@ -314,17 +324,24 @@ public class OrderResource extends BuyerResource {
                 //插入订单商品表和订单用户表
                 new order_goods().set("area_id", cart.get("area_id")).set("goods_num", cart.get("goods_num")).set("sku_id", cart.get("goods_sku_id")).set("order_num", num).set("goods_sku_price", goods_sku_price).set("goods_sku_count", cart.get("goods_sku_count")).set("single_total_price", single_total_price).save();
             }
-            //num = CodeUtils.code(dateFormat.format(date), ConstantsUtils.ORDER_NUM_TYPE);
-            cart.dao.deleteBy("id in (" + cart_list + ")");
-            new order_user().set("area_id", ConstantsUtils.ALL_AREA_ID).set("order_num", num).set("buyer_id", buyer_id).set("seller_id", seller_id).save();
-            new order_info().set("area_id", ConstantsUtils.ALL_AREA_ID).set("num", num).set("status", ConstantsUtils.ORDER_INFO_STATUS_CREATED).set("pay_status", ConstantsUtils.ORDER_PAYMENT_STATUS_WAITE).set("total_price", total_price).set("buyer_receive_id", buyer_receive_id).set("pay_type_id", ConstantsUtils.PAY_TYPE_INT_DEFAULT).save();
+            if(isValid) {
+                cart.dao.deleteBy("id in (" + cart_list + ")");
+                new order_user().set("area_id", ConstantsUtils.ALL_AREA_ID).set("order_num", num).set("buyer_id", buyer_id).set("seller_id", seller_id).save();
+                new order_info().set("area_id", ConstantsUtils.ALL_AREA_ID).set("num", num).set("status", ConstantsUtils.ORDER_INFO_STATUS_CREATED).set("pay_status", ConstantsUtils.ORDER_PAYMENT_STATUS_WAITE).set("total_price", total_price).set("buyer_receive_id", buyer_receive_id).set("pay_type_id", ConstantsUtils.PAY_TYPE_INT_DEFAULT).save();
+                //num = CodeUtils.code(dateFormat.format(date), ConstantsUtils.ORDER_NUM_TYPE);
+            }
         }
         HashMap hash = new HashMap();
         //根据订单编号查订单ID
         String order_id = YamlRead.getSQL("getFieldOrderIdAll", "buyer/order");
         //返回订单ID 和 订单编号
         order_info order_info_list = order_info.dao.findFirst(order_id, num);
-        hash.put("order_id", order_info_list.get("id"));
+
+        if(!StringUtils.isEmpty(msg)) {
+            msg = msg.substring(0,msg.length()-1);
+        }
+        hash.put("msg",msg);
+        hash.put("order_id", order_info_list==null?0l:order_info_list.get("id"));
         hash.put("order_num", num);
         return hash;
     }

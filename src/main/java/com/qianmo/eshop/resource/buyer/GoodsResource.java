@@ -79,7 +79,7 @@ public class GoodsResource extends BuyerResource {
         String goodsNum = "";
         //查询商品编号
         FullPage<goods_info> goodsNumList = goods_info.dao.fullPaginate(page_start / page_step + 1,page_step,
-                goodsNumSql, buyer_id, buyer_id, buyer_id);
+                goodsNumSql, buyer_id,buyer_id,buyer_id);
         //非空判断
         if (goodsNumList!=null && goodsNumList.getList().size()>0){
              for(goods_info goods:goodsNumList.getList()){
