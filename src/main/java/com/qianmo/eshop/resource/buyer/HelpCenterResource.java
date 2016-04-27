@@ -19,7 +19,7 @@ import java.util.Map;
  * @version 1.0
  */
 @API("/help_center")
-public class HelpCenterResource extends BuyerResource {
+public class HelpCenterResource extends ApiResource {
     /**
      * 获取帮助中心列表
      * @return
