@@ -193,6 +193,8 @@ public class ApiResource extends Resource {
                         if(invite_verify_code.dao.deleteBy("phone = ? and code = ? and type = 1",username,code))
                         {
                             result = CommonUtils.getCodeMessage(true,"注册成功");
+                            //注册成功后调用登录
+                            Subject.login(username, new_pwd, true);
                         }
                     }
                 }
