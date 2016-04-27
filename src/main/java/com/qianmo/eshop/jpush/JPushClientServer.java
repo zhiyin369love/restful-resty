@@ -32,7 +32,6 @@ public class JPushClientServer {
     private static void send(String username,String message,String orderNum){
         JPushClient jpushClient = new JPushClient(masterSecret,appKey);
         PushPayload payload = buildPushObject(username,message,orderNum);
-
         try {
             PushResult result = jpushClient.sendPush(payload);
         } catch (APIConnectionException e) {
