@@ -38,7 +38,7 @@ CREATE TABLE `app_version` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 <!--创建app导航表-->
-DROP TABLE IF EXISTS `app_home_nav`;
+DROP TABLE IF EXISTS `app_nav`;
 CREATE TABLE `app_home_nav` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
   `img` varchar(256) DEFAULT NULL COMMENT '导航图片',

@@ -2,6 +2,7 @@ package com.qianmo.eshop.resource.buyer;
 
 import cn.dreampie.route.annotation.API;
 import cn.dreampie.route.annotation.GET;
+import com.qianmo.eshop.model.user.app_nav;
 import com.qianmo.eshop.model.user.app_version;
 
 import java.util.HashMap;
@@ -19,7 +20,12 @@ import java.util.Map;
  */
 @API("/app")
 public class APPResource extends BuyerResource {
-
+    /**
+     * 获取最新版本APP
+     * @param version 版本号
+     * @param type 类型 1：Android  2：IOS
+     * @return
+     */
     @GET
     public HashMap list(String version,Integer type){
         app_version appVersion = null;
@@ -39,5 +45,18 @@ public class APPResource extends BuyerResource {
         }
         return resultMap;
 
+    }
+
+    /**
+     * 获取APP导航
+     * @param app_type 类型 1：买家APP 2：卖家APP
+     * @return
+     */
+    @GET("/nav")
+    public HashMap getHomeNav(int app_type){
+        HashMap resultMap = new HashMap();
+        List<app_nav> list = app_nav.dao.findBy("app_type=? AND deleted_at is null ORDER BY sort", app_type);
+        resultMap.put("app_nav_list",list);
+        return resultMap;
     }
 }
