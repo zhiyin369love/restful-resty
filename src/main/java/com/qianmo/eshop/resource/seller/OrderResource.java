@@ -1,5 +1,6 @@
 package com.qianmo.eshop.resource.seller;
 
+import cn.dreampie.log.Logger;
 import cn.dreampie.orm.page.FullPage;
 import cn.dreampie.route.annotation.API;
 import cn.dreampie.route.annotation.GET;
@@ -15,6 +16,7 @@ import com.qianmo.eshop.model.goods.goods_sku;
 import com.qianmo.eshop.model.order.order_info;
 import com.qianmo.eshop.model.order.order_remark;
 import com.qianmo.eshop.model.order.order_user;
+import com.qianmo.eshop.model.user.sms_template;
 import com.qianmo.eshop.model.user.user_info;
 
 import java.math.BigDecimal;
@@ -28,6 +30,7 @@ import java.util.*;
 
 @API("/order")
 public class OrderResource extends SellerResource {
+    private static final Logger logger = Logger.getLogger(OrderResource.class);
     /**
      * 查看单个订单详情
      *
@@ -88,6 +91,18 @@ public class OrderResource extends SellerResource {
             String message = "订单"+order_num+"已发货，发货人："+userInfo.get("nickname")+"，联系电话："+userInfo.get("phone");
             JPushClientServer.pushMassage(buyerUsername,message,String.valueOf(order_num));
             new order_remark().set("order_num", order_num).set("op", op).set("details", remark == null ? "" : remark).set("area_id", ConstantsUtils.ALL_AREA_ID).set("user_id", orderUser.get("seller_id")).save();
+            sms_template model = sms_template.dao.findById(ConstantsUtils.INVITE_VERIFY_CODE_TYPE_SEND_SMS);
+            String templateContent = model.get("content");
+            String sign = model.get("sign");
+            String content = sign + templateContent;
+            user_info buyerInfo = user_info.dao.findById(orderUser.get("buyer_id"));
+            user_info sellerInfo = user_info.dao.findById(orderUser.get("seller_id"));
+            try {
+                SmsApi.sendSms(SmsApi.APIKEY, content.replace("orderNum", order_num.toString()).replace("userName",sellerInfo.get("name").toString())
+                        .replace("phone",sellerInfo.get("phone").toString()), buyerInfo.get("phone").toString());
+            } catch (Exception e) {
+                logger.error(order_num.toString() + "::" + buyerInfo.get("phone").toString() + "短信发送失败");
+            }
         } else if (op == ConstantsUtils.SELLER_ORDER_OP_PAY_STATUS) {
             //取消
             order_info orderInfo = order_info.dao.findFirstBy("num = ?", order_num);

@@ -140,12 +140,12 @@ public class RedisClusterProvider extends CacheProvider {
         } else if (event.getType().equals(CacheEvent.CacheEventType.GROUP)) {
             String groupKeys = event.getGroup() + Constant.CONNECTOR + "keys";
             List<String> groupKeyList = getGroupKeys(groupKeys);
-
             if (groupKeyList != null && groupKeyList.size() > 0) {
                 for(String key : groupKeyList) {
-                    cluster.del(key);
+                    cluster.del(getRedisKey(event.getGroup(),key).getBytes());
                 }
             }
+            cluster.del(groupKeys);
         }
 
     }

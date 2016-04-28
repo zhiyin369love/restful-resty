@@ -74,6 +74,8 @@ public class ConstantsUtils {
 	public final static Integer INVITE_VERIFY_CODE_TYPE_RESET = 2;
 	/**邀请**/
 	public final static Integer INVITE_VERIFY_CODE_TYPE_INVITE = 3;
+	/**发送短信**/
+	public final static Integer INVITE_VERIFY_CODE_TYPE_SEND_SMS = 4;
 	/**********************************************************/
 
 	/**************************买家卖家绑定**************************/
