@@ -39,7 +39,8 @@ public class IndexResource extends SellerResource {
             return setResult("输入参数有误");
         }
         //零售商数量
-        long cartNum = cart.dao.findFirst("select count(*) cn from buyer_seller where seller_id = ? and status = 1", seller_id).<Long>get("cn");
+        long cartNum = cart.dao.findFirst("select count(*) cn from buyer_seller a,user_info b where a.seller_id = ? " +
+                "and a.status = 1 and a.buyer_id = b.id and b.deleted_at is null", seller_id).<Long>get("cn");
         //赊账零售商数量
         long cancelStatusNum = credit.dao.findFirst("select count(distinct(buyer_id)) cn from credit where seller_id = ? and status = ?", seller_id, ConstantsUtils.CREDIT_CANCEL_STATUS).<Long>get("cn");
         //赊账总数量
