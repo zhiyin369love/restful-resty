@@ -25,8 +25,8 @@ public class JPushClientServer {
     private static final String appKey = "90dfa31987a482d15bb32e41";
     private static final String masterSecret = "03d03b48bd2588846122229b";
 
-    public static void pushMassage(String username,String message,String orderNum){
-        send(username, message, orderNum);
+    public static void pushMassage(String username,String message,String orderId){
+        send(username, message, orderId);
     }
 
     private static void send(String username,String message,String orderNum){
@@ -42,13 +42,13 @@ public class JPushClientServer {
 
     }
 
-    public static PushPayload buildPushObject(String username,String message,String orderNum) {
+    public static PushPayload buildPushObject(String username,String message,String orderId) {
         return PushPayload.newBuilder()
                 .setPlatform(Platform.android_ios())
                 .setAudience(Audience.alias(username))
                 .setMessage(Message.newBuilder()
                     .setMsgContent(message)
-                    .addExtra("orderNum", orderNum).build())
+                    .addExtra("orderId", orderId).build())
                 //.setNotification(Notification.alert(message))
                 .build();
     }
