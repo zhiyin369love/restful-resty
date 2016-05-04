@@ -128,10 +128,13 @@ public class IndexResource extends ApiResource {
             total.put("todo_receive_count", receiveWait);
             resultMap.put("total", total);
             //  return resultMap;
-        } //else {
+        } else {
+            total.put("cart_count", 0);
+            total.put("todo_pay_count", 0);
+            total.put("todo_receive_count", 0);
+            resultMap.put("total", total);
+        }
         return resultMap;
-        //}
-
         /*} catch (Exception e) {
             resultMap.put("total", null);
             return resultMap;
