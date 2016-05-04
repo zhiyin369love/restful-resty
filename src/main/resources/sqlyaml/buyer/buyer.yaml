@@ -13,7 +13,7 @@ getSellerIdByVerifyCode:
 getAllSellerInfo:
    SELECT
      a.id,
-     a.username,
+     a.username phone,
      a.name,
      a.nickname,
      CONCAT(
