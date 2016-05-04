@@ -30,4 +30,4 @@ getAllSellerInfo:
    LEFT JOIN buyer_seller b
     ON a.id = b.seller_id
     AND b.buyer_id = ?
-    AND a.status = ?
+    AND b.status = ?
