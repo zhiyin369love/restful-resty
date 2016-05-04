@@ -215,4 +215,124 @@ public class GoodsResource extends BuyerResource {
         return resultMap;
     }
 
+
+    /**
+     * 获取商品列表
+     *
+     * @param goods_name  商品名称
+     * @param category_id 商品分类ID
+     * @param page_start  第几页开始
+     * @param page_step   返回多少条
+     * @param seller_id   卖家id
+     * @return
+     */
+    @GET("/sellerGoods")
+    public HashMap getSellergoods(String goods_name, Integer category_id,Integer parent_category_id,
+                         Integer page_start, Integer page_step,long seller_id) {
+        /*
+        判断是否有分页信息，如果没有，给定默认值
+         */
+        if (page_start == null) {
+            page_start = ConstantsUtils.DEFAULT_PAGE_START; //默认从第1条开始
+        }
+        if (page_step == null) {
+            page_step = ConstantsUtils.DEFAULT_PAGE_STEP;  //默认返回10条
+        }
+        //查询商品编号
+        String goodsNumSql = YamlRead.getSQL("findSellerGoodsNum","buyer/goods");
+        //查询商品、规格、价格
+        String goodsSql = YamlRead.getSQL("findGoodsInfo","buyer/goods");
+         /*
+        判断是否根据分类查找商品
+         */
+        if (category_id != null && category_id > 0) {
+            goodsNumSql = goodsNumSql + " AND b.category_id=" + category_id;
+        }
+        if (parent_category_id!=null && parent_category_id>0){
+            goodsNumSql = goodsNumSql + " AND b.category_id in (SELECT id from goods_category where pid="+parent_category_id+")";
+        }
+
+
+        /*
+        判断是否根据商品名称模糊搜索
+         */
+        if (goods_name != null && !"".equals(goods_name)) {
+            goodsNumSql = goodsNumSql + " AND b.name like '%" + goods_name + "%'";
+        }
+        String goodsNum = "";
+        //查询商品编号
+        FullPage<goods_info> goodsNumList = goods_info.dao.fullPaginate(page_start / page_step + 1,page_step,
+                goodsNumSql, buyer_id,seller_id,buyer_id,seller_id,buyer_id,seller_id);
+        //非空判断
+        if (goodsNumList!=null && goodsNumList.getList().size()>0){
+            for(goods_info goods:goodsNumList.getList()){
+                if("".equals(goodsNum)){
+                    goodsNum = goods.get("goods_num").toString();
+                } else {
+                    goodsNum = goodsNum + "," + goods.get("goods_num");
+                }
+            }
+        }
+        List<goods_info> list = null;
+        //如果商品编号不为空时查询商品、规格、价格信息
+        if (!"".equals(goodsNum)){
+            goodsSql = goodsSql + "  AND b.num in ("+goodsNum+")";
+            list = goods_info.dao.find(goodsSql,buyer_id,buyer_id,buyer_id);
+        }
+        HashMap<Long,GoodsInfo> map = new HashMap<Long, GoodsInfo>();
+        //非空判断
+        if (list!=null && list.size()>0) {
+            for (goods_info info:list){
+                GoodsInfo goodsInfo = map.get(info.get("goods_id"));
+                //如果商品为空，新建商品
+                if(goodsInfo==null){
+                    goodsInfo = new GoodsInfo();
+                    goodsInfo.setGoods_id(info.<Long>get("goods_id"));
+                    goodsInfo.setGoods_name(info.get("goods_name").toString());
+                    goodsInfo.setGoods_num(info.<Long>get("goods_num"));
+                    if(info.get("main_pic_url")!=null){
+                        goodsInfo.setMain_pic_url(info.get("main_pic_url").toString());
+                    }
+                    goodsInfo.setProducer(info.get("producer").toString());
+                    goodsInfo.setIngredient(info.get("ingredient").toString());
+                    goodsInfo.setSeller_id(info.<Long>get("seller_id"));
+                    goodsInfo.setSeller_name(info.get("seller_name").toString());
+                }
+
+                //商品规格及价格信息
+                List<GoodsSku> skuList = (List)goodsInfo.getGoods_sku_list();
+                /*
+                商品规格价格集合为空时，新建商品规格价格集合
+                将查询的商品规格及价格信息存入集合中
+                 */
+                if(skuList==null){
+                    skuList = new ArrayList<GoodsSku>();
+                }
+                GoodsSku goodsSku = new GoodsSku();
+                goodsSku.setSku_id(info.<Long>get("sku_id"));
+                goodsSku.setSku_name(info.get("sku_name").toString());
+                goodsSku.setPrice(info.<BigDecimal>get("price"));
+                skuList.add(goodsSku);
+                goodsInfo.setGoods_sku_list(skuList);
+                //将商品存入map中
+                map.put(info.<Long>get("goods_id"),goodsInfo);
+            }
+        }
+        //将商品Map转为商品List
+        List<GoodsInfo> goodsInfoList = new ArrayList<GoodsInfo>();
+        if(map!=null && map.size()>0){
+            for(Long goodsId:map.keySet()){
+                GoodsInfo info = map.get(goodsId);
+                if (info!=null){
+                    goodsInfoList.add(info);
+                }
+            }
+        }
+        HashMap resultMap = new HashMap();
+        resultMap.put("goods_list",goodsInfoList);//商品信息
+        resultMap.put("total_count", goodsNumList.getTotalRow());//商品总条数
+        return resultMap;
+    }
+
+
 }

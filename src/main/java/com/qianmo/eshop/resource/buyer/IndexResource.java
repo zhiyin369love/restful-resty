@@ -7,9 +7,11 @@ import cn.dreampie.route.annotation.POST;
 import com.qianmo.eshop.common.CommonUtils;
 import com.qianmo.eshop.common.ConstantsUtils;
 import com.qianmo.eshop.common.SessionUtil;
+import com.qianmo.eshop.common.YamlRead;
 import com.qianmo.eshop.model.buyer.buyer_seller;
 import com.qianmo.eshop.model.cart.cart;
 import com.qianmo.eshop.model.order.order_info;
+import com.qianmo.eshop.model.order.order_user;
 import com.qianmo.eshop.model.user.invite_verify_code;
 import com.qianmo.eshop.model.user.user_info;
 import com.qianmo.eshop.resource.z_common.ApiResource;
@@ -139,5 +141,17 @@ public class IndexResource extends ApiResource {
             resultMap.put("total", null);
             return resultMap;
         }*/
+    }
+
+
+    /**
+     * 根据验证码获取经销商信息
+     */
+    @GET("/allseller")
+    public List getAllSellerInfo() {
+        long buyerId = SessionUtil.getUserId();
+        //获取当前用户绑定的经销商信息sql
+        String allSellerInfoSql = YamlRead.getSQL("getAllSellerInfo", "buyer/buyer");
+        return buyer_seller.dao.find(allSellerInfoSql, buyerId, ConstantsUtils.BUYER_SELLER_STATUS_BIDING);
     }
 }

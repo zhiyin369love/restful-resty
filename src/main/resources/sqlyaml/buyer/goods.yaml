@@ -47,3 +47,15 @@ findGoods:
   SELECT a.id goods_id,a.name goods_name,a.num goods_num,a.category_id,a.details,a.form_id,a.generic_name,a.ingredient,a.seller_id,a.license_num,a.main_pic_url,a.pic_url_list,a.producer,a.standard,a.seller_id,b.name form_name
     FROM goods_info a
     LEFT JOIN goods_form b ON a.form_id = b.id WHERE a.id=?
+
+
+#获取绑定的经销商商品编号
+findSellerGoodsNum:
+  SELECT DISTINCT b.num goods_num FROM (SELECT id sku_id,goods_num,list_price price
+    FROM goods_sku a WHERE a.status = 1
+    AND NOT EXISTS (SELECT 1 FROM goods_sku_price b WHERE b.sku_id = a.id AND buyer_id=? AND b.seller_id = ?)
+    UNION ALL SELECT sku_id,goods_num,price FROM goods_sku_price WHERE status = 1 AND buyer_id=? AND seller_id = ?) a,
+    goods_info b,buyer_seller c,user_info d,goods_sku e
+    WHERE a.goods_num = b.num AND a.sku_id = e.id AND d.deleted_at IS NULL AND e.deleted_at IS NULL
+    AND b.seller_id = c.seller_id AND b.seller_id = d.id AND c.status = 1 AND c.buyer_id = ? AND c.seller_id = ?
+    AND e.status = 1
