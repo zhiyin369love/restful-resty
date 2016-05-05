@@ -148,10 +148,14 @@ public class IndexResource extends ApiResource {
      * 根据验证码获取经销商信息
      */
     @GET("/allseller")
-    public List getAllSellerInfo() {
+    public Map getAllSellerInfo() {
         long buyerId = SessionUtil.getUserId();
         //获取当前用户绑定的经销商信息sql
         String allSellerInfoSql = YamlRead.getSQL("getAllSellerInfo", "buyer/buyer");
-        return buyer_seller.dao.find(allSellerInfoSql, buyerId, ConstantsUtils.BUYER_SELLER_STATUS_BIDING);
+        List<buyer_seller> buyerSellerList =  buyer_seller.dao.find(allSellerInfoSql, buyerId, ConstantsUtils.BUYER_SELLER_STATUS_BIDING);
+        Map resultMap = new HashMap();
+        resultMap.put("code",ConstantsUtils.HTTP_STATUS_OK_200);
+        resultMap.put("sellerList",buyerSellerList);
+        return resultMap;
     }
 }
