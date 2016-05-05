@@ -3,6 +3,8 @@ ALTER TABLE user_info ADD id_card VARCHAR(20) DEFAULT NULL COMMENT '身份证号
       ADD id_card_url VARCHAR (64) DEFAULT NULL COMMENT '身份证图片地址',
       ADD business_license_url VARCHAR (64) DEFAULT NULL COMMENT '营业执照图片地址',
       ADD annual_sales VARCHAR (100) DEFAULT NULL COMMENT '年度营业额',
+      ADD longitude VARCHAR (64) DEFAULT NULL COMMENT '经度',
+      ADD latitude VARCHAR (64) DEFAULT NULL COMMENT '纬度'
 
 <!--buyer_receive_address增加是否为默认地址、经度、纬度字段-->
 ALTER TABLE buyer_receive_address ADD isdefault tinyint(1) DEFAULT NULL COMMENT '是否为默认地址',

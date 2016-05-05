@@ -8,3 +8,26 @@ getSellerIdByVerifyCode:
   select   a.user_id,a.id,a.status
      from  invite_verify_code a
      where a.code = ?  and  a.type = ?
+
+
+getAllSellerInfo:
+   SELECT
+     a.id,
+     a.username phone,
+     a.name,
+     a.nickname,
+     CONCAT(
+       a.province_name,
+       a.city_name,
+       a.county_name,
+       a.town_name,
+       a.address
+    ) address,
+      a.longitude,
+      a.latitude
+  FROM
+    user_info a
+   LEFT JOIN buyer_seller b
+    ON a.id = b.seller_id
+    AND b.buyer_id = ?
+    AND b.status = ?
