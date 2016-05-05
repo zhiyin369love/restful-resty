@@ -125,7 +125,7 @@ public class IndexResource extends ApiResource {
             //待收货订单
             long receiveWait = order_info.dao.findFirst("SELECT COUNT(*) cn FROM order_info a  LEFT JOIN order_user b" +
                     "                ON a.num = b.order_num" +
-                    "                WHERE  a.status = ? and b.order_num IS NOT NULL AND b.buyer_id = ? ", ConstantsUtils.ORDER_INFO_STATUS_WAIT_RECEIVE, buyer_id).<Long>get("cn");
+                    "                WHERE  a.status in ( ?,?) and b.order_num IS NOT NULL AND b.buyer_id = ? ", ConstantsUtils.ORDER_INFO_STATUS_WAIT_RECEIVE, ConstantsUtils.ORDER_INFO_STATUS_ALREADY, buyer_id).<Long>get("cn");
             total.put("todo_pay_count", payWait);
             total.put("todo_receive_count", receiveWait);
             resultMap.put("total", total);
