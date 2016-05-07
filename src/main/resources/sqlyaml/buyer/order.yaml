@@ -13,7 +13,7 @@ getFieldBuyerInfoAll:
   where oi.num is not null and  oi.id = ?
 
 getFieldBuyerReceiveAll:
-  select bra.address as receive_address,bra.name as receive_name,bra.phone as receive_phone from buyer_receive_address bra LEFT JOIN order_info oi on bra.id = oi.buyer_receive_id where oi.id = ?
+  select  CONCAT (bra.province_name ,bra.city_name,bra.county_name,bra.town_name, bra.address) AS receive_address,bra.name as receive_name,bra.phone as receive_phone from buyer_receive_address bra LEFT JOIN order_info oi on bra.id = oi.buyer_receive_id where oi.id = ?
 
 getFirldGoodsInfoAll:
    select gi.details,gi.form_id,gi.generic_name,gi.id as goods_id,gi.name as goods_name,gi.ingredient,gi.license_num,gi.main_pic_url,gi.num as number,gi.pic_url_list,gi.producer,gi.standard,gi.category_id

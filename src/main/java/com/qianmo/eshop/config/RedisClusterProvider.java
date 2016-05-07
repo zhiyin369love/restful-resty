@@ -147,7 +147,6 @@ public class RedisClusterProvider extends CacheProvider {
             }
             cluster.del(groupKeys);
         }
-
     }
 
     private String getRedisKey(String group, String key) {
@@ -190,5 +189,15 @@ public class RedisClusterProvider extends CacheProvider {
             groupKeyList.remove(key);
             cluster.set(gkey, Serializer.serialize(groupKeyList));
         }
+    }
+
+
+    public static void main(String[] args) {
+        RedisClusterProvider provider = new RedisClusterProvider();
+        provider.addCache("testttt","1","123",10);
+        provider.addCache("testttt","2","1234",10);
+        provider.doFlush(new CacheEvent("testttt","tt"));
+        System.out.print(provider.getCache("testttt","1"));
+
     }
 }

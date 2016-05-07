@@ -46,7 +46,7 @@ public class IndexResource extends SellerResource {
         //赊账总数量
         double cancelSum = new credit().getTotalPriceBySellerIdStatus(seller_id, ConstantsUtils.CREDIT_CANCEL_STATUS).<BigDecimal>get("total").doubleValue();
         //客服电话
-        String phone = user_info.dao.findById(seller_id).get("phone");
+        String phone = user_info.dao.findById(seller_id).get("phone")==null?"":user_info.dao.findById(seller_id).get("phone").toString();
         //出售中的商品
         long sellingGoods = getGoodsBySellIdStatus(seller_id, ConstantsUtils.GOODS_SELLING);
         order_info orderInfo = new order_info();

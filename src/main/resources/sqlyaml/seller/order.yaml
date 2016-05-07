@@ -23,7 +23,7 @@ getFileCreditOrderUserAll:
    select  ou.buyer_id,ou.seller_id from order_user ou where ou.order_num = ?
 
 getFieldBuyerReceiveAll:
-  select bra.address as receive_address,bra.name as receive_name,bra.phone as receive_phone from buyer_receive_address bra LEFT JOIN order_info oi on bra.id = oi.buyer_receive_id where oi.id = ?
+  select CONCAT (bra.province_name ,bra.city_name,bra.county_name,bra.town_name, bra.address) AS receive_address,bra.name as receive_name,bra.phone as receive_phone from buyer_receive_address bra LEFT JOIN order_info oi on bra.id = oi.buyer_receive_id where oi.id = ?
 
 getFieldOrderNumAll:
   select cast(num as CHAR) num from order_info where id = ?
