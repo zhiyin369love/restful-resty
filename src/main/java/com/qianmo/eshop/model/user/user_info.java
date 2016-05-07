@@ -115,6 +115,7 @@ public class user_info extends Model<user_info> {
                 if (UserInfo.get("password").toString().equals(DefaultPasswordService.instance().crypto(old_pwd))) {
                     //正确则更新密码
                     UserInfo.set("password", DefaultPasswordService.instance().crypto(new_pwd)).update();
+                    Subject.refresh();
                     Subject.logout();
                 } else {
                     return false;
@@ -146,6 +147,7 @@ public class user_info extends Model<user_info> {
                     //正确则更新密码
                     if(UserInfo.set("password", DefaultPasswordService.instance().crypto(pwd)).update())
                     {
+                        Subject.refresh();
                         inviteVerifyCode.delete();
                     }
                 }

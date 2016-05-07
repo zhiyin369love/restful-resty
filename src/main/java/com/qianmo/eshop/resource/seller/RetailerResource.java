@@ -63,27 +63,40 @@ public class RetailerResource extends ApiResource {
                 for (JSONObject userInfo : accounts) {
                     phone = (String) userInfo.get("phone");
                     remark = (String) userInfo.get("remark");
+                    long isBind = buyer_seller.dao.findFirst(" select count(1) cn from buyer_seller a left join user_info b on a.buyer_id = b.id where b.username = ? and b.deleted_at is null and a.seller_id = ? and a.status = 1 ",phone,seller_id).<Long>get("cn");
+                    if(isBind > 0) {
+                        resultContent += phone + "已经绑定;";
+                        continue;
+                    }
                     code = CommonUtils.getRandNum(6);
                     invite_verify_code verifyCode = invite_verify_code.dao.findFirstBy(" user_id = ? and phone = ? and type = ?  ", seller_id, phone, ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE);
                     //如果没有发送过邀请码，那么第一次需要保存
                     if (verifyCode == null) {
-                        returnResult = (JSONObject) JSON.parse(SmsApi.sendSms(SmsApi.APIKEY, content.replace("?", code), phone));
-                        //if (returnResult.get("msg") != null && "OK".equals(returnResult.get("msg"))) {
                         invite_verify_code.dao.set("area_id", ConstantsUtils.ALL_AREA_ID).set("code", code).set("user_id", seller_id).set("type", ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE).set("status", ConstantsUtils.INVITE_CODE_STATUS_SUCCESSED)
                                 .set("expire_time", DateUtils.getDateString(afterOneDay, DateUtils.format_yyyyMMddHHmmss)).set("remark", remark).set("phone", phone).save();
+                        returnResult = (JSONObject) JSON.parse(SmsApi.sendSms(SmsApi.APIKEY, content.replace("?", code), phone));
+                        //if (returnResult.get("msg") != null && "OK".equals(returnResult.get("msg"))) {
                         // }
                     } else {
                         //如果邀请码在一天有效期内，暂时就不给发
                         if (DateUtils.formatDate(verifyCode.get("expire_time").toString(), DateUtils.format_yyyyMMddHHmmss).getTime() > System.currentTimeMillis()) {
                             return CommonUtils.getCodeMessage(false, "邀请码在一天有效期内暂时不发送");
                         } else {
+                            if(StringUtils.isEmpty(remark)) {
+                                verifyCode.set("code", code)
+                                        .set("expire_time", DateUtils.getDateString(afterOneDay, DateUtils.format_yyyyMMddHHmmss))
+                                        .set("status", ConstantsUtils.INVITE_CODE_STATUS_SUCCESSED)
+                                        .update();
+                            } else {
+                                verifyCode.set("code", code)
+                                        .set("expire_time", DateUtils.getDateString(afterOneDay, DateUtils.format_yyyyMMddHHmmss))
+                                        .set("status", ConstantsUtils.INVITE_CODE_STATUS_SUCCESSED)
+                                        .set("remark",remark)
+                                        .update();
+                            }
                             //如果在一天有效期外，那么就需要发送，并且update  invite_verify_code这张表
                             returnResult = (JSONObject) JSON.parse(SmsApi.sendSms(SmsApi.APIKEY, content.replace("?", code), phone));
                             //if (returnResult.get("msg") != null && "OK".equals(returnResult.get("msg"))) {
-                            verifyCode.set("code", code)
-                                    .set("expire_time", DateUtils.getDateString(afterOneDay, DateUtils.format_yyyyMMddHHmmss))
-                                    .set("status", ConstantsUtils.INVITE_CODE_STATUS_SUCCESSED)
-                                    .update();
                             //}
                         }
                     }
@@ -180,13 +193,11 @@ public class RetailerResource extends ApiResource {
      * 获取经销商下的零售商信息
      *
      * @param buyer_name 零售商名称
-     * @param name       用户名称
      * @param page_start 第几条开始
      * @param page_step  返回多少条
-     * @param phone      手机号
      */
     @GET
-    public HashMap getRetailerList(String buyer_name, String name, Integer page_start, Integer page_step, String phone, Integer status) {
+    public HashMap getRetailerList(String buyer_name, Integer page_start, Integer page_step, Integer status) {
         HashMap<String, Object> resultMap = new HashMap<String, Object>();
         List<invite_verify_code> inviteVerifyCodes = new ArrayList<invite_verify_code>();
         List<HashMap> buyerSellerResultList = new ArrayList<HashMap>();

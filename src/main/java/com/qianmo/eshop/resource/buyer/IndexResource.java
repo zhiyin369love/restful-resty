@@ -137,6 +137,8 @@ public class IndexResource extends ApiResource {
             resultMap.put("total", total);
         }
         return resultMap;
+        //}
+
         /*} catch (Exception e) {
             resultMap.put("total", null);
             return resultMap;

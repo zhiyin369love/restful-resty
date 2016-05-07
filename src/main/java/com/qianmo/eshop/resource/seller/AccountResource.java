@@ -1,10 +1,8 @@
 package com.qianmo.eshop.resource.seller;
 
 
-import cn.dreampie.common.http.UploadedFile;
 import cn.dreampie.orm.page.Page;
 import cn.dreampie.route.annotation.*;
-import cn.dreampie.route.core.multipart.FILE;
 import com.qianmo.eshop.common.CommonUtils;
 import com.qianmo.eshop.common.ConstantsUtils;
 import com.qianmo.eshop.common.SessionUtil;
@@ -106,6 +104,4 @@ public class AccountResource extends SellerResource {
         }
         return result;
     }
-
-
 }

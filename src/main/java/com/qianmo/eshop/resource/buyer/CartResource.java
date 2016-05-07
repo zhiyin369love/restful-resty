@@ -181,7 +181,8 @@ public class CartResource extends BuyerResource {
                     //卖家id
                     cartResult.put("seller_id", tempCart.get("seller_id"));
                     //卖家名称
-                    cartResult.put("seller_name", tempCart.get("seller_name"));
+                    String SellerName = user_info.dao.findById(tempCart.get("seller_id")).get("nickname");
+                    cartResult.put("seller_name", SellerName);
                     //商品列表
                     cartResult.put("goods_list", goodInfoList);
                     resultCartList.add(cartResult);

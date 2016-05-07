@@ -5,7 +5,6 @@ package com.qianmo.eshop.config;
  */
 public enum ValidateRule {
     userId("required,num,maxlength=18,minlength=1");
-
     private String checkRegx;
 
     private ValidateRule(String value) {
