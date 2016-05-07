@@ -27,7 +27,7 @@ public class buyer_seller extends Model<buyer_seller> {
         if (code != null && buyer_id != 0 && code.<Boolean>get("status") == true) {
             Long seller_Id = code.<Long>get("user_id");
             String phone = user_info.dao.findById(buyer_id).get("username");
-            if(!CommonUtils.isEmpty(phone)) {
+            if(!CommonUtils.isEmpty(phone) && phone.equals(code.get("phone").toString())) {
             //查看是否已经绑定过
               buyer_seller buyerSeller = buyer_seller.dao.unCache().findFirstBy("buyer_id = ? and seller_id = ?", buyer_id, seller_Id);
               if (buyerSeller == null) {
