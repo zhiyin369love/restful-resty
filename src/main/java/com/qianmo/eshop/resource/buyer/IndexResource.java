@@ -81,7 +81,7 @@ public class IndexResource extends ApiResource {
             resultMap.put("seller_info", sellInfo);
         } else {
             //如果找不到，返回空
-            resultMap.put("seller_info", null);
+            return CommonUtils.getCodeMessage(false, "邀请码不存在");
         }
         return resultMap;
         /*} catch (Exception e) {
