@@ -64,38 +64,76 @@ public class CartResource extends BuyerResource {
         List<cart> carts = new ArrayList<cart>();
         if (goods != null && goods.size() > 0) {
             for (Map good : goods) {
-                cart tempCart = new cart();
-                //买家id
-                tempCart.set("buyer_id", buyer_id);
-                //商品id
-                tempCart.set("goods_num", good.get("goods_num"));
-                //商品型号id
-                tempCart.set("goods_sku_id", good.get("goods_sku_id"));
-                cart cartTemp = cart.dao.findFirstBy(" goods_sku_id = ? and buyer_id = ? ", good.get("goods_sku_id"), buyer_id);
-                if (cartTemp != null) {
-                    long cartCounts = Long.valueOf(cartTemp.get("goods_sku_count").toString()) + Long.valueOf(good.get("goods_sku_count").toString());
-                    cartTemp.set("goods_sku_count", cartCounts).update();
-                } else {
-                    //订购数量
-                    tempCart.set("goods_sku_count", good.get("goods_sku_count"));
-                    //卖家id
-                    long seller_id = Long.valueOf(good.get("seller_id").toString());
-                    tempCart.set("seller_id", seller_id);
-                    //卖家name
-                    tempCart.set("seller_name", user_info.dao.findById(seller_id).get("nickname"));
-                    goods_sku goodsSku = goods_sku.dao.findById(good.get("goods_sku_id"));
-                    //商品规格状态
-                    tempCart.set("status", goodsSku.get("status"));
-                    //区域id
-                    tempCart.set("area_id", ConstantsUtils.ALL_AREA_ID);
-                    //cart.dao.save(tempCart);
-                    carts.add(tempCart);
+                goods_info goodsInfo = goods_info.dao.findGoodsInfo(buyer_id,
+                        Long.parseLong(good.get("goods_sku_id").toString()));
+                //判断该规格商品是否可购买
+                if (goodsInfo!=null){
+                    cart tempCart = new cart();
+                    //买家id
+                    tempCart.set("buyer_id", buyer_id);
+                    //商品id
+                    tempCart.set("goods_num", good.get("goods_num"));
+                    //商品型号id
+                    tempCart.set("goods_sku_id", good.get("goods_sku_id"));
+                    cart cartTemp = cart.dao.findFirstBy(" goods_sku_id = ? and buyer_id = ? ", good.get("goods_sku_id"), buyer_id);
+                    if (cartTemp != null) {
+                        long cartCounts = Long.valueOf(cartTemp.get("goods_sku_count").toString()) + Long.valueOf(good.get("goods_sku_count").toString());
+                        cartTemp.set("goods_sku_count", cartCounts).update();
+                    } else {
+                        //订购数量
+                        tempCart.set("goods_sku_count", good.get("goods_sku_count"));
+                        //卖家id
+                        long seller_id = Long.valueOf(good.get("seller_id").toString());
+                        tempCart.set("seller_id", seller_id);
+                        //卖家name
+                        tempCart.set("seller_name", user_info.dao.findById(seller_id).get("nickname"));
+                        //商品规格状态
+                        tempCart.set("status",ConstantsUtils.RELEASE_STATUS_ON);
+                        //区域id
+                        tempCart.set("area_id", ConstantsUtils.ALL_AREA_ID);
+                        carts.add(tempCart);
+                    }
                 }
+//                cart tempCart = new cart();
+//                //买家id
+//                tempCart.set("buyer_id", buyer_id);
+//                //商品id
+//                tempCart.set("goods_num", good.get("goods_num"));
+//                //商品型号id
+//                tempCart.set("goods_sku_id", good.get("goods_sku_id"));
+//                cart cartTemp = cart.dao.findFirstBy(" goods_sku_id = ? and buyer_id = ? ", good.get("goods_sku_id"), buyer_id);
+//                if (cartTemp != null) {
+//                    long cartCounts = Long.valueOf(cartTemp.get("goods_sku_count").toString()) + Long.valueOf(good.get("goods_sku_count").toString());
+//                    cartTemp.set("goods_sku_count", cartCounts).update();
+//                } else {
+//                    //订购数量
+//                    tempCart.set("goods_sku_count", good.get("goods_sku_count"));
+//                    //卖家id
+//                    long seller_id = Long.valueOf(good.get("seller_id").toString());
+//                    tempCart.set("seller_id", seller_id);
+//                    //卖家name
+//                    tempCart.set("seller_name", user_info.dao.findById(seller_id).get("nickname"));
+//                    goods_sku goodsSku = goods_sku.dao.findById(good.get("goods_sku_id"));
+//                    //商品规格状态
+//                    tempCart.set("status", goodsSku.get("status"));
+//                    //区域id
+//                    tempCart.set("area_id", ConstantsUtils.ALL_AREA_ID);
+//                    //cart.dao.save(tempCart);
+//                    carts.add(tempCart);
+//                }
             }
+            System.out.println(CommonUtils.getCodeMessage(false,"该订单商品已下架，无法加入购物车"));
             if (carts.size() > 0) {
                 cart.dao.save(carts);
+                if(carts.size()==goods.size()){
+                    return CommonUtils.getCodeMessage(true,"该订单商品已全部加入购物车");
+                }else{
+                    return CommonUtils.getCodeMessage(true,"该订单未下架的商品已加入购物车");
+                }
+            } else {
+                return CommonUtils.getCodeMessage(false,"该订单商品已下架，无法加入购物车");
             }
-            return setResult("添加商品到购物车成功");
+
         } else {
             return CommonUtils.getCodeMessage(false, "输入参数有误");
         }
