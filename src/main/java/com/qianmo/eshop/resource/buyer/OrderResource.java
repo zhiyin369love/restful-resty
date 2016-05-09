@@ -1,8 +1,6 @@
 package com.qianmo.eshop.resource.buyer;
 
-import cn.dreampie.common.http.result.HttpStatus;
 import cn.dreampie.orm.page.FullPage;
-import cn.dreampie.orm.page.Page;
 import cn.dreampie.orm.transaction.Transaction;
 import cn.dreampie.route.annotation.API;
 import cn.dreampie.route.annotation.GET;
@@ -158,13 +156,17 @@ public class OrderResource extends BuyerResource {
             case ConstantsUtils.ORDER_OP_BUYER_AGAIN:  //5再买一次  添加一次购物车
                 CartResource cartResource = new CartResource();
                 result = cartResource.addCartGoods(goods);
-                if("200".equals(result.get("code").toString())) {
-                    isSuccess = true;
-                }
+//                if("200".equals(result.get("code").toString())) {
+                isSuccess = true;
+//                }
                 break;
         }
         if (isSuccess) {
-            return setResult("操作订单成功");
+            if (result !=null && result.size()>0) {
+                return result;
+            } else {
+                return setResult("操作订单成功");
+            }
         } else {
             return CommonUtils.getCodeMessage(false,"操作订单失败");
         }
