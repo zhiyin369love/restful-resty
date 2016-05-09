@@ -53,5 +53,14 @@ findPriceCount:
 
 #查询经销商下所有零售商总数
 findAllUserCount:
-  SELECT count(a.id) count FROM buyer_seller a,user_info b WHERE a.seller_id = ? AND a.status = 1
-    AND a.deleted_at is null AND a.buyer_id = b.id AND b.deleted_at is null
+  SELECT count(a.id) count FROM buyer_seller a,user_info b WHERE a.seller_id = ? AND a.status = 1 AND a.deleted_at is  null
+    AND a.buyer_id = b.id AND b.deleted_at is null
+
+#查询商品或规格价格信息
+findGoodsSkuPrice:
+  select IFNULL(IFNULL(b.price,a.list_price),0) price from goods_sku a
+  left outer join goods_sku_price b on a.goods_num = b.goods_num and a.id = b.sku_id and b.status = 1
+  WHERE
+  a.deleted_at is null and
+
+

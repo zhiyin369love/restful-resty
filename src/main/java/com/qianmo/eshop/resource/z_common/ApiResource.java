@@ -7,11 +7,9 @@ import cn.dreampie.orm.transaction.Transaction;
 import cn.dreampie.route.annotation.*;
 import cn.dreampie.route.core.Resource;
 import cn.dreampie.security.DefaultPasswordService;
-import cn.dreampie.security.Principal;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.qianmo.eshop.common.*;
-import com.qianmo.eshop.model.goods.goods_info;
 import com.qianmo.eshop.model.user.invite_verify_code;
 import com.qianmo.eshop.model.user.sms_template;
 import com.qianmo.eshop.model.user.user_info;
@@ -21,7 +19,6 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 
 /**
@@ -43,9 +40,8 @@ public class ApiResource extends Resource {
         //调用登录方法
         try {
             Subject.login(username, pwd, remember_me);
-        }
-        catch (Exception ex){
-            result = CommonUtils.getCodeMessage(false,"用户名密码错误");
+        } catch (Exception ex) {
+            result = CommonUtils.getCodeMessage(false, "用户名密码错误");
             return result;
         }
         //获取缓存是否有用户信息来判断是否登录成功
@@ -82,9 +78,9 @@ public class ApiResource extends Resource {
     public WebResult updatePwd(String old_pwd, String new_pwd, String confirm_pwd) {
         Long id = SessionUtil.getUserId();
         if (user_info.dao.updatePwd(id, confirm_pwd, new_pwd, old_pwd)) {
-            return new WebResult<Map<String,Object>>(HttpStatus.OK, Maper.<String, Object>of("code", HttpStatus.OK.getCode(), "message", "修改成功"));
+            return new WebResult<Map<String, Object>>(HttpStatus.OK, Maper.<String, Object>of("code", HttpStatus.OK.getCode(), "message", "修改成功"));
         } else {
-            return new WebResult<Map<String,Object>>(HttpStatus.OK, Maper.<String, Object>of("code", HttpStatus.INTERNAL_SERVER_ERROR.getCode(), "message", "修改失败"));
+            return new WebResult<Map<String, Object>>(HttpStatus.OK, Maper.<String, Object>of("code", HttpStatus.INTERNAL_SERVER_ERROR.getCode(), "message", "修改失败"));
         }
     }
 
@@ -121,10 +117,17 @@ public class ApiResource extends Resource {
         String sign;
 
         if (op.equals(ConstantsUtils.INVITE_VERIFY_CODE_TYPE_REGISTER)) {
+            //判断手机号是否存在后,判断是否已注册
+            if (user_info.dao.findBy("username = ? ", phone).size() > 0) {
+                return new WebResult<HashMap<String, String>>(HttpStatus.OK, CommonUtils.getCodeMessage(false, "该号码已注册"));
+            }
             sms_template model = sms_template.dao.findById(ConstantsUtils.INVITE_VERIFY_CODE_TYPE_REGISTER);
             content = model.get("content");
             sign = model.get("sign");
         } else {
+            if (user_info.dao.findBy("username = ? ", phone).size() == 0) {
+                return new WebResult<HashMap<String, String>>(HttpStatus.OK, CommonUtils.getCodeMessage(false, "该号码未注册"));
+            }
             sms_template model = sms_template.dao.findById(ConstantsUtils.INVITE_VERIFY_CODE_TYPE_RESET);
             content = model.get("content");
             sign = model.get("sign");
@@ -150,12 +153,12 @@ public class ApiResource extends Resource {
                 resultContent += phone + "短信发送失败";
             }
             if (!"".equals(resultContent)) {
-                return new WebResult<HashMap<String,String>>(HttpStatus.OK, CommonUtils.getCodeMessage(false,resultContent));
+                return new WebResult<HashMap<String, String>>(HttpStatus.OK, CommonUtils.getCodeMessage(false, resultContent));
             } else {
-                return new WebResult<HashMap<String,String>>(HttpStatus.OK, CommonUtils.getCodeMessage(true,"发送验证码成功"));
+                return new WebResult<HashMap<String, String>>(HttpStatus.OK, CommonUtils.getCodeMessage(true, "发送验证码成功"));
             }
         } else {
-            return new WebResult<HashMap<String,String>>(HttpStatus.OK, CommonUtils.getCodeMessage(false,"输入参数有误"));
+            return new WebResult<HashMap<String, String>>(HttpStatus.OK, CommonUtils.getCodeMessage(false, "输入参数有误"));
         }
 
     }
@@ -190,18 +193,16 @@ public class ApiResource extends Resource {
                             .set("isbuyer", 0);
                     if (saveUserInfo.save()) {
                         //result写入注册成功信息
-                        if(invite_verify_code.dao.deleteBy("phone = ? and code = ? and type = 1",username,code))
-                        {
-                            result = CommonUtils.getCodeMessage(true,"注册成功");
+                        if (invite_verify_code.dao.deleteBy("phone = ? and code = ? and type = 1", username, code)) {
+                            result = CommonUtils.getCodeMessage(true, "注册成功");
                             //注册成功后调用登录
                             Subject.login(username, new_pwd, true);
                         }
                     }
                 }
             }
-        }
-        else{
-            result = CommonUtils.getCodeMessage(false,"该用户已注册!");
+        } else {
+            result = CommonUtils.getCodeMessage(false, "该用户已注册!");
         }
         return new WebResult<Map<String, Object>>(HttpStatus.OK, result);
     }

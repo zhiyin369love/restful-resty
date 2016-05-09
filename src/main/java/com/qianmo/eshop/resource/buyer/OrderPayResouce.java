@@ -48,7 +48,7 @@ public class OrderPayResouce extends BuyerResource {
         //如果id不为空值，则需要根据id去查找
         if (id != null && id != 0) {
             sellPayList = new ArrayList<seller_pay>();
-            sellPayList.add(seller_pay.dao.findById(id));
+            sellPayList.add(seller_pay.dao.findFirstBy(" pay_id = ? ", id));
         } else {
             sellPayList = seller_pay.dao.find(getPaySql, seller_id);
         }

@@ -1,8 +1,6 @@
 package com.qianmo.eshop.resource.buyer;
 
-import cn.dreampie.common.http.result.HttpStatus;
 import cn.dreampie.orm.page.FullPage;
-import cn.dreampie.orm.page.Page;
 import cn.dreampie.orm.transaction.Transaction;
 import cn.dreampie.route.annotation.API;
 import cn.dreampie.route.annotation.GET;
@@ -158,13 +156,17 @@ public class OrderResource extends BuyerResource {
             case ConstantsUtils.ORDER_OP_BUYER_AGAIN:  //5再买一次  添加一次购物车
                 CartResource cartResource = new CartResource();
                 result = cartResource.addCartGoods(goods);
-                if("200".equals(result.get("code").toString())) {
-                    isSuccess = true;
-                }
+//                if("200".equals(result.get("code").toString())) {
+                isSuccess = true;
+//                }
                 break;
         }
         if (isSuccess) {
-            return setResult("操作订单成功");
+            if (result !=null && result.size()>0) {
+                return result;
+            } else {
+                return setResult("操作订单成功");
+            }
         } else {
             return CommonUtils.getCodeMessage(false,"操作订单失败");
         }
@@ -302,8 +304,10 @@ public class OrderResource extends BuyerResource {
         String num = "";
         String msg = "";
         //遍历购物车
+        List<order_goods> orderGoodList = new ArrayList<order_goods>();
         if (results != null && results.size() > 0) {
             boolean isValid = false;
+            num = CodeUtils.code(dateFormat.format(date), ConstantsUtils.ORDER_NUM_TYPE);
             for (cart cart : results) {
                 //商品单价
                 long goodsSkuId = cart.get("goods_sku_id");
@@ -314,7 +318,6 @@ public class OrderResource extends BuyerResource {
                     continue;
                 }
                 isValid = true;
-                num = CodeUtils.code(dateFormat.format(date), ConstantsUtils.ORDER_NUM_TYPE);
                 String sqlprice = YamlRead.getSQL("getBuyerPrice", "buyer/order");
                 goods_sku_price results_goods = goods_sku_price.dao.findFirst(sqlprice, cart.get("buyer_id"), cart.get("seller_id"), cart.get("goods_sku_id"), cart.get("goods_sku_id"));
                 Integer goods_sku_count = cart.get("goods_sku_count");
@@ -322,9 +325,12 @@ public class OrderResource extends BuyerResource {
                 BigDecimal single_total_price = new BigDecimal(goods_sku_count).multiply(goods_sku_price);
                 total_price = total_price.add(single_total_price);
                 //插入订单商品表和订单用户表
-                new order_goods().set("area_id", cart.get("area_id")).set("goods_num", cart.get("goods_num")).set("sku_id", cart.get("goods_sku_id")).set("order_num", num).set("goods_sku_price", goods_sku_price).set("goods_sku_count", cart.get("goods_sku_count")).set("single_total_price", single_total_price).save();
+                order_goods orderGoods = new order_goods();
+                orderGoods.set("area_id", cart.get("area_id")).set("goods_num", cart.get("goods_num")).set("sku_id", cart.get("goods_sku_id")).set("order_num", num).set("goods_sku_price", goods_sku_price).set("goods_sku_count", cart.get("goods_sku_count")).set("single_total_price", single_total_price);
+                orderGoodList.add(orderGoods);
             }
             if(isValid) {
+                order_goods.dao.save(orderGoodList);
                 cart.dao.deleteBy("id in (" + cart_list + ")");
                 new order_user().set("area_id", ConstantsUtils.ALL_AREA_ID).set("order_num", num).set("buyer_id", buyer_id).set("seller_id", seller_id).save();
                 new order_info().set("area_id", ConstantsUtils.ALL_AREA_ID).set("num", num).set("status", ConstantsUtils.ORDER_INFO_STATUS_CREATED).set("pay_status", ConstantsUtils.ORDER_PAYMENT_STATUS_WAITE).set("total_price", total_price).set("buyer_receive_id", buyer_receive_id).set("pay_type_id", ConstantsUtils.PAY_TYPE_INT_DEFAULT).save();

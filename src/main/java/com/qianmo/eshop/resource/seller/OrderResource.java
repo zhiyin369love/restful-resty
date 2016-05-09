@@ -99,8 +99,10 @@ public class OrderResource extends SellerResource {
             user_info buyerInfo = user_info.dao.findById(orderUser.get("buyer_id"));
             user_info sellerInfo = user_info.dao.findById(orderUser.get("seller_id"));
             try {
-                SmsApi.sendSms(SmsApi.APIKEY, content.replace("orderNum", order_num.toString()).replace("userName",sellerInfo.get("name").toString())
-                        .replace("phone",sellerInfo.get("phone").toString()), buyerInfo.get("phone").toString());
+                logger.debug(content.replace("orderNum", order_num.toString()).replace("userName",sellerInfo.get("nickname").toString())
+                        .replace("phone",sellerInfo.get("phone").toString()));
+                SmsApi.sendSms(SmsApi.APIKEY, content.replace("orderNum", order_num.toString()).replace("userName",sellerInfo.get("nickname").toString())
+                        .replace("phone",sellerInfo.get("phone").toString()), buyerInfo.get("username").toString());
             } catch (Exception e) {
                 logger.error(order_num.toString() + "::" + buyerInfo.get("phone").toString() + "短信发送失败");
             }
