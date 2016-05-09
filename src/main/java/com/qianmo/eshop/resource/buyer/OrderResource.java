@@ -8,6 +8,7 @@ import cn.dreampie.route.annotation.API;
 import cn.dreampie.route.annotation.GET;
 import cn.dreampie.route.annotation.POST;
 import cn.dreampie.route.annotation.PUT;
+import com.alibaba.druid.sql.visitor.functions.If;
 import com.alibaba.druid.util.StringUtils;
 import com.alibaba.fastjson.JSONObject;
 import com.qianmo.eshop.common.*;
@@ -158,13 +159,17 @@ public class OrderResource extends BuyerResource {
             case ConstantsUtils.ORDER_OP_BUYER_AGAIN:  //5再买一次  添加一次购物车
                 CartResource cartResource = new CartResource();
                 result = cartResource.addCartGoods(goods);
-                if("200".equals(result.get("code").toString())) {
-                    isSuccess = true;
-                }
+//                if("200".equals(result.get("code").toString())) {
+                isSuccess = true;
+//                }
                 break;
         }
         if (isSuccess) {
-            return setResult("操作订单成功");
+            if (result !=null && result.size()>0) {
+                return result;
+            } else {
+                return setResult("操作订单成功");
+            }
         } else {
             return CommonUtils.getCodeMessage(false,"操作订单失败");
         }

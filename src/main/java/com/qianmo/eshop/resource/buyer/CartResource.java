@@ -122,7 +122,6 @@ public class CartResource extends BuyerResource {
 //                    carts.add(tempCart);
 //                }
             }
-            System.out.println(CommonUtils.getCodeMessage(false,"该订单商品已下架，无法加入购物车"));
             if (carts.size() > 0) {
                 cart.dao.save(carts);
                 if(carts.size()==goods.size()){
