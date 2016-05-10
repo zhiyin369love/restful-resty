@@ -6,6 +6,7 @@ import cn.dreampie.route.annotation.GET;
 import cn.dreampie.route.annotation.POST;
 import com.qianmo.eshop.common.CommonUtils;
 import com.qianmo.eshop.common.ConstantsUtils;
+import com.qianmo.eshop.common.DateUtils;
 import com.qianmo.eshop.common.SessionUtil;
 import com.qianmo.eshop.common.YamlRead;
 import com.qianmo.eshop.model.buyer.buyer_seller;
@@ -62,6 +63,10 @@ public class IndexResource extends ApiResource {
         //通过验证码找卖家id
         invite_verify_code code = buyer_seller.dao.getInviteByVerifyCode(bind_code);
         if (code != null) {
+            //判断是否失效
+            if (DateUtils.formatDate(code.get("expire_time").toString(), DateUtils.format_yyyyMMddHHmmss).getTime() < System.currentTimeMillis()) {
+                return CommonUtils.getCodeMessage(false, "邀请码失效");
+            }
             Long seller_Id = code.<Long>get("user_id");
            /* String getUserInfoSql = YamlRead.getSQL("findUserInfoById","buyer/order");
             user_info  userTemp = user_info.dao.findFirst(getUserInfoSql,seller_Id);
@@ -76,7 +81,7 @@ public class IndexResource extends ApiResource {
             resultMap.put("seller_info", sellInfo);
         } else {
             //如果找不到，返回空
-            resultMap.put("seller_info", null);
+            return CommonUtils.getCodeMessage(false, "邀请码不存在");
         }
         return resultMap;
         /*} catch (Exception e) {
