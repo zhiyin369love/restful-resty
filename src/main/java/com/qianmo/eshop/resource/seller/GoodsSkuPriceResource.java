@@ -1,6 +1,5 @@
 package com.qianmo.eshop.resource.seller;
 
-import cn.dreampie.orm.page.FullPage;
 import cn.dreampie.orm.transaction.Transaction;
 import cn.dreampie.route.annotation.API;
 import cn.dreampie.route.annotation.GET;
@@ -11,7 +10,6 @@ import com.qianmo.eshop.bean.user.UserInfo;
 import com.qianmo.eshop.common.CommonUtils;
 import com.qianmo.eshop.common.ConstantsUtils;
 import com.qianmo.eshop.common.SessionUtil;
-import com.qianmo.eshop.common.YamlRead;
 import com.qianmo.eshop.model.buyer.buyer_seller;
 import com.qianmo.eshop.model.goods.goods_sku;
 import com.qianmo.eshop.model.goods.goods_sku_price;
@@ -33,7 +31,6 @@ public class GoodsSkuPriceResource extends GoodsResource {
 
     /**
      * 获取商品价格
-     *
      * @param sku_id           商品规格ID
      * @param sku_price_status 商品规格状态 0：已下架 1：已上架
      * @param name             零售商公司名称或者账号
@@ -43,20 +40,6 @@ public class GoodsSkuPriceResource extends GoodsResource {
      */
     @GET
     public HashMap price(Long sku_id, Integer sku_price_status, String name, Integer page_start, Integer page_step) {
-
-
-//        String sql = YamlRead.getSQL("findUserAndPrice", "seller/goods");
-//        if (sku_price_status==ConstantsUtils.GOODS_SKU_PRICE_BUY_ENBLE) {
-//            sql = sql + " LEFT JOIN goods_sku_price d on a.id = d.buyer_id AND d.status = ?" ;
-//        } else {
-//            sql = sql + " INNER JOIN goods_sku_price d on a.id = d.buyer_id AND d.status = ?";
-//        }
-//        sql = sql + " WHERE b.seller_id = ?";
-//        //判断是否根据账号，公司名称及姓名模糊查询
-//        if (name != null && !"".equals(name)) {
-//            sql = sql + " AND (a.username like '%" + name + "%' or a.nickname like '%"
-//                    + name + "%' or a.name like '%" + name + "%')";
-//        }
         /*
         判断是否有分页信息，如果没有，给定默认值
          */
@@ -64,42 +47,8 @@ public class GoodsSkuPriceResource extends GoodsResource {
             page_start = ConstantsUtils.DEFAULT_PAGE_START;//默认从第1条开始
         if (page_step == null)
             page_step = ConstantsUtils.DEFAULT_PAGE_STEP;//默认返回10条
-
-        String sql = "SELECT a.id buyer_id,a.nickname,CONCAT(a.province_name,a.city_name,a.county_name,a.town_name,a.address) buyer_address FROM user_info a" +
-                " INNER JOIN buyer_seller b on a.id = b.buyer_id WHERE b.seller_id = ?";
-        //判断是否根据账号，公司名称及姓名模糊查询
-        if (name != null && !"".equals(name)) {
-            sql = sql + " AND (a.username like '%" + name + "%' or a.nickname like '%"
-                    + name + "%' or a.name like '%" + name + "%')";
-        }
-        FullPage<user_info> userList =  user_info.dao.fullPaginate(page_start / page_step + 1, page_step,sql,seller_id);
-        List<UserInfo> list = new ArrayList<UserInfo>();
-        String skuSql = "SELECT a.id sku_id,a.name sku_name,a.goods_num,b.id sku_price_id," +
-                "IFNULL(b.price,a.list_price) price,IFNULL(b.status,1) status FROM goods_sku a";
-
-        skuSql = skuSql + " LEFT JOIN goods_sku_price b on a.id = b.sku_id AND b.buyer_id=? WHERE a.id=?" ;
-
-        if(userList!=null && userList.getList().size()>0){
-            for(user_info user:userList.getList()){
-                UserInfo userInfo = new UserInfo();
-                userInfo.setBuyer_id(user.<Long>get("buyer_id"));
-                userInfo.setNickname(user.<String>get("nickname"));
-                userInfo.setBuyer_address(user.<String>get("buyer_address"));
-                goods_sku_price goodsSkuPrice = goods_sku_price.dao.findFirst(skuSql,user.<Long>get("buyer_id"),sku_id);
-                if(Long.valueOf(sku_price_status).equals(goodsSkuPrice.get("status"))){
-                    userInfo.setSku_id(sku_id);
-                    userInfo.setSku_name(goodsSkuPrice.<String>get("sku_name"));
-                    userInfo.setGoods_num(goodsSkuPrice.<Long>get("goods_num"));
-                    if(goodsSkuPrice.get("sku_price_id")!=null){
-                        userInfo.setSku_price_id(goodsSkuPrice.<Long>get("sku_price_id"));
-                    }
-                    userInfo.setSku_price_status(sku_price_status);
-                    userInfo.setPrice(goodsSkuPrice.<BigDecimal>get("price"));
-                    list.add(userInfo);
-                }
-            }
-        }
-//        FullPage<goods_sku_price> userList = goods_sku_price.dao.fullPaginate(page_start / page_step + 1, page_step, sql, sku_id, sku_price_status, seller_id);
+        List<UserInfo> list = user_info.dao.userInfoList(sku_id, sku_price_status,
+                name,page_start,page_step,seller_id);
         HashMap resultMap = new HashMap();
         resultMap.put("goods_price", list);
         resultMap.put("total_count", list.size());
@@ -108,7 +57,6 @@ public class GoodsSkuPriceResource extends GoodsResource {
 
     /**
      * 批量修改商品价格
-     *
      * @param goods_price_list 商品价格列表
      * @param goods_num        商品编号
      * @return
@@ -143,7 +91,6 @@ public class GoodsSkuPriceResource extends GoodsResource {
 
     /**
      * 获取经销商下单个商品所有用户可购买不可购买总数
-     *
      * @param sku_id 商品规格ID
      * @return
      */
@@ -151,19 +98,15 @@ public class GoodsSkuPriceResource extends GoodsResource {
     public List count(Long sku_id) {
         List list = new ArrayList();
         //查询经销商下所有零售商总数
-        long userCount = buyer_seller.dao.queryFirst(YamlRead.getSQL("findAllUserCount", "seller/goods"), seller_id);
+        long userCount = buyer_seller.dao.getUserCount(seller_id);
         //查询不可购买的零售商总数
-        long count = goods_sku_price.dao.queryFirst(YamlRead.getSQL("findPriceCount", "seller/goods"), sku_id,seller_id);
-        /*
-        不可购买
-         */
+        long count = goods_sku_price.dao.getCount(sku_id,seller_id);
+        /*不可购买*/
         HashMap notBuyMap = new HashMap();
         notBuyMap.put("status", ConstantsUtils.GOODS_SKU_PRICE_BUY_DISABLE);
         notBuyMap.put("count", count);
         list.add(notBuyMap);
-        /*
-        可购买
-         */
+        /*可购买*/
         HashMap buyMap = new HashMap();
         buyMap.put("status", ConstantsUtils.GOODS_SKU_PRICE_BUY_ENBLE);
         buyMap.put("count", userCount - count);

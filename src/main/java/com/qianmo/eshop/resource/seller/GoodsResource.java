@@ -7,14 +7,12 @@ import cn.dreampie.route.annotation.*;
 import cn.dreampie.route.core.multipart.FILE;
 import com.alibaba.fastjson.JSONObject;
 import com.qianmo.eshop.bean.goods.GoodsInfo;
-import com.qianmo.eshop.bean.goods.GoodsSku;
 import com.qianmo.eshop.common.*;
 import com.qianmo.eshop.model.goods.goods_info;
 import com.qianmo.eshop.model.goods.goods_sku;
 import com.qianmo.eshop.model.goods.goods_sku_price;
 
 import java.io.File;
-import java.math.BigDecimal;
 import java.util.*;
 
 /**
@@ -40,55 +38,13 @@ public class GoodsResource extends SellerResource {
     @GET
     public HashMap list(String goods_name, Integer goods_status, Integer category_id,
                         Integer sub_category_id, Integer page_start, Integer page_step) {
-        String countSql = "SELECT DISTINCT a.id FROM goods_info a " +
-                "INNER JOIN goods_sku b ON a.num = b.goods_num " +
-                "WHERE a.seller_id = ? AND a.deleted_at IS NULL AND b.deleted_at IS NULL ";
         HashMap resultMap = new HashMap();
-        if (category_id == null) {
-            return resultMap;
-        }
-        /*
-        判断是否有分页信息，如果没有，给定默认值
-         */
-        if (page_start == null) {
-            page_start = ConstantsUtils.DEFAULT_PAGE_START;//默认从第1条开始
-        }
-        if (page_step == null) {
-            page_step = ConstantsUtils.DEFAULT_PAGE_STEP;//默认返回10条
-        }
-        String sql = YamlRead.getSQL("findGoodsInfo", "seller/goods");
-        /*
-        判断是根据一级分类查商品还是二级分类查商品
-         */
-        if (sub_category_id != null && sub_category_id > 0) {
-//            sql = sql + " AND a.category_id=" + sub_category_id;
-            countSql = countSql + " AND a.category_id=" + sub_category_id;
-        } else {
-//            sql = sql + " AND a.category_id in (SELECT id from goods_category where pid=" + category_id + ")";
-            countSql = countSql + " AND a.category_id in (SELECT id from goods_category where pid=" + category_id + ")";
-        }
-        /*
-        判断是否根据商品上下架状态查商品
-         */
-        if (goods_status != null) {
-//            sql = sql + " AND b.status=" + goods_status;
-            countSql = countSql + " AND b.status=" + goods_status;
-        }
-        /*
-        判断是否根据商品名称模糊搜索
-         */
-        if (goods_name != null && !"".equals(goods_name)) {
-//            sql = sql + " AND a.name like '%" + goods_name + "%'";
-            countSql = countSql + " AND a.name like '%" + goods_name + "%'";
-        }
-
+        //获取商品id
+        FullPage<goods_info> idList = goods_info.dao.getGoodsIdList(goods_name,goods_status,category_id,sub_category_id,page_start,page_step,seller_id);
         String goodsIds = "";
-        //查询商品编号
-        FullPage<goods_info> countList = goods_info.dao.fullPaginate(page_start / page_step + 1, page_step,
-                countSql, seller_id);
         //非空判断
-        if (countList != null && countList.getList().size() > 0) {
-            for (goods_info goods : countList.getList()) {
+        if (idList != null && idList.getList().size() > 0) {
+            for (goods_info goods : idList.getList()) {
                 if ("".equals(goodsIds)) {
                     goodsIds = goods.get("id").toString();
                 } else {
@@ -96,92 +52,14 @@ public class GoodsResource extends SellerResource {
                 }
             }
         }
-        List<goods_info> list = null;
-        //如果商品ID不为空时查询商品、规格、价格信息
-        if (!"".equals(goodsIds)) {
-            sql = sql + "  AND a.id in (" + goodsIds + ")";
-            list = goods_info.dao.find(sql, seller_id);
-        }
-
-        HashMap<Long, GoodsInfo> map = new HashMap<Long, GoodsInfo>();
-        //查询结果非空判断
-        if (list != null && list.size() > 0) {
-            for (goods_info goodsInfo : list) {
-                GoodsInfo goods = map.get(goodsInfo.<Long>get("goods_id")); //
-                if (goods == null) {
-                    goods = new GoodsInfo();
-                    goods.setGoods_id(goodsInfo.<Long>get("goods_id"));
-                    goods.setGoods_name(goodsInfo.get("goods_name").toString());
-                    goods.setGoods_num(goodsInfo.<Long>get("goods_num"));
-                    //判断是否有主图
-                    if (goodsInfo.get("main_pic_url") != null) {
-                        goods.setMain_pic_url(goodsInfo.get("main_pic_url").toString());
-                    }
-                    goods.setProducer(goodsInfo.get("producer").toString());
-                    //商品规格信息
-                    List<GoodsSku> skuList = new ArrayList<GoodsSku>();
-                    GoodsSku goodsSku = new GoodsSku();
-                    goodsSku.setSku_id(goodsInfo.<Long>get("sku_id"));
-                    goodsSku.setSku_name(goodsInfo.get("sku_name").toString());
-                    goodsSku.setStatus(goodsInfo.<Integer>get("status"));
-                    //判断是否有价格信息
-                    if (goodsInfo.get("list_price") != null) {
-                        goodsSku.setPrice(goodsInfo.<BigDecimal>get("list_price"));
-                    }
-                    //判断是否有上架时间信息
-                    if (goodsInfo.get("release_date") != null
-                            && goodsInfo.<Integer>get("status") == 1) {
-                        goodsSku.setRelease_date(goodsInfo.get("release_date").toString());
-                    }
-                    goodsSku.setSeller_count(0);
-                    //判断该商品规格是否有售出
-                    if (goodsInfo.get("sell_count") != null) {
-                        goodsSku.setSeller_count(goodsInfo.<Integer>get("sell_count"));
-                    }
-                    skuList.add(goodsSku);
-                    goods.setGoods_sku_list(skuList);
-                } else {
-                    List<GoodsSku> skuList = (List) goods.getGoods_sku_list();
-                    GoodsSku goodsSku = new GoodsSku();
-                    goodsSku.setSku_id(goodsInfo.<Long>get("sku_id"));
-                    goodsSku.setSku_name(goodsInfo.get("sku_name").toString());
-                    goodsSku.setStatus(goodsInfo.<Integer>get("status"));
-                    //判断是否有价格信息
-                    if (goodsInfo.get("list_price") != null) {
-                        goodsSku.setPrice(goodsInfo.<BigDecimal>get("list_price"));
-                    }
-                    //判断是否有上架时间信息
-                    if (goodsInfo.get("release_date") != null
-                            && goodsInfo.<Integer>get("status") == 1) {
-                        goodsSku.setRelease_date(goodsInfo.get("release_date").toString());
-                    }
-                    goodsSku.setSeller_count(0);
-                    //判断该商品规格是否有售出
-                    if (goodsInfo.get("sell_count") != null) {
-                        goodsSku.setSeller_count(goodsInfo.<Integer>get("sell_count"));
-                    }
-                    skuList.add(goodsSku);
-                    goods.setGoods_sku_list(skuList);
-                }
-                map.put(goods.getGoods_id(), goods);
-            }
-        }
-        List<GoodsInfo> goodsInfoList = new ArrayList<GoodsInfo>();
-        //非空判断
-        if (map != null && map.size() > 0) {
-            for (Long goodsId : map.keySet()) {
-                goodsInfoList.add(map.get(goodsId));
-            }
-        }
-
-
+        //获取商品信息
+        List<GoodsInfo> goodsInfoList = goods_info.dao.goodsList(goodsIds,seller_id);
         resultMap.put("goods_list", goodsInfoList);
-        if (countList != null) {
-            resultMap.put("total_count", countList.getTotalRow());
+        if (idList != null) {
+            resultMap.put("total_count", idList.getTotalRow());
         } else {
             resultMap.put("total_count", 0);
         }
-
         return resultMap;
     }
 
@@ -202,8 +80,7 @@ public class GoodsResource extends SellerResource {
         //判断当前登录用户是否有查看该商品的权限
         if (seller_id == goodsInfo.<Long>get("seller_id") && goodsInfo != null) {
             resultMap.put("goods_info", goodsInfo);
-            List<goods_sku> list = goods_sku.dao.find(YamlRead.getSQL("findGoodsSku", "seller/goods"),
-                    goodsInfo.get("goods_num"));
+            List<goods_sku> list = goods_sku.dao.find(YamlRead.getSQL("findGoodsSku", "seller/goods"),goodsInfo.get("goods_num"));
             resultMap.put("goods_sku_list", list);
         }
         return resultMap;
@@ -301,7 +178,6 @@ public class GoodsResource extends SellerResource {
             添加商品规格信息
             */
             List<JSONObject> list = goods.get("goods_sku_list");
-//            List<goods_sku> skuList = new ArrayList<goods_sku>();
             //非空判断
             if (list != null && list.size() > 0) {
                 for (JSONObject obj : list) {
@@ -316,96 +192,15 @@ public class GoodsResource extends SellerResource {
                         goodsSku.set("seller_id", seller_id);
                         goodsSku.save();
                     }
-//                    else {
-//                        goodsSku.set("id",obj.get("sku_id"));
-//                        goodsSku.set("amount", obj.get("sku_amount"));
-//                        goodsSku.set("name", obj.get("sku_name"));
-//                        goodsSku.set("unit_id", obj.get("sku_unit_id"));
-//                        goodsSku.update();
-//                    }
-//                    skuList.add(goodsSku);
                 }
             } else {
                 return CommonUtils.getCodeMessage(false, "请填写商品规格");
             }
-//            goods_sku.dao.save(skuList);
             return CommonUtils.getCodeMessage(true, "修改商品成功");
         } else {
             return CommonUtils.getCodeMessage(false, "修改商品失败");
         }
     }
-
-//    /**
-//     * 编辑商品
-//     *
-//     * @param goods          商品信息
-//     * @param id             商品id
-//     * @param delete_pic_url 删除的图片地址
-//     * @return
-//     */
-//    @PUT("/:id")
-//    @Transaction
-//    public HashMap edit(goods_info goods, Long id, String delete_pic_url) {
-//        /*
-//        修改商品基本信息
-//        */
-//        goods_info info = goods.get("goods_info", goods_info.class);
-//        goods_info goodsInfo = goods_info.dao.findById(id);
-//        if (goodsInfo.<Long>get("seller_id") == seller_id) {
-//            goodsInfo.set("name", info.get("goods_name"));
-//            goodsInfo.update();
-//            /*
-//            删除商品图片
-//            */
-//            if (delete_pic_url != null) {
-//                String[] deletePic = delete_pic_url.split(",");
-//                for (String delete_pic : deletePic) {
-//                    if (delete_pic.indexOf(ConstantsUtils.PIC_DIR) != -1) {
-//                        deleteMainPic(delete_pic.substring(delete_pic.indexOf(ConstantsUtils.PIC_DIR)));
-//                    }
-//                }
-//            }
-//            /*
-//            对商品规格信息的操作
-//            */
-//            List<JSONObject> list = goods.get("goods_sku_list");
-//            if (list != null && list.size() > 0) {
-//                for (JSONObject obj : list) {
-//                    //status为1表示新增商品规格
-//                    if (Integer.parseInt(obj.get("status").toString()) == 1) {
-//                        goods_sku goodsSku = new goods_sku();
-//                        goodsSku.set("status", ConstantsUtils.RELEASE_STATUS_OFF);//商品规格状态(0 未上架 1 已上架)
-//                        goodsSku.set("area_id", ConstantsUtils.ALL_AREA_ID);
-//                        goodsSku.set("goods_num", goodsInfo.get("num"));
-//                        goodsSku.set("amount", obj.get("sku_amount"));
-//                        goodsSku.set("name", obj.get("sku_name"));
-//                        goodsSku.set("unit_id", obj.get("sku_unit_id"));
-//                        goodsSku.set("seller_id", seller_id);
-//                        goodsSku.save();
-//                    } else {
-//                        goods_sku goodsSku = new goods_sku();
-//                        goodsSku.set("id", obj.get("sku_id"));
-//                        switch (Integer.parseInt(obj.get("status").toString())) {
-//                            case 2: //status为2表示修改商品规格
-//                                goodsSku.set("amount", obj.get("sku_amount"));
-//                                goodsSku.set("name", obj.get("sku_name"));
-//                                goodsSku.set("unit_id", obj.get("sku_unit_id"));
-//                                break;
-//                            case 3: //status为3表示删除商品规格
-//                                goodsSku.set("deleted_at", new Date());
-//                                break;
-//                        }
-//                        goodsSku.update();
-//                    }
-//                }
-//            }
-//            return CommonUtils.getCodeMessage(true, "修改商品成功");
-//        } else {
-//            return CommonUtils.getCodeMessage(false, "修改商品失败");
-//        }
-//
-//    }
-
     /**
      * 批量删除商品
      *
@@ -426,11 +221,9 @@ public class GoodsResource extends SellerResource {
                             obj.get("sku_id"), seller_id);
                 } else { //商品规格ID为空时，删除商品及规格信息
                     //删除商品
-                    goods_info.dao.updateColsBy("deleted_at", "num = ? AND seller_id = ?",
-                            new Date(), obj.get("goods_num"), seller_id);
+                    goods_info.dao.updateColsBy("deleted_at", "num = ? AND seller_id = ?", new Date(), obj.get("goods_num"), seller_id);
                     //删除商品规格
-                    goods_sku.dao.updateColsBy("deleted_at", "goods_num=? AND seller_id = ?",
-                            new Date(), obj.get("goods_num"), seller_id);
+                    goods_sku.dao.updateColsBy("deleted_at", "goods_num=? AND seller_id = ?",new Date(), obj.get("goods_num"), seller_id);
                     //删除商品价格
                     goods_sku_price.dao.deleteBy("goods_num=?  AND seller_id = ?",
                             obj.get("goods_num"), seller_id);
@@ -458,10 +251,7 @@ public class GoodsResource extends SellerResource {
         if (seller_id == goods.<Long>get("seller_id")) {
             if (goods_sku_id != null) {  //商品规格ID不为空时，只删除商品规格信息
                 //删除商品规格
-                goods_sku sku = new goods_sku();
-                sku.set("id", goods_sku_id);
-                sku.set("deleted_at", new Date());
-                sku.update();
+                goods_sku.dao.updateColsBy("deleted_at","id=?",new Date(),goods_sku_id);
                 //删除商品规格价格
                 goods_sku_price.dao.deleteBy("sku_id=?", goods_sku_id);
             } else { //商品规格ID为空时，删除商品及规格信息
@@ -469,23 +259,17 @@ public class GoodsResource extends SellerResource {
                 goods.set("deleted_at", new Date());
                 goods.update();
                 //删除商品规格
-                String delSql = YamlRead.getSQL("deleteGoodsSku", "seller/goods");
-                goods_sku.dao.update(delSql, new Date(), goods.get("num"));
+                goods_sku.dao.updateColsBy("deleted_at","goods_num=?",new Date(),goods.get("num"));
                 //删除商品规格价格
                 goods_sku_price.dao.deleteBy("goods_num=?", goods.get("num"));
-
-                /*
-                删除商品主图
-                 */
+                //删除商品主图
                 String mainPicUrl = goods.get("main_pic_url");
                 //判断图片地址是否正确
                 if (mainPicUrl != null && !"".equals(mainPicUrl)
                         && mainPicUrl.indexOf(ConstantsUtils.PIC_DIR) != -1) {
                     deleteMainPic(mainPicUrl.substring(mainPicUrl.indexOf(ConstantsUtils.PIC_DIR)));
                 }
-                /*
-                删除商品详细图片
-                 */
+                //删除商品详细图片
                 String[] picUrl = goods.get("pic_url_list").toString().split(",");
                 //非空判断
                 if (picUrl != null && picUrl.length > 0) {
@@ -570,41 +354,35 @@ public class GoodsResource extends SellerResource {
      * @return
      */
     @PUT("/updown")
+    @Transaction
     public HashMap updown(Integer status, List<JSONObject> goods_sku_list) {
+        boolean flag = false;
         for (JSONObject obj : goods_sku_list) {
-
-            //先判断是否价格不为0
-            String sql = YamlRead.getSQL("findGoodsSkuPrice", "seller/goods");
-            if (obj.get("sku_id") != null) {
-                sql += " a.id = " + obj.get("sku_id").toString();
-            } else {
-                sql += " a.goods_num = '" + obj.get("goods_num").toString() + "'";
-            }
-            Object price = goods_sku_price.dao.queryFirst(sql);
-            if(price == null){
-                continue;
-            }
-            if(price.toString().equals("0.00")){
+            Long goodsNum = obj.getLong("goods_num");
+            Long skuId = obj.getLong("sku_id");
+            String price = goods_sku_price.dao.getSkuPrice(goodsNum,skuId);
+            if(price == null || price.equals("0.00")){
                 if(status == ConstantsUtils.RELEASE_STATUS_ON){
                     continue;
                 }
             }
-            /*
-            当商品规格id不为空时，表示只修改单个商品规格的上下架信息
-            否则表示修改一个或多个商品的商品规格上下架信息
-             */
-            if (obj.get("sku_id") != null) {
-                goods_sku.dao.updateColsBy("status,release_date", "id=? AND seller_id=? AND deleted_at is null",
-                        status, new Date(), obj.get("sku_id"), seller_id);
-            } else {
-                goods_sku.dao.updateColsBy("status,release_date", "goods_num=? AND seller_id=? AND deleted_at is null",
-                        status, new Date(), obj.get("goods_num"), seller_id);
+            flag = goods_sku.dao.updown(skuId,goodsNum,status,seller_id);
+            if (!flag){
+                break;
             }
         }
-        if (status == ConstantsUtils.RELEASE_STATUS_ON) {
-            return CommonUtils.getCodeMessage(true, "商品上架成功");
+        if(flag){
+            if (status == ConstantsUtils.RELEASE_STATUS_ON) {
+                return CommonUtils.getCodeMessage(true, "商品上架成功");
+            } else {
+                return CommonUtils.getCodeMessage(true, "商品下架成功");
+            }
         } else {
-            return CommonUtils.getCodeMessage(true, "商品下架成功");
+            if (status == ConstantsUtils.RELEASE_STATUS_ON) {
+                return CommonUtils.getCodeMessage(false, "商品上架失败");
+            } else {
+                return CommonUtils.getCodeMessage(false, "商品下架失败");
+            }
         }
     }
 
