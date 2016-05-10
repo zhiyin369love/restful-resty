@@ -67,6 +67,10 @@ public class IndexResource extends ApiResource {
             if (DateUtils.formatDate(code.get("expire_time").toString(), DateUtils.format_yyyyMMddHHmmss).getTime() < System.currentTimeMillis()) {
                 return CommonUtils.getCodeMessage(false, "邀请码失效");
             }
+            String phone = user_info.dao.findById(buyer_id).get("username");
+            if(CommonUtils.isEmpty(phone) || !phone.equals(code.get("phone").toString())) {
+                return CommonUtils.getCodeMessage(false, "非本人验证码");
+            }
             Long seller_Id = code.<Long>get("user_id");
            /* String getUserInfoSql = YamlRead.getSQL("findUserInfoById","buyer/order");
             user_info  userTemp = user_info.dao.findFirst(getUserInfoSql,seller_Id);
