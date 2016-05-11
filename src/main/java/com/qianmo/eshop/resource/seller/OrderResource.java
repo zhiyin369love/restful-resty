@@ -114,7 +114,13 @@ public class OrderResource extends SellerResource {
             //order_info.dao.update("update order_info set status = ?  where id = ? ", ConstantsUtils.ORDER_INFO_STATUS_CANCEL, id);
             //isSuccess = new order_remark().set("order_num", order_num).set("op", op).set("details", remark).set("reason", "").set("user_id", orderUser.get("seller_id")).set("area_id",ConstantsUtils.ALL_AREA_ID).save();
             //new order_remark().set("order_num", order_num).set("op", op).set("reason", value).set("user_id", buyer_id).set("area_id",ConstantsUtils.ALL_AREA_ID).set("details","").save();
-        } else if (op == ConstantsUtils.SELLER_ORDER_OP_PAY_GOODS) {
+        }else if (op == ConstantsUtils.SELLER_ORDER_OP_BUYER_CASH_AGREE){
+            //当卖家同意买家货到付款时
+            isSuccess = order_info.dao.update("update order_info set status = ?, pay_status = ?  where num = ? ", ConstantsUtils.ORDER_INFO_STATUS_WAIT_RECEIVE, ConstantsUtils.ORDER_PAYMENT_STATUS_RECEIVED, order_num);
+        }else  if (op == ConstantsUtils.SELLER_ORDER_OP_BUYER_CASH_DISAGREE){
+            //当卖家不同意买家货到付款时
+            isSuccess = order_info.dao.update("update order_info set status = ?, pay_status = ?  where num = ? ", ConstantsUtils.ORDER_INFO_STATUS_CANCEL, ConstantsUtils.ORDER_PAYMENT_STATUS_CANCALED, order_num);    //注：除了要删除订单主表之外，可能还要删除其他关联表，“待开发”
+        }else if (op == ConstantsUtils.SELLER_ORDER_OP_PAY_GOODS) {
             //卖家备注订单
             isSuccess = new order_remark().set("order_num", order_num).set("op", op).set("details", remark).set("user_id", orderUser.get("seller_id")).set("area_id", ConstantsUtils.ALL_AREA_ID).save();
         } else if (op == ConstantsUtils.SELLER_ORDER_OP_PAY_CELL) {
