@@ -1,56 +1,46 @@
 getFieldActivityAll:
-  select a.id,a.fieldid,a.activitytypeid,a.input,a.inputQuantity,a.intro,a.created_at,b.name activitytype
+  select
+    a.id,a.fieldid,a.activitytypeid,a.input,a.inputQuantity,a.intro,a.created_at,b.name activitytype
   from activity_info a
   left outer join activity_type b on a.activitytypeid = b.id
   where a.fieldid = ?
 
 getTotalPriceBySellerIdStatus:
-  select  IF (SUM(a.total_price) IS NULL,0,SUM(a.total_price)) total from  order_info a left join  credit b on a.num = b.order_num
+  select IF (SUM(a.total_price) IS NULL,0,SUM(a.total_price)) total from  order_info a left join  credit b on a.num = b.order_num
   where  b.order_num is not null
   and b.seller_id = ?
   and b.status = ?
 
 getAccountPermissionById:
   SELECT
-  method,id permission_id,name permission_name,pid,url
-  FROM
-  sec_permission
+    method,id permission_id,name permission_name,pid,url
+  FROM  sec_permission
   WHERE
-  id IN (
-  SELECT
-  permission_id
-  FROM
-  sec_role_permission
-  WHERE
-  role_id = (
-  SELECT
-  role_id
-  FROM
-  sec_user_role
-  WHERE
-  user_id = ?
-  )
-  )
+  id IN (SELECT permission_id
+          FROM  sec_role_permission
+          WHERE role_id = (SELECT role_id FROM  sec_user_role WHERE user_id = ?)
+      )
 
 getRetailerSkuPrice:
-  SELECT b.goods_num,
-  c.name goods_name,
-  c.price,
-  c.sku_id,
-  d.name sku_name,
-  c.type
+  SELECT
+    b.goods_num,
+    c.name goods_name,
+    c.price,
+    c.sku_id,
+    d.name sku_name,
+    c.type
   FROM goods_sku_price b,
-  goods_info c,
-  goods_sku d
+    goods_info c,
+    goods_sku d
   WHERE b.goods_num = c.num
-  and b.sku_id = d.id
-  and b.buyer_id = ?
-  and b.seller_id = ?
-  and b.goods_num = ?
+    and b.sku_id = d.id
+    and b.buyer_id = ?
+    and b.seller_id = ?
+    and b.goods_num = ?
 
 getAccountList:
   SELECT
-  DATE(a.created_at) created_at ,a.name,a.id user_id,b.id role_id,c.name role_name
+    DATE(a.created_at) created_at ,a.name,a.id user_id,b.id role_id,c.name role_name
   FROM user_info a
   LEFT OUTER JOIN sec_user_role b ON a.id = b.user_id
   LEFT OUTER JOIN sec_role c ON b.role_id = c.id
@@ -63,152 +53,170 @@ getBankList:
   select account_name,account_num,account_address,name bank_name, id from seller_bank where seller_id = ?
 
 getMyRetailer:
-   select * from (
-      SELECT
-             concat(a.province_name,a.city_name,a.county_name,a.town_name,a.address) address,
-             1 is_invited,
-             a.name,
-             a.nickname,
-             a.username phone,
-             ifnull(a.remark,'') remark,
-             a.id user_id,
-             NULL invite_code,
-             NULL notexpire,
-             b.status  is_cooperation
-      FROM
-             user_info a  LEFT JOIN
-             buyer_seller b
-       ON    a.id = b.buyer_id
-      WHERE
-             b.seller_id = ?
-      UNION ALL
+  select * from (
     SELECT
-             NULL,
-             0 is_invited,
-             NULL,
-             NULL,
-             d.phone phone,
-             ifnull(d.remark,'') remark,
-             NULL user_id,
-             d.code invite_code,
-             IF(SYSDATE() < d.expire_time, 1,0)  notexpire,
-             null is_cooperation
-     FROM
-             invite_verify_code d
-     WHERE
-             d.user_id = ?
-             AND d.type = ?
-             AND NOT EXISTS
-                   (  SELECT
-                           1
-                             FROM
-                                  user_info c
-                            WHERE d.phone = c.username )) a
-                            where 1 = 1
+         concat(a.province_name,a.city_name,a.county_name,a.town_name,a.address) address,
+         1 is_invited,
+         a.name,
+         a.nickname,
+         a.username phone,
+         ifnull(a.remark,'') remark,
+         a.id user_id,
+         NULL invite_code,
+         NULL notexpire,
+         b.status  is_cooperation
+    FROM
+         user_info a  LEFT JOIN
+         buyer_seller b
+    ON a.id = b.buyer_id
+    WHERE
+         b.seller_id = ?
+    UNION ALL
+    SELECT
+         NULL,
+         0 is_invited,
+         NULL,
+         NULL,
+         d.phone phone,
+         ifnull(d.remark,'') remark,
+         NULL user_id,
+         d.code invite_code,
+         IF(SYSDATE() < d.expire_time, 1,0)  notexpire,
+         null is_cooperation
+    FROM
+         invite_verify_code d
+    WHERE
+         d.user_id = ?
+         AND d.type = ?
+         AND NOT EXISTS
+               (  SELECT
+                       1
+                         FROM
+                              user_info c
+                        WHERE d.phone = c.username )) a
+                        where 1 = 1
 getNoRegisterUserList:
-   SELECT
-             count(1) cn
-     FROM
-             invite_verify_code a
-     WHERE
-             a.user_id = ?
-             AND a.type = ?
-             AND NOT EXISTS
-                   (  SELECT
-                                              1
-                                                FROM
-                                                     user_info c left join buyer_seller e on c.id = e.buyer_id
-                                               WHERE  e.seller_id = ? and  a.phone = c.username)
+  SELECT
+         count(1) cn
+  FROM
+         invite_verify_code a
+  WHERE
+         a.user_id = ?
+         AND a.type = ?
+         AND NOT EXISTS
+               (  SELECT
+                                          1
+                                            FROM
+                                                 user_info c left join buyer_seller e on c.id = e.buyer_id
+                                           WHERE  e.seller_id = ? and  a.phone = c.username)
 getRegisterUserList:
-      SELECT
-             count(1) cn
-      FROM
-             user_info a  LEFT JOIN
-             buyer_seller b
-       ON    a.id = b.buyer_id
-      WHERE
-             b.seller_id = ?
+  SELECT
+         count(1) cn
+  FROM
+         user_info a  LEFT JOIN
+         buyer_seller b
+   ON    a.id = b.buyer_id
+  WHERE
+         b.seller_id = ?
 getMyRegisterRetailer:
-      SELECT
-             concat(a.province_name,a.city_name,a.county_name,a.town_name,a.address) address,
-             1 is_invited,
-             a.name,
-             a.nickname,
-             a.username phone,
-             ifnull(a.remark,'') remark,
-             a.id user_id,
-             NULL invite_code,
-             NULL notexpire,
-             b.status  is_cooperation
-      FROM
-             user_info a  LEFT JOIN
-             buyer_seller b
-       ON    a.id = b.buyer_id
-      WHERE
-             b.seller_id = ?
+  SELECT
+         concat(a.province_name,a.city_name,a.county_name,a.town_name,a.address) address,
+         1 is_invited,
+         a.name,
+         a.nickname,
+         a.username phone,
+         ifnull(a.remark,'') remark,
+         a.id user_id,
+         NULL invite_code,
+         NULL notexpire,
+         b.status  is_cooperation
+  FROM
+         user_info a  LEFT JOIN
+         buyer_seller b
+   ON    a.id = b.buyer_id
+  WHERE
+         b.seller_id = ?
+
+
 getMyNoRegisterRetailer:
-   SELECT *
-        FROM
-        (SELECT
-             NULL address,
-             0 is_invited,
-             NULL name,
-             NULL nickname,
-             d.phone phone,
-             ifnull(d.remark,'') remark,
-             NULL user_id,
-             d.code invite_code,
-             IF(SYSDATE() < d.expire_time, 1,0)  notexpire,
-             null is_cooperation
-     FROM
-             invite_verify_code d
-     WHERE
-             d.user_id = ?
-             AND d.type = ?
-             AND NOT EXISTS
-                   (  SELECT
-                           1
-                             FROM
-                                  user_info c left join buyer_seller e on c.id = e.buyer_id
-                            WHERE  e.seller_id = ? and  d.phone = c.username )) a
-        where 1 = 1
+  SELECT *
+    FROM
+    (SELECT
+         NULL address,
+         0 is_invited,
+         NULL name,
+         NULL nickname,
+         d.phone phone,
+         ifnull(d.remark,'') remark,
+         NULL user_id,
+         d.code invite_code,
+         IF(SYSDATE() < d.expire_time, 1,0)  notexpire,
+         null is_cooperation
+ FROM
+         invite_verify_code d
+ WHERE
+         d.user_id = ?
+         AND d.type = ?
+         AND NOT EXISTS
+               (  SELECT
+                       1
+                         FROM
+                              user_info c left join buyer_seller e on c.id = e.buyer_id
+                        WHERE  e.seller_id = ? and  d.phone = c.username )) a
+    where 1 = 1
 
 getRetailerPrice:
-   SELECT
-         b.num goods_num,
-         b.name goods_name,
-         c.id sku_id,
-         c.name sku_name,
-         ifnull(a.price,0) price
+  SELECT
+     b.num goods_num,
+     b.name goods_name,
+     c.id sku_id,
+     c.name sku_name,
+     ifnull(a.price,0) price
+  FROM
+    (SELECT
+           id sku_id,
+           goods_num,
+           list_price price
+       FROM
+           goods_sku A
+     WHERE A.STATUS = ?
+       AND NOT EXISTS
+           (SELECT
+              1
+             FROM
+                 goods_sku_price b
+           WHERE b.sku_id = A.id)
+      AND A.seller_id = ?
+ UNION
+    SELECT
+          sku_id,
+          goods_num,
+          price
     FROM
-        (SELECT
-               id sku_id,
-               goods_num,
-               list_price price
-           FROM
-               goods_sku A
-         WHERE A.STATUS = ?
-           AND NOT EXISTS
-               (SELECT
-                  1
-                 FROM
-                     goods_sku_price b
-               WHERE b.sku_id = A.id)
-          AND A.seller_id = ?
-     UNION
-        SELECT
-              sku_id,
-              goods_num,
-              price
-        FROM
-             goods_sku_price
-       WHERE
-             STATUS = ?
-        AND  seller_id = ?
-        AND  buyer_id = ? ) a,
-         goods_info b,
-         goods_sku c
+         goods_sku_price
    WHERE
-        a.goods_num = b.num
-    AND a.sku_id = c.id
+         STATUS = ?
+    AND  seller_id = ?
+    AND  buyer_id = ? ) a,
+     goods_info b,
+     goods_sku c
+  WHERE
+    a.goods_num = b.num AND b.deleted_at IS NULL AND c.deleted_at IS NULL
+  AND a.sku_id = c.id
+
+#查询卖家下合作的买家信息
+findBuyer:
+  SELECT
+    a.id buyer_id,
+    a.nickname,
+    CONCAT(
+      a.province_name,
+      a.city_name,
+      a.county_name,
+      a.town_name,
+      a.address
+    ) buyer_address
+  FROM user_info a
+  INNER JOIN buyer_seller b ON a.id = b.buyer_id AND b.status = 1
+  WHERE b.seller_id = ?
 

@@ -2,18 +2,21 @@ package com.qianmo.eshop.model.user;
 
 import cn.dreampie.orm.Model;
 import cn.dreampie.orm.annotation.Table;
+import cn.dreampie.orm.page.FullPage;
 import cn.dreampie.orm.transaction.Transaction;
 import cn.dreampie.security.*;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.annotation.JSONField;
+import com.qianmo.eshop.bean.user.UserInfo;
 import com.qianmo.eshop.common.CommonUtils;
 import com.qianmo.eshop.common.ConstantsUtils;
 import com.qianmo.eshop.common.SessionUtil;
 import com.qianmo.eshop.common.YamlRead;
+import com.qianmo.eshop.model.goods.goods_sku_price;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.math.BigDecimal;
+import java.util.*;
 
 /**
  * Created by ccq on 16-2-20.
@@ -199,4 +202,80 @@ public class user_info extends Model<user_info> {
         return userTemp == null ? new user_info() : userTemp;
     }
 
+    /**
+     * 获取卖家下买家信息
+     * @param name 零售商公司名称或者账号
+     * @param pageStart  从第几条开始
+     * @param pageStep   返回多少条
+     * @param sellerId 卖家ID
+     * @return
+     */
+    public FullPage<user_info> userList(String name, Integer pageStart, Integer pageStep,Long sellerId) {
+        String sql = YamlRead.getSQL("findBuyer","seller/seller");
+        //判断是否根据账号，公司名称及姓名模糊查询
+        if (name != null && !"".equals(name)) {
+            sql = sql + " AND (a.username like '%" + name + "%' or a.nickname like '%"
+                    + name + "%' or a.name like '%" + name + "%')";
+        }
+        FullPage<user_info> userList = fullPaginate(pageStart/pageStep + 1, pageStep,sql,sellerId);
+        return userList;
+    }
+
+    /**
+     * 获取商品规格及规格对应的买家价格信息
+     * @param skuId   商品规格ID
+     * @param skuPriceStatus 商品价格状态
+     * @param name 名称
+     * @param pageStart  从第几条开始
+     * @param pageStep   返回多少条
+     * @param sellerId   卖家ID
+     * @return
+     */
+    public List<UserInfo> userInfoList(Long skuId, Integer skuPriceStatus, String name, Integer pageStart, Integer pageStep, Long sellerId){
+        FullPage<user_info> userList = userList(name,pageStart,pageStep,sellerId);
+        List<UserInfo> list = new ArrayList<UserInfo>();
+        String skuSql = YamlRead.getSQL("findGoodsSkuAndPrice","seller/goods");
+        if(userList!=null && userList.getList().size()>0){
+            for(user_info user:userList.getList()){
+                UserInfo userInfo = new UserInfo();
+                userInfo.setBuyer_id(user.<Long>get("buyer_id"));
+                userInfo.setNickname(user.<String>get("nickname"));
+                userInfo.setBuyer_address(user.<String>get("buyer_address"));
+                goods_sku_price goodsSkuPrice = goods_sku_price.dao.findFirst(skuSql,user.<Long>get("buyer_id"),skuId);
+                if(Long.valueOf(skuPriceStatus).equals(goodsSkuPrice.get("status"))){
+                    userInfo.setSku_id(skuId);
+                    userInfo.setSku_name(goodsSkuPrice.<String>get("sku_name"));
+                    userInfo.setGoods_num(goodsSkuPrice.<Long>get("goods_num"));
+                    if(goodsSkuPrice.get("sku_price_id")!=null){
+                        userInfo.setSku_price_id(goodsSkuPrice.<Long>get("sku_price_id"));
+                    }
+                    userInfo.setSku_price_status(skuPriceStatus);
+                    userInfo.setPrice(goodsSkuPrice.<BigDecimal>get("price"));
+                    list.add(userInfo);
+                }
+            }
+        }
+        return list;
+    }
+
+    /**
+     * 根据账号获取用户信息
+     * @param username 用户账号拼接的字符串
+     * @return
+     */
+    public String getUserInfo(String username){
+        JSONArray array = new JSONArray();
+        List<user_info> list = user_info.dao.findBy("username in ("+username+")");
+        if(list!=null && list.size()>0) {
+            for (user_info user : list) {
+                JSONObject obj = new JSONObject();
+                obj.put("username", user.get("username"));
+                obj.put("name", user.get("name"));
+                obj.put("nickname", user.get("nickname"));
+                array.add(obj);
+            }
+        }
+        return array.toString();
+
+    }
 }

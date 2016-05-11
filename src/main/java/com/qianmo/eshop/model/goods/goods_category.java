@@ -3,6 +3,7 @@ package com.qianmo.eshop.model.goods;
 import cn.dreampie.orm.Model;
 import cn.dreampie.orm.annotation.Table;
 import com.qianmo.eshop.bean.goods.GoodsCategory;
+import com.qianmo.eshop.common.YamlRead;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +22,7 @@ public class goods_category extends Model<goods_category> {
     public List getList(){
         List list = new ArrayList();
         //查询一级商品分类
-        List<goods_category> parentList = dao.findBy("pid=0 and deleted_at is null");
+        List<goods_category> parentList = findBy("pid=0 and deleted_at is null");
         if(parentList!=null && parentList.size()>0){
             for (goods_category category:parentList){
                 GoodsCategory goodsCategory = new GoodsCategory();
@@ -40,6 +41,39 @@ public class goods_category extends Model<goods_category> {
                 }
                 goodsCategory.setGoods_category_list(categoryList);
                 list.add(goodsCategory);
+            }
+        }
+        return list;
+    }
+
+    /**
+     * 获取商品分类及该商品分类下的商品总数
+     *
+     * @param goodsName 商品名称
+     * @return
+     */
+    public List getCountList(String goodsName,Long sellerId){
+        //获取商品分类
+        List<GoodsCategory> list = getList();
+        String sql = YamlRead.getSQL("findGoodsCount", "seller/goods");
+        if (list != null && list.size() > 0) {
+            for (GoodsCategory category : list) {
+                long count = 0;
+                //获取商品子分类
+                List<GoodsCategory> childList = (List) category.getGoods_category_list();
+                if (childList != null && childList.size() > 0) {
+                    //获取子分类下商品总数
+                    for (GoodsCategory childCategory : childList) {
+                        long childCount = 0;
+                        if (goodsName != null && !"".equals(goodsName)) {
+                            sql = sql + " AND name like '%" + goodsName + "%' ";
+                        }
+                        childCount = queryFirst(sql, childCategory.getCategory_id(), sellerId);
+                        childCategory.setGoods_count(childCount);
+                        count += childCount;
+                    }
+                }
+                category.setGoods_count(count);
             }
         }
         return list;

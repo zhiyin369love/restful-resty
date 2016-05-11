@@ -132,6 +132,10 @@ public class ConstantsUtils {
 	public final static Integer SELLER_ORDER_OP_PAY_CELL = 4;
 	/**5不同意买家赊账**/
 	public final static Integer SELLER_ORDER_OP_BUYER_AGAIN = 5;
+	/**6同意买家货到付款**/
+	public  final  static  Integer SELLER_ORDER_OP_BUYER_CASH_AGREE = 6;
+	/**7不同意买家货到付款**/
+	public  final  static  Integer SELLER_ORDER_OP_BUYER_CASH_DISAGREE= 7;
 	/**********************************************************/
 
 

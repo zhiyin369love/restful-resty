@@ -11,7 +11,7 @@ public class GoodsSku {
     private Integer status;//商品规格上下架状态 1：已上架 0：已下架
     private BigDecimal price;//商品规格价格
     private String release_date;//商品规格上架时间
-    private Integer seller_count;//商品规格已售总数
+    private Integer sell_count;//商品规格已售总数
     private Long seller_id;//卖家ID
 
     public Long getSku_id() {
@@ -54,12 +54,12 @@ public class GoodsSku {
         this.release_date = release_date;
     }
 
-    public Integer getSeller_count() {
-        return seller_count;
+    public Integer getSell_count() {
+        return sell_count;
     }
 
-    public void setSeller_count(Integer seller_count) {
-        this.seller_count = seller_count;
+    public void setSell_count(Integer sell_count) {
+        this.sell_count = sell_count;
     }
 
     public Long getSeller_id() {

@@ -41,10 +41,10 @@ findUserAndPrice:
 #获取经销商的商品信息
 findGoodsInfo:
   SELECT a.id goods_id,a.num goods_num,a.main_pic_url,a.name goods_name,a.producer,
-    b.id sku_id,b.name sku_name,DATE(b.release_date) release_date,b.status,b.list_price,c.seller_count
+    b.id sku_id,b.name sku_name,DATE(b.release_date) release_date,b.status,b.list_price,c.sell_count
     FROM goods_info a
     INNER JOIN goods_sku b on a.num = b.goods_num
-    LEFT JOIN(SELECT sum(goods_sku_count) seller_count,sku_id FROM order_goods GROUP BY sku_id) c on b.id = c.sku_id
+    LEFT JOIN(SELECT sum(goods_sku_count) sell_count,sku_id FROM order_goods GROUP BY sku_id) c on b.id = c.sku_id
     WHERE a.seller_id = ? AND a.deleted_at is null AND b.deleted_at is null
 
 #获取经销商下单个商品不可购买的所有用户总数
@@ -53,14 +53,47 @@ findPriceCount:
 
 #查询经销商下所有零售商总数
 findAllUserCount:
-  SELECT count(a.id) count FROM buyer_seller a,user_info b WHERE a.seller_id = ? AND a.status = 1 AND a.deleted_at is  null
-    AND a.buyer_id = b.id AND b.deleted_at is null
+  SELECT
+    count(a.id) count
+  FROM buyer_seller a,user_info b
+  WHERE a.seller_id = ?
+    AND a.status = 1
+    AND a.deleted_at is null
+    AND a.buyer_id = b.id
+    AND b.deleted_at is null
 
 #查询商品或规格价格信息
 findGoodsSkuPrice:
-  select IFNULL(IFNULL(b.price,a.list_price),0) price from goods_sku a
-  left outer join goods_sku_price b on a.goods_num = b.goods_num and a.id = b.sku_id and b.status = 1
-  WHERE
-  a.deleted_at is null and
+  SELECT
+    IFNULL(IFNULL(b.price, a.list_price),0) price
+  FROM
+    goods_sku a
+  LEFT OUTER JOIN goods_sku_price b ON a.goods_num = b.goods_num
+    AND a.id = b.sku_id
+    AND b. STATUS = 1
+  WHERE	a.deleted_at IS NULL AND
+
+#查询商品或规格及价格信息
+findGoodsSkuAndPrice:
+  SELECT
+    a.id sku_id,
+    a.name sku_name,
+    a.goods_num,
+    b.id sku_price_id,
+    IFNULL(b.price, a.list_price) price,
+    IFNULL(b.status, 1) status
+  FROM goods_sku a
+  LEFT JOIN goods_sku_price b ON a.id = b.sku_id AND b.buyer_id = ?
+  WHERE a.id = ?
+
+#获取商品ID
+findGoodsId:
+  SELECT DISTINCT a.id
+    FROM  goods_info a
+    INNER JOIN goods_sku b ON a.num = b.goods_num
+    WHERE a.seller_id = ?
+      AND a.deleted_at IS NULL AND b.deleted_at IS NULL
+
+
 
 

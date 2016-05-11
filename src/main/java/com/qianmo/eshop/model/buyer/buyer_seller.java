@@ -4,6 +4,7 @@ import cn.dreampie.orm.Model;
 import cn.dreampie.orm.annotation.Table;
 import com.qianmo.eshop.common.CommonUtils;
 import com.qianmo.eshop.common.ConstantsUtils;
+import com.qianmo.eshop.common.YamlRead;
 import com.qianmo.eshop.model.user.invite_verify_code;
 import com.qianmo.eshop.model.user.user_info;
 
@@ -67,4 +68,16 @@ public class buyer_seller extends Model<buyer_seller> {
     public List<buyer_seller> getSellerList(long buyer_id, int status) {
         return buyer_seller.dao.findBy("buyer_id = ? and status = ? ", buyer_id, status);
     }
+
+    /**
+     * 查询经销商下所有零售商总数
+     * @param sellerId 卖家ID
+     * @return
+     */
+    public long getUserCount(Long sellerId){
+        long userCount = dao.queryFirst(YamlRead.getSQL("findAllUserCount", "seller/goods"), sellerId);
+        return userCount;
+    }
+
+
 }
