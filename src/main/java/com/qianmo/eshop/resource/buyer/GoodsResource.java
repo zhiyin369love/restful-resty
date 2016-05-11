@@ -4,15 +4,12 @@ import cn.dreampie.orm.page.FullPage;
 import cn.dreampie.route.annotation.API;
 import cn.dreampie.route.annotation.GET;
 import com.qianmo.eshop.bean.goods.GoodsInfo;
-import com.qianmo.eshop.bean.goods.GoodsSku;
 import com.qianmo.eshop.common.ConstantsUtils;
 import com.qianmo.eshop.common.SessionUtil;
-import com.qianmo.eshop.common.YamlRead;
 import com.qianmo.eshop.model.goods.goods_category;
 import com.qianmo.eshop.model.goods.goods_info;
 import com.qianmo.eshop.model.goods.goods_sku;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -48,103 +45,19 @@ public class GoodsResource extends BuyerResource {
             page_step = ConstantsUtils.DEFAULT_PAGE_STEP;  //默认返回10条
         }
         //查询商品编号
-        String goodsNumSql = YamlRead.getSQL("findGoodsNum","buyer/goods");
-        //查询商品、规格、价格
-        String goodsSql = YamlRead.getSQL("findGoodsInfo","buyer/goods");
-         /*
-        判断是否根据分类查找商品
-         */
-        if (category_id != null && category_id > 0) {
-            goodsNumSql = goodsNumSql + " AND b.category_id=" + category_id;
-        }
-        if (parent_category_id!=null && parent_category_id>0){
-            goodsNumSql = goodsNumSql + " AND b.category_id in (SELECT id from goods_category where pid="+parent_category_id+")";
-        }
-
-
-        /*
-        判断是否根据商品名称模糊搜索
-         */
-        if (goods_name != null && !"".equals(goods_name)) {
-            goodsNumSql = goodsNumSql + " AND b.name like '%" + goods_name + "%'";
-        }
-        if (sort != null) {
-            //是否按新品排序 目前是否为新品都是根据上架时间倒序查询
-            if (sort == ConstantsUtils.SORT_NEW) {
-                goodsSql = goodsSql + " ORDER BY e.release_date DESC";
-            } else {
-                goodsSql = goodsSql + " ORDER BY e.release_date DESC";
-            }
-        }
+        FullPage<goods_info> goodsNumList = goods_info.dao.getGoodsNumList(goods_name, category_id,parent_category_id,page_start, page_step, buyer_id);
         String goodsNum = "";
-        //查询商品编号
-        FullPage<goods_info> goodsNumList = goods_info.dao.fullPaginate(page_start / page_step + 1,page_step,
-                goodsNumSql, buyer_id,buyer_id,buyer_id);
-        //非空判断
-        if (goodsNumList!=null && goodsNumList.getList().size()>0){
-             for(goods_info goods:goodsNumList.getList()){
-                 if("".equals(goodsNum)){
-                     goodsNum = goods.get("goods_num").toString();
-                 } else {
-                     goodsNum = goodsNum + "," + goods.get("goods_num");
-                 }
-             }
-        }
-        List<goods_info> list = null;
-        //如果商品编号不为空时查询商品、规格、价格信息
-        if (!"".equals(goodsNum)){
-            goodsSql = goodsSql + "  AND b.num in ("+goodsNum+")";
-            list = goods_info.dao.find(goodsSql,buyer_id,buyer_id,buyer_id);
-        }
-        HashMap<Long,GoodsInfo> map = new HashMap<Long, GoodsInfo>();
-        //非空判断
-        if (list!=null && list.size()>0) {
-            for (goods_info info:list){
-                GoodsInfo goodsInfo = map.get(info.get("goods_id"));
-                //如果商品为空，新建商品
-                if(goodsInfo==null){
-                    goodsInfo = new GoodsInfo();
-                    goodsInfo.setGoods_id(info.<Long>get("goods_id"));
-                    goodsInfo.setGoods_name(info.get("goods_name").toString());
-                    goodsInfo.setGoods_num(info.<Long>get("goods_num"));
-                    if(info.get("main_pic_url")!=null){
-                        goodsInfo.setMain_pic_url(info.get("main_pic_url").toString());
-                    }
-                    goodsInfo.setProducer(info.get("producer").toString());
-                    goodsInfo.setIngredient(info.get("ingredient").toString());
-                    goodsInfo.setSeller_id(info.<Long>get("seller_id"));
-                    goodsInfo.setSeller_name(info.get("seller_name").toString());
+        if (goodsNumList!=null && goodsNumList.getList().size()>0){//非空判断
+            for (goods_info goods:goodsNumList.getList()){
+                if ("".equals(goodsNum)){
+                    goodsNum = goods.get("goods_num").toString();
+                }else{
+                    goodsNum = goodsNum + "," + goods.get("goods_num");
                 }
+            }
+        }
+        List<GoodsInfo> goodsInfoList = goods_info.dao.goodsInfoList(goodsNum,sort,buyer_id);
 
-                //商品规格及价格信息
-                List<GoodsSku> skuList = (List)goodsInfo.getGoods_sku_list();
-                /*
-                商品规格价格集合为空时，新建商品规格价格集合
-                将查询的商品规格及价格信息存入集合中
-                 */
-                if(skuList==null){
-                    skuList = new ArrayList<GoodsSku>();
-                }
-                GoodsSku goodsSku = new GoodsSku();
-                goodsSku.setSku_id(info.<Long>get("sku_id"));
-                goodsSku.setSku_name(info.get("sku_name").toString());
-                goodsSku.setPrice(info.<BigDecimal>get("price"));
-                skuList.add(goodsSku);
-                goodsInfo.setGoods_sku_list(skuList);
-                //将商品存入map中
-                map.put(info.<Long>get("goods_id"),goodsInfo);
-            }
-        }
-        //将商品Map转为商品List
-        List<GoodsInfo> goodsInfoList = new ArrayList<GoodsInfo>();
-        if(map!=null && map.size()>0){
-            for(Long goodsId:map.keySet()){
-                GoodsInfo info = map.get(goodsId);
-                if (info!=null){
-                    goodsInfoList.add(info);
-                }
-            }
-        }
         HashMap resultMap = new HashMap();
         resultMap.put("goods_list",goodsInfoList);//商品信息
         resultMap.put("total_count", goodsNumList.getTotalRow());//商品总条数
@@ -173,7 +86,7 @@ public class GoodsResource extends BuyerResource {
         if (id == null) {
             return resultMap;
         }
-        goods_info goodsInfo = goods_info.dao.findFirst(YamlRead.getSQL("findGoods", "buyer/goods"), id);
+        goods_info goodsInfo = goods_info.dao.findGoodsInfo(id);
         resultMap.put("goods_info", goodsInfo);
 
         String skuSql = "SELECT a.id sku_id,a.name sku_name, IFNULL(b.price,a.list_price) price, " +
@@ -201,16 +114,13 @@ public class GoodsResource extends BuyerResource {
     @GET("/name")
     public HashMap goodsName(String goods_name) {
         HashMap resultMap = new HashMap();
-        String goodsNameSql = YamlRead.getSQL("findGoodsName","buyer/goods");
-        if(goods_name!=null && !"".equals(goods_name)){
-            goodsNameSql = goodsNameSql + " AND b.name like '%"+goods_name+"%'";
-        }
         int page_start = ConstantsUtils.DEFAULT_PAGE_START; //默认从第1条开始
         int page_step = ConstantsUtils.DEFAULT_PAGE_STEP;  //默认返回10条
-        FullPage<goods_info> goodsNameList = goods_info.dao.fullPaginate(page_start / page_step + 1,page_step,
-                goodsNameSql, buyer_id, buyer_id, buyer_id);
+        FullPage goodsNameList = goods_info.dao.getGoodsName(goods_name,page_start,page_step,buyer_id);
         if (goodsNameList != null){
             resultMap.put("goods_name_list", goodsNameList.getList());
+        } else {
+            resultMap.put("goods_name_list", "");
         }
         return resultMap;
     }
@@ -238,31 +148,11 @@ public class GoodsResource extends BuyerResource {
         if (page_step == null) {
             page_step = ConstantsUtils.DEFAULT_PAGE_STEP;  //默认返回10条
         }
-        //查询商品编号
-        String goodsNumSql = YamlRead.getSQL("findSellerGoodsNum","buyer/goods");
-        //查询商品、规格、价格
-        String goodsSql = YamlRead.getSQL("findGoodsInfo","buyer/goods");
-         /*
-        判断是否根据分类查找商品
-         */
-        if (category_id != null && category_id > 0) {
-            goodsNumSql = goodsNumSql + " AND b.category_id=" + category_id;
-        }
-        if (parent_category_id!=null && parent_category_id>0){
-            goodsNumSql = goodsNumSql + " AND b.category_id in (SELECT id from goods_category where pid="+parent_category_id+")";
-        }
 
-
-        /*
-        判断是否根据商品名称模糊搜索
-         */
-        if (goods_name != null && !"".equals(goods_name)) {
-            goodsNumSql = goodsNumSql + " AND b.name like '%" + goods_name + "%'";
-        }
         String goodsNum = "";
         //查询商品编号
-        FullPage<goods_info> goodsNumList = goods_info.dao.fullPaginate(page_start / page_step + 1,page_step,
-                goodsNumSql, buyer_id,seller_id,buyer_id,seller_id,buyer_id,seller_id);
+        FullPage<goods_info> goodsNumList = goods_info.dao.findSellerGoodsNumList(goods_name,category_id,
+                parent_category_id,page_start,page_step,seller_id,buyer_id);
         //非空判断
         if (goodsNumList!=null && goodsNumList.getList().size()>0){
             for(goods_info goods:goodsNumList.getList()){
@@ -273,61 +163,7 @@ public class GoodsResource extends BuyerResource {
                 }
             }
         }
-        List<goods_info> list = null;
-        //如果商品编号不为空时查询商品、规格、价格信息
-        if (!"".equals(goodsNum)){
-            goodsSql = goodsSql + "  AND b.num in ("+goodsNum+")";
-            list = goods_info.dao.find(goodsSql,buyer_id,buyer_id,buyer_id);
-        }
-        HashMap<Long,GoodsInfo> map = new HashMap<Long, GoodsInfo>();
-        //非空判断
-        if (list!=null && list.size()>0) {
-            for (goods_info info:list){
-                GoodsInfo goodsInfo = map.get(info.get("goods_id"));
-                //如果商品为空，新建商品
-                if(goodsInfo==null){
-                    goodsInfo = new GoodsInfo();
-                    goodsInfo.setGoods_id(info.<Long>get("goods_id"));
-                    goodsInfo.setGoods_name(info.get("goods_name").toString());
-                    goodsInfo.setGoods_num(info.<Long>get("goods_num"));
-                    if(info.get("main_pic_url")!=null){
-                        goodsInfo.setMain_pic_url(info.get("main_pic_url").toString());
-                    }
-                    goodsInfo.setProducer(info.get("producer").toString());
-                    goodsInfo.setIngredient(info.get("ingredient").toString());
-                    goodsInfo.setSeller_id(info.<Long>get("seller_id"));
-                    goodsInfo.setSeller_name(info.get("seller_name").toString());
-                }
-
-                //商品规格及价格信息
-                List<GoodsSku> skuList = (List)goodsInfo.getGoods_sku_list();
-                /*
-                商品规格价格集合为空时，新建商品规格价格集合
-                将查询的商品规格及价格信息存入集合中
-                 */
-                if(skuList==null){
-                    skuList = new ArrayList<GoodsSku>();
-                }
-                GoodsSku goodsSku = new GoodsSku();
-                goodsSku.setSku_id(info.<Long>get("sku_id"));
-                goodsSku.setSku_name(info.get("sku_name").toString());
-                goodsSku.setPrice(info.<BigDecimal>get("price"));
-                skuList.add(goodsSku);
-                goodsInfo.setGoods_sku_list(skuList);
-                //将商品存入map中
-                map.put(info.<Long>get("goods_id"),goodsInfo);
-            }
-        }
-        //将商品Map转为商品List
-        List<GoodsInfo> goodsInfoList = new ArrayList<GoodsInfo>();
-        if(map!=null && map.size()>0){
-            for(Long goodsId:map.keySet()){
-                GoodsInfo info = map.get(goodsId);
-                if (info!=null){
-                    goodsInfoList.add(info);
-                }
-            }
-        }
+        List<GoodsInfo> goodsInfoList = goods_info.dao.goodsInfoList(goodsNum,ConstantsUtils.SORT_NEW,buyer_id);
         HashMap resultMap = new HashMap();
         resultMap.put("goods_list",goodsInfoList);//商品信息
         resultMap.put("total_count", goodsNumList.getTotalRow());//商品总条数
