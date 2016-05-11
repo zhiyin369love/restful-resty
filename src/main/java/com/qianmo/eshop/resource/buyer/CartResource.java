@@ -184,7 +184,7 @@ public class CartResource extends BuyerResource {
         if (cartlist != null && cartlist.size() > 0) {
             for (cart tempCart : cartlist) {
                 //如果卖家id之前已经存在了，那么表示在同一个cart里
-                if (cartResult.get("seller_id") != null && cartResult.get("seller_id") == tempCart.get("seller_id")) {
+                if (cartResult.get("seller_id") != null && cartResult.get("seller_id").equals(tempCart.get("seller_id"))) {
                     Long tempCartGoodsNum = tempCart.get("goods_num");
                     List<JSONObject> goods_infoList = (List<JSONObject>) cartResult.get("goods_list");
                     // List<JSONObject> goodInfoList = new ArrayList<JSONObject>();
