@@ -132,4 +132,12 @@ public class BuyerResource extends ApiResource {
         resultMap.put("business_pic_url",businessPicUrl);
         return resultMap;
     }
+
+    @GET("/all")
+    public Map getAllUser(String username){
+        Map resultMap = new HashMap();
+        String allUser = user_info.dao.getUserInfo(username);
+        resultMap.put("allUser",allUser);
+        return resultMap;
+    }
 }

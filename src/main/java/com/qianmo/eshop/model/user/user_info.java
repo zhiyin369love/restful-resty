@@ -5,6 +5,8 @@ import cn.dreampie.orm.annotation.Table;
 import cn.dreampie.orm.page.FullPage;
 import cn.dreampie.orm.transaction.Transaction;
 import cn.dreampie.security.*;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.annotation.JSONField;
 import com.qianmo.eshop.bean.user.UserInfo;
 import com.qianmo.eshop.common.CommonUtils;
@@ -254,5 +256,26 @@ public class user_info extends Model<user_info> {
             }
         }
         return list;
+    }
+
+    /**
+     * 根据账号获取用户信息
+     * @param username 用户账号拼接的字符串
+     * @return
+     */
+    public String getUserInfo(String username){
+        JSONArray array = new JSONArray();
+        List<user_info> list = user_info.dao.findBy("username in ("+username+")");
+        if(list!=null && list.size()>0) {
+            for (user_info user : list) {
+                JSONObject obj = new JSONObject();
+                obj.put("username", user.get("username"));
+                obj.put("name", user.get("name"));
+                obj.put("nickname", user.get("nickname"));
+                array.add(obj);
+            }
+        }
+        return array.toString();
+
     }
 }
