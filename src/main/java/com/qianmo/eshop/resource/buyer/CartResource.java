@@ -91,8 +91,8 @@ public class CartResource extends BuyerResource {
                         tempCart.set("status",ConstantsUtils.RELEASE_STATUS_ON);
                         //区域id
                         tempCart.set("area_id", ConstantsUtils.ALL_AREA_ID);
-                        carts.add(tempCart);
                     }
+                    carts.add(tempCart);
                 }
 //                cart tempCart = new cart();
 //                //买家id
