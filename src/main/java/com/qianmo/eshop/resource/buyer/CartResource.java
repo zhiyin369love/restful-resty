@@ -64,11 +64,13 @@ public class CartResource extends BuyerResource {
         //try
         List<cart> carts = new ArrayList<cart>();
         if (goods != null && goods.size() > 0) {
+            int goodCouldBuy = 0;
             for (Map good : goods) {
                 goods_info goodsInfo = goods_info.dao.findGoodsInfo(buyer_id,
                         Long.parseLong(good.get("goods_sku_id").toString()));
                 //判断该规格商品是否可购买
                 if (goodsInfo!=null){
+                    goodCouldBuy ++;
                     cart tempCart = new cart();
                     //买家id
                     tempCart.set("buyer_id", buyer_id);
@@ -92,8 +94,9 @@ public class CartResource extends BuyerResource {
                         tempCart.set("status",ConstantsUtils.RELEASE_STATUS_ON);
                         //区域id
                         tempCart.set("area_id", ConstantsUtils.ALL_AREA_ID);
+                        carts.add(tempCart);
                     }
-                    carts.add(tempCart);
+
                 }
 //                cart tempCart = new cart();
 //                //买家id
@@ -123,9 +126,19 @@ public class CartResource extends BuyerResource {
 //                    carts.add(tempCart);
 //                }
             }
-            if (carts.size() > 0) {
+           /* if (carts.size() > 0) {
                 cart.dao.save(carts);
                 if(carts.size()==goods.size()){
+                    return CommonUtils.getCodeMessage(true,"该订单商品已全部加入购物车");
+                }else{
+                    return CommonUtils.getCodeMessage(true,"该订单未下架的商品已加入购物车");
+                }
+            }*/
+            if(goodCouldBuy > 0) {
+                if (carts.size() > 0) {
+                    cart.dao.save(carts);
+                }
+                if(goodCouldBuy ==goods.size()) {
                     return CommonUtils.getCodeMessage(true,"该订单商品已全部加入购物车");
                 }else{
                     return CommonUtils.getCodeMessage(true,"该订单未下架的商品已加入购物车");
