@@ -13,6 +13,7 @@ import com.qianmo.eshop.model.user.user_info;
 import com.qianmo.eshop.resource.z_common.ApiResource;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -136,7 +137,7 @@ public class BuyerResource extends ApiResource {
     @GET("/all")
     public Map getAllUser(String username){
         Map resultMap = new HashMap();
-        String allUser = user_info.dao.getUserInfo(username);
+        List<user_info> allUser = user_info.dao.getUserInfo(username);
         resultMap.put("allUser",allUser);
         return resultMap;
     }

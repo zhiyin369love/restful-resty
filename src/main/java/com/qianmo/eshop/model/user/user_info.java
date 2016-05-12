@@ -263,27 +263,26 @@ public class user_info extends Model<user_info> {
      * @param username 用户账号拼接的字符串
      * @return
      */
-    public String getUserInfo(String username){
-        JSONArray array = new JSONArray();
+    public List getUserInfo(String username){
         List<user_info> list = user_info.dao.findBy("username in ("+username+")");
+        List<user_info> userList = new ArrayList<user_info>();
         if(list!=null && list.size()>0) {
             for (user_info user : list) {
-                JSONObject obj = new JSONObject();
-                obj.put("username", user.get("username"));
+                user_info userInfo = new user_info();
+                userInfo.put("username", user.get("username"));
                 if (user.get("name")!=null && !"".equals(user.get("name"))){
-                    obj.put("name", user.get("name"));
+                    userInfo.put("name", user.get("name"));
                 } else {
-                    obj.put("name", "");
+                    userInfo.put("name", "");
                 }
                 if (user.get("nickname")!=null && !"".equals(user.get("nickname"))){
-                    obj.put("nickname", user.get("nickname"));
+                    userInfo.put("nickname", user.get("nickname"));
                 } else {
-                    obj.put("nickname", "");
+                    userInfo.put("nickname", "");
                 }
-                array.add(obj);
+                userList.add(userInfo);
             }
         }
-        return array.toString();
-
+        return userList;
     }
 }
