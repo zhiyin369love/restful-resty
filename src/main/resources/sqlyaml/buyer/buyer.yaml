@@ -9,6 +9,11 @@ getSellerIdByVerifyCode:
      from  invite_verify_code a
      where a.code = ?  and  a.type = ?
 
+getSellerIdByVerifyCodePhone:
+  select   a.user_id,a.id,a.status,a.phone,a.expire_time
+     from  invite_verify_code a
+     where a.code = ?  and  a.type = ?  and a.phone = ?
+
 
 getAllSellerInfo:
    SELECT
