@@ -2,8 +2,10 @@ package com.qianmo.eshop.model.goods;
 
 import cn.dreampie.orm.Model;
 import cn.dreampie.orm.annotation.Table;
+import com.qianmo.eshop.common.YamlRead;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * Created by ccq on 16-1-1.
@@ -32,5 +34,17 @@ public class goods_sku extends Model<goods_sku> {
             flag = updateColsBy("status,release_date", "goods_num=? AND seller_id=? AND deleted_at is null",status, new Date(), goodsNum, sellerId);
         }
         return flag;
+    }
+
+    /**
+     * 买家获取商品规格及价格
+     * @param buyerId
+     * @param goodsNum
+     * @return
+     */
+    public List getGoodsSku(Long buyerId,Long goodsNum){
+        String sql = YamlRead.getSQL("findGoodsSkuAndPrice","buyer/goods");
+        List<goods_sku> list = goods_sku.dao.find(sql, buyerId, goodsNum);
+        return list;
     }
 }

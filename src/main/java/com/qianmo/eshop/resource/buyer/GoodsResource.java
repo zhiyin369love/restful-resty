@@ -88,21 +88,8 @@ public class GoodsResource extends BuyerResource {
         }
         goods_info goodsInfo = goods_info.dao.findGoodsInfo(id);
         resultMap.put("goods_info", goodsInfo);
-
-        String skuSql = "SELECT a.id sku_id,a.name sku_name, IFNULL(b.price,a.list_price) price, " +
-                "IFNULL(b.status,1) status FROM goods_sku a " +
-                "LEFT JOIN goods_sku_price b ON a.id = b.sku_id AND b.buyer_id = ? " +
-                "WHERE a.goods_num = ? AND a.status = 1";
-        List<goods_sku> list = goods_sku.dao.find(skuSql, buyer_id, goodsInfo.get("goods_num"));
-        List<goods_sku> skuList = new ArrayList<goods_sku>();
-        if(list!=null && list.size()>0){
-            for(goods_sku sku : list){
-                if (sku.get("status").equals(Long.parseLong(ConstantsUtils.GOODS_SKU_PRICE_BUY_ENBLE.toString()))){
-                    skuList.add(sku);
-                }
-            }
-        }
-        resultMap.put("goods_sku_list", skuList);
+        List<goods_sku> list = goods_sku.dao.getGoodsSku(buyer_id,goodsInfo.<Long>get("goods_num"));
+        resultMap.put("goods_sku_list", list);
         return resultMap;
     }
 

@@ -59,3 +59,14 @@ findSellerGoodsNum:
     WHERE a.goods_num = b.num AND a.sku_id = e.id AND d.deleted_at IS NULL AND e.deleted_at IS NULL
     AND b.seller_id = c.seller_id AND b.seller_id = d.id AND c.status = 1 AND c.buyer_id = ? AND c.seller_id = ?
     AND e.status = 1
+
+#买家获取商品及价格
+findGoodsSkuAndPrice:
+  SELECT
+    a.id sku_id,
+    a.name sku_name,
+    IFNULL(b.price,a.list_price) price,
+    IFNULL(b.status,a.status) status
+  FROM goods_sku a
+  LEFT JOIN goods_sku_price b ON a.id = b.sku_id AND b.buyer_id = ?
+  WHERE a.goods_num = ? AND a.status = 1 AND (b.status IS NULL OR b.status=1)
