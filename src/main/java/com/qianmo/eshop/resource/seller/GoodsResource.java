@@ -147,6 +147,7 @@ public class GoodsResource extends SellerResource {
         if (goodsSku != null) {
             //删除商品规格
             goodsSku.set("deleted_at", new Date());
+            goodsSku.set("status",0);
             goodsSku.update();
             //删除商品规格价格
             goods_sku_price.dao.deleteBy("sku_id=?", id);
