@@ -8,6 +8,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.qianmo.eshop.common.CommonUtils;
 import com.qianmo.eshop.common.ConstantsUtils;
 import com.qianmo.eshop.common.SessionUtil;
+import com.qianmo.eshop.common.YamlRead;
 import com.qianmo.eshop.model.buyer.buyer_seller;
 import com.qianmo.eshop.model.cart.cart;
 import com.qianmo.eshop.model.goods.goods_info;
@@ -139,12 +140,12 @@ public class CartResource extends BuyerResource {
                     cart.dao.save(carts);
                 }
                 if(goodCouldBuy ==goods.size()) {
-                    return CommonUtils.getCodeMessage(true,"该订单商品已全部加入购物车");
+                    return CommonUtils.getCodeMessage(true,"商品已全部加入购物车");
                 }else{
                     return CommonUtils.getCodeMessage(true,"部分商品已下架，未能加入购物车");
                 }
             } else {
-                return CommonUtils.getCodeMessage(false,"该订单商品已下架，无法加入购物车");
+                return CommonUtils.getCodeMessage(false,"商品已下架，无法加入购物车");
             }
 
         } else {
@@ -321,6 +322,18 @@ public class CartResource extends BuyerResource {
         Map resultMap = new HashMap();
         resultMap.put("code", ConstantsUtils.HTTP_STATUS_OK_200);
         resultMap.put("message", message);
+        return resultMap;
+    }
+
+    /**
+     * 获取用户购物车信息列表
+     */
+    @GET("/sellerInfo")
+    public Map getSellerInfo(Long sellerId) {
+        String getSellerInfoSql = YamlRead.getSQL("getSellerInfo", "buyer/cart");
+        user_info  userInfo =  user_info.dao.findFirst(getSellerInfoSql,sellerId);
+        Map resultMap = new HashMap();
+        resultMap.put("userInfo",userInfo);
         return resultMap;
     }
 }
