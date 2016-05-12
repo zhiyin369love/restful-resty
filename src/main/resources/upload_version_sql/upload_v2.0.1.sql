@@ -6,6 +6,9 @@ ALTER TABLE user_info ADD id_card VARCHAR(20) DEFAULT NULL COMMENT '身份证号
       ADD longitude VARCHAR (64) DEFAULT NULL COMMENT '经度',
       ADD latitude VARCHAR (64) DEFAULT NULL COMMENT '纬度'
 
+<!--user_info增加绑定码字段-->
+ALTER TABLE user_info ADD binding_code VARCHAR (10) DEFAULT NULL COMMENT '绑定码'
+
 <!--buyer_receive_address增加是否为默认地址、经度、纬度字段-->
 ALTER TABLE buyer_receive_address ADD isdefault tinyint(1) DEFAULT NULL COMMENT '是否为默认地址',
       ADD longitude DOUBLE (10,2) DEFAULT NULL COMMENT '经度',

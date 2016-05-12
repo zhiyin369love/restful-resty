@@ -270,8 +270,16 @@ public class user_info extends Model<user_info> {
             for (user_info user : list) {
                 JSONObject obj = new JSONObject();
                 obj.put("username", user.get("username"));
-                obj.put("name", user.get("name"));
-                obj.put("nickname", user.get("nickname"));
+                if (user.get("name")!=null && !"".equals(user.get("name"))){
+                    obj.put("name", user.get("name"));
+                } else {
+                    obj.put("name", "");
+                }
+                if (user.get("nickname")!=null && !"".equals(user.get("nickname"))){
+                    obj.put("nickname", user.get("nickname"));
+                } else {
+                    obj.put("nickname", "");
+                }
                 array.add(obj);
             }
         }
