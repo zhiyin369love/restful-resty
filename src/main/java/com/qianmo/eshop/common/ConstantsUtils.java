@@ -24,6 +24,8 @@ public class ConstantsUtils {
 	public final static Integer ONE = 1;
 
     public final static Integer SIX = 6;
+
+	public final static Long ZERO_LONG = 0L;
 	/**********************************************************/
 
 	/**************************支付方式**************************/

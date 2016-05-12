@@ -62,7 +62,7 @@ public class buyer_seller extends Model<buyer_seller> {
     }
 
     public invite_verify_code getInviteByVerifyCode(int bindCode) {
-        return new invite_verify_code().getInviteByCode(bindCode, ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE);
+        return new invite_verify_code().getInviteByCode(String.valueOf(bindCode), ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE);
     }
 
     public List<buyer_seller> getSellerList(long buyer_id, int status) {

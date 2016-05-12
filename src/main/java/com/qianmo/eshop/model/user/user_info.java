@@ -166,12 +166,12 @@ public class user_info extends Model<user_info> {
 
     //检查验证码是否正确
     public String checkCode(String code, String phone) {
-        long id;
+        Long id;
         String randCode = null;
         try {
             id = invite_verify_code.dao.queryFirst("select id from invite_verify_code where code=? and phone = ? and expire_time > NOW()", code, phone);
             //判断是否成功匹配到了验证码 zero表示没有验证成功
-            if (id != ConstantsUtils.ZERO) {
+            if (!id.equals(ConstantsUtils.ZERO_LONG)) {
                 randCode = CommonUtils.getRandNum(ConstantsUtils.SIX); //生成6位作为token返回
                 invite_verify_code.dao.findById(id).set("token", randCode).update();
             }
