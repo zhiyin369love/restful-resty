@@ -21,6 +21,15 @@ public class invite_verify_code extends Model<invite_verify_code> {
     }
 
     /**
+     * 根据验证码和类别以及手机号获取验证信息
+     */
+    public invite_verify_code getInviteByCodePhone(String verifyCode, int type,String phone) {
+        String sql  = "";
+        sql = YamlRead.getSQL("getSellerIdByVerifyCodePhone","buyer/buyer");
+        return invite_verify_code.dao.unCache().findFirst(sql, verifyCode, type, phone);
+    }
+
+    /**
      * 根据验证码和类别获取验证信息
      */
     public invite_verify_code getInviteByBuyerAndSeller(long buyer_id, long seller_id) {

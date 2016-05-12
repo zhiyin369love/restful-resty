@@ -147,7 +147,7 @@ public class ApiResource extends Resource {
             code = CommonUtils.getRandNum(ConstantsUtils.SIX);
             Date ExpireTime = new Date(System.currentTimeMillis() + 15 * 60 * 1000); //十五分钟
             returnResult = (JSONObject) JSON.parse(SmsApi.sendSms(SmsApi.APIKEY, sign + content.replace("?", code), phone));
-            invite_verify_code verifyCode = invite_verify_code.dao.getInviteByCode(code,op);
+            invite_verify_code verifyCode = invite_verify_code.dao.getInviteByCodePhone(code,op,phone);
             if(verifyCode != null) {
                 verifyCode.set("code", code).set("expire_time", DateUtils.getDateString(ExpireTime, DateUtils.format_yyyyMMddHHmmss)).update();
             } else {
