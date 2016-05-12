@@ -10,6 +10,7 @@ import com.alibaba.druid.util.StringUtils;
 import com.alibaba.fastjson.JSONObject;
 import com.qianmo.eshop.common.*;
 import com.qianmo.eshop.model.buyer.buyer_receive_address;
+import com.qianmo.eshop.model.buyer.buyer_seller;
 import com.qianmo.eshop.model.cart.cart;
 import com.qianmo.eshop.model.credit.credit;
 import com.qianmo.eshop.model.goods.goods_category;
@@ -312,8 +313,10 @@ public class OrderResource extends BuyerResource {
                 //商品单价
                 long goodsSkuId = cart.get("goods_sku_id");
                 goods_sku goodsSku = goods_sku.dao.findById(goodsSkuId);
-                goods_sku_price goodsSkuPrice = goods_sku_price.dao.findFirstBy( "sku_id =? and buyer_id = ? and seller_id =? ", goodsSkuId,cart.get("buyer_id"),cart.get("seller_id"));
-                if (goodsSku.<Integer>get("status") == ConstantsUtils.GOODS_SKU_PRICE_BUY_DISABLE || (goodsSkuPrice != null && goodsSkuPrice.<Integer>get("status") == ConstantsUtils.GOODS_SKU_PRICE_BUY_DISABLE)) {
+                goods_sku_price goodsSkuPrice = goods_sku_price.dao.findFirstBy( "sku_id =? and buyer_id = ? and seller_id =? ", goodsSkuId,buyer_id,seller_id);
+                Integer status = buyer_seller.dao.findFirstBy("buyer_id = ? and seller_id = ?",buyer_id,seller_id).<Integer>get("status");
+                //商品下架或者不可购买，都是属于下架状态
+                if (status.equals(ConstantsUtils.BUYER_SELLER_STATUS_BIDING_CANCEL) || goodsSku.<Integer>get("status") == ConstantsUtils.GOODS_SKU_PRICE_BUY_DISABLE || (goodsSkuPrice != null && goodsSkuPrice.<Integer>get("status") == ConstantsUtils.GOODS_SKU_PRICE_BUY_DISABLE)) {
                     msg += goodsSkuId + "已下架或不可购买；";
                     continue;
                 }
