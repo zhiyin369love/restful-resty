@@ -60,9 +60,14 @@ public class RetailerResource extends ApiResource {
                 String templateContent = model.get("content");
                 String sign = model.get("sign");
                 String content = sign + templateContent;
-                for (JSONObject userInfo : accounts) {
-                    phone = (String) userInfo.get("phone");
-                    remark = (String) userInfo.get("remark");
+                //for (JSONObject userInfo : accounts) {
+                for(int i = 0; i < accounts.size(); i++) {
+
+                    phone = (String) accounts.get(i).get("phone");
+                    remark = (String) accounts.get(i).get("remark");
+                    if(i >0 && phone.equals((String) accounts.get(i-1).get("phone"))) {
+                        continue;
+                    }
                     long isBind = buyer_seller.dao.findFirst(" select count(1) cn from buyer_seller a left join user_info b on a.buyer_id = b.id where b.username = ? and b.deleted_at is null and a.seller_id = ? and a.status = 1 ",phone,seller_id).<Long>get("cn");
                     if(isBind > 0) {
                         resultContent += phone + "已经绑定;";
