@@ -141,7 +141,7 @@ public class CartResource extends BuyerResource {
                 if(goodCouldBuy ==goods.size()) {
                     return CommonUtils.getCodeMessage(true,"该订单商品已全部加入购物车");
                 }else{
-                    return CommonUtils.getCodeMessage(true,"该订单未下架的商品已加入购物车");
+                    return CommonUtils.getCodeMessage(true,"部分商品已下架，未能加入购物车");
                 }
             } else {
                 return CommonUtils.getCodeMessage(false,"该订单商品已下架，无法加入购物车");
