@@ -8,6 +8,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.qianmo.eshop.common.CommonUtils;
 import com.qianmo.eshop.common.ConstantsUtils;
 import com.qianmo.eshop.common.SessionUtil;
+import com.qianmo.eshop.model.buyer.buyer_seller;
 import com.qianmo.eshop.model.cart.cart;
 import com.qianmo.eshop.model.goods.goods_info;
 import com.qianmo.eshop.model.goods.goods_sku;
@@ -292,8 +293,10 @@ public class CartResource extends BuyerResource {
         //规格名称
         jsonObject.put("sku_name", goodssku.get("name"));
         goods_sku_price goodsSkuPrice = goods_sku_price.dao.findFirstBy(" sku_id = ? and buyer_id = ?", goodsSkuId, buyer_id);
+        Long selerId = tempCart.get("seller_id");
+        Integer status = buyer_seller.dao.findFirstBy("buyer_id = ? and seller_id = ?",buyer_id,selerId).<Integer>get("status");
         //商品下架或者不可购买，都是属于下架状态
-        if (goodssku.<Integer>get("status") == ConstantsUtils.GOODS_SKU_PRICE_BUY_DISABLE || (goodsSkuPrice != null && goodsSkuPrice.<Integer>get("status") == ConstantsUtils.GOODS_SKU_PRICE_BUY_DISABLE)) {
+        if (status.equals(ConstantsUtils.BUYER_SELLER_STATUS_BIDING_CANCEL) || goodssku.<Integer>get("status").equals(ConstantsUtils.GOODS_SKU_PRICE_BUY_DISABLE) || (goodsSkuPrice != null && goodsSkuPrice.<Integer>get("status").equals(ConstantsUtils.GOODS_SKU_PRICE_BUY_DISABLE))) {
             jsonObject.put("status", ConstantsUtils.GOODS_SKU_PRICE_BUY_DISABLE);
         } else {
             jsonObject.put("status", ConstantsUtils.GOODS_SKU_PRICE_BUY_ENBLE);
