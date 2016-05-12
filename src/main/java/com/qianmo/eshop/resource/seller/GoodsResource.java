@@ -214,8 +214,7 @@ public class GoodsResource extends SellerResource {
         if (goods_list != null && goods_list.size() > 0) {
             for (JSONObject obj : goods_list) {
                 if (obj.get("sku_id") != null) {//商品规格ID不为空时，只删除商品规格信息
-                    goods_sku.dao.updateColsBy("deleted_at", "id = ? AND seller_id = ?",
-                            new Date(), obj.get("sku_id"), seller_id);
+                    goods_sku.dao.updateColsBy("deleted_at,status", "id = ? AND seller_id = ?", new Date(),ConstantsUtils.RELEASE_STATUS_OFF, obj.get("sku_id"), seller_id);
                     //删除商品规格价格
                     goods_sku_price.dao.deleteBy("sku_id = ? AND seller_id = ?",
                             obj.get("sku_id"), seller_id);
@@ -223,7 +222,7 @@ public class GoodsResource extends SellerResource {
                     //删除商品
                     goods_info.dao.updateColsBy("deleted_at", "num = ? AND seller_id = ?", new Date(), obj.get("goods_num"), seller_id);
                     //删除商品规格
-                    goods_sku.dao.updateColsBy("deleted_at", "goods_num=? AND seller_id = ?",new Date(), obj.get("goods_num"), seller_id);
+                    goods_sku.dao.updateColsBy("deleted_at,status", "goods_num=? AND seller_id = ?",new Date(),ConstantsUtils.RELEASE_STATUS_OFF, obj.get("goods_num"), seller_id);
                     //删除商品价格
                     goods_sku_price.dao.deleteBy("goods_num=?  AND seller_id = ?",
                             obj.get("goods_num"), seller_id);
@@ -251,7 +250,7 @@ public class GoodsResource extends SellerResource {
         if (seller_id == goods.<Long>get("seller_id")) {
             if (goods_sku_id != null) {  //商品规格ID不为空时，只删除商品规格信息
                 //删除商品规格
-                goods_sku.dao.updateColsBy("deleted_at","id=?",new Date(),goods_sku_id);
+                goods_sku.dao.updateColsBy("deleted_at,status","id=?",new Date(),ConstantsUtils.RELEASE_STATUS_OFF,goods_sku_id);
                 //删除商品规格价格
                 goods_sku_price.dao.deleteBy("sku_id=?", goods_sku_id);
             } else { //商品规格ID为空时，删除商品及规格信息
@@ -259,7 +258,7 @@ public class GoodsResource extends SellerResource {
                 goods.set("deleted_at", new Date());
                 goods.update();
                 //删除商品规格
-                goods_sku.dao.updateColsBy("deleted_at","goods_num=?",new Date(),goods.get("num"));
+                goods_sku.dao.updateColsBy("deleted_at,status","goods_num=?",new Date(),ConstantsUtils.RELEASE_STATUS_OFF,goods.get("num"));
                 //删除商品规格价格
                 goods_sku_price.dao.deleteBy("goods_num=?", goods.get("num"));
                 //删除商品主图
