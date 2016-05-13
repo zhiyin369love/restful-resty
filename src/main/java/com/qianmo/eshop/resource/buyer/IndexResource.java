@@ -40,7 +40,7 @@ public class IndexResource extends ApiResource {
      * @param bind_code 绑定码
      */
     @POST("/bind")
-    public Map addBuyerSeller(int bind_code) {
+    public Map addBuyerSeller(String bind_code) {
         long userId = SessionUtil.getUserId();
         boolean isBind = new buyer_seller().bindSeller(bind_code,userId);
         if(isBind) {
@@ -57,7 +57,7 @@ public class IndexResource extends ApiResource {
      * @param bind_code 绑定码
      */
     @GET("/seller")
-    public Map getSellerInfoByVerifyCode(Integer bind_code) {
+    public Map getSellerInfoByVerifyCode(String bind_code) {
         HashMap resultMap = new HashMap();
         //try {
         //通过验证码找卖家id

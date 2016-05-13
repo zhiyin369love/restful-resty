@@ -22,7 +22,7 @@ public class buyer_seller extends Model<buyer_seller> {
     }
 
 
-    public boolean bindSeller(int bind_code, long buyer_id){
+    public boolean bindSeller(String bind_code, long buyer_id){
         //通过验证码找卖家id
         invite_verify_code code = getInviteByVerifyCode(bind_code);
         if (code != null && buyer_id != 0 && code.<Boolean>get("status") == true) {
@@ -61,7 +61,7 @@ public class buyer_seller extends Model<buyer_seller> {
         }
     }
 
-    public invite_verify_code getInviteByVerifyCode(int bindCode) {
+    public invite_verify_code getInviteByVerifyCode(String bindCode) {
         return new invite_verify_code().getInviteByCode(String.valueOf(bindCode), ConstantsUtils.INVITE_VERIFY_CODE_TYPE_INVITE);
     }
 
