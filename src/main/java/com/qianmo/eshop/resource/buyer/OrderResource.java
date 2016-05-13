@@ -1,5 +1,6 @@
 package com.qianmo.eshop.resource.buyer;
 
+import cn.dreampie.common.http.result.HttpStatus;
 import cn.dreampie.orm.page.FullPage;
 import cn.dreampie.orm.transaction.Transaction;
 import cn.dreampie.route.annotation.API;
@@ -313,7 +314,7 @@ public class OrderResource extends BuyerResource {
                 //商品单价
                 long goodsSkuId = cart.get("goods_sku_id");
                 goods_sku goodsSku = goods_sku.dao.findById(goodsSkuId);
-                goods_sku_price goodsSkuPrice = goods_sku_price.dao.findFirstBy( "sku_id =? and buyer_id = ? and seller_id =? ", goodsSkuId,buyer_id,seller_id);
+                goods_sku_price goodsSkuPrice = goods_sku_price.dao.findFirstBy( "sku_id =? and buyer_id = ? and seller_id =? ", goodsSkuId,cart.get("buyer_id"),cart.get("seller_id"));
                 Integer status = buyer_seller.dao.findFirstBy("buyer_id = ? and seller_id = ?",buyer_id,seller_id).<Integer>get("status");
                 //商品下架或者不可购买，都是属于下架状态
                 if (status.equals(ConstantsUtils.BUYER_SELLER_STATUS_BIDING_CANCEL) || goodsSku.<Integer>get("status") == ConstantsUtils.GOODS_SKU_PRICE_BUY_DISABLE || (goodsSkuPrice != null && goodsSkuPrice.<Integer>get("status") == ConstantsUtils.GOODS_SKU_PRICE_BUY_DISABLE)) {
@@ -349,9 +350,14 @@ public class OrderResource extends BuyerResource {
         if(!StringUtils.isEmpty(msg)) {
             msg = msg.substring(0,msg.length()-1);
         }
+        if(order_info_list == null) {
+            hash.put("code", HttpStatus.INTERNAL_SERVER_ERROR.getCode());
+        } else {
+            hash.put("order_id", order_info_list==null?0l:order_info_list.get("id"));
+            hash.put("order_num", num);
+        }
         hash.put("msg",msg);
-        hash.put("order_id", order_info_list==null?0l:order_info_list.get("id"));
-        hash.put("order_num", num);
+
         return hash;
     }
 
