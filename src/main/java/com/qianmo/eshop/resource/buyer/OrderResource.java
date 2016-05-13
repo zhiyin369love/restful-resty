@@ -353,6 +353,7 @@ public class OrderResource extends BuyerResource {
         if(order_info_list == null) {
             hash.put("code", HttpStatus.INTERNAL_SERVER_ERROR.getCode());
         } else {
+            hash.put("code", HttpStatus.OK.getCode());
             hash.put("order_id", order_info_list==null?0l:order_info_list.get("id"));
             hash.put("order_num", num);
         }
