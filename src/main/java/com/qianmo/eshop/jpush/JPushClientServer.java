@@ -48,7 +48,7 @@ public class JPushClientServer {
                 .setAudience(Audience.alias(username))
                 .setMessage(Message.newBuilder()
                     .setMsgContent(message)
-                    .addExtra("orderId", orderId).build())
+                    .addExtra("orderNum", orderId).build())
                 //.setNotification(Notification.alert(message))
                 .build();
     }
