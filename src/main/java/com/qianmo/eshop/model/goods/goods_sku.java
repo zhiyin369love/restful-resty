@@ -43,7 +43,7 @@ public class goods_sku extends Model<goods_sku> {
      * @return
      */
     public List getGoodsSku(Long buyerId,Long goodsNum){
-        String sql = YamlRead.getSQL("findGoodsSkuAndPrice","buyer/goods");
+        String sql = YamlRead.getSQL("findSkuAndPrice","buyer/goods");
         List<goods_sku> list = goods_sku.dao.find(sql, buyerId, goodsNum);
         return list;
     }

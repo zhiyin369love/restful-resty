@@ -70,3 +70,15 @@ findGoodsSkuAndPrice:
   FROM goods_sku a
   LEFT JOIN goods_sku_price b ON a.id = b.sku_id AND b.buyer_id = ?
   WHERE a.goods_num = ? AND a.status = 1 AND (b.status IS NULL OR b.status=1)
+
+#买家获取商品及默认价格和价格
+findSkuAndPrice:
+  SELECT
+    a.id sku_id,
+    a.name sku_name,
+    a.list_price,
+    IFNULL(b.price,a.list_price) price,
+    IFNULL(b.status,a.status) status
+  FROM goods_sku a
+  LEFT JOIN goods_sku_price b ON a.id = b.sku_id AND b.buyer_id = ?
+  WHERE a.goods_num = ? AND a.status = 1 AND (b.status IS NULL OR b.status=1)
