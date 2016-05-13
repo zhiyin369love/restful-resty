@@ -71,7 +71,7 @@ public class BuyerResource extends ApiResource {
      */
     @PUT
     @Transaction
-    public Map editBindCode(user_info user, int bind_code) {
+    public Map editBindCode(user_info user, String bind_code) {
         Map result;
         long id;
         id = SessionUtil.getUserId();
