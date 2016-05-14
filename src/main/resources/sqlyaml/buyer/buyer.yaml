@@ -32,7 +32,7 @@ getAllSellerInfo:
       a.latitude
   FROM
     user_info a
-   LEFT JOIN buyer_seller b
-    ON a.id = b.seller_id
+    ,buyer_seller b
+    where a.id = b.seller_id
     AND b.buyer_id = ?
     AND b.status = ?
