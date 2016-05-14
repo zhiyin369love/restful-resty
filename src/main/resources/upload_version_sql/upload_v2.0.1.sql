@@ -44,7 +44,7 @@ CREATE TABLE `app_version` (
 
 <!--创建app导航表-->
 DROP TABLE IF EXISTS `app_nav`;
-CREATE TABLE `app_home_nav` (
+CREATE TABLE `app_nav` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
   `img` varchar(256) DEFAULT NULL COMMENT '导航图片',
   `type` varchar(255) DEFAULT NULL COMMENT '类型（保留字段）',
