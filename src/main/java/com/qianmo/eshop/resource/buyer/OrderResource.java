@@ -314,11 +314,12 @@ public class OrderResource extends BuyerResource {
                 //商品单价
                 long goodsSkuId = cart.get("goods_sku_id");
                 goods_sku goodsSku = goods_sku.dao.findById(goodsSkuId);
+                String goodsName = goods_info.dao.findFirstBy("num = ?",goodsSku.get("goods_num")).get("name");
                 goods_sku_price goodsSkuPrice = goods_sku_price.dao.findFirstBy( "sku_id =? and buyer_id = ? and seller_id =? ", goodsSkuId,cart.get("buyer_id"),cart.get("seller_id"));
                 Integer status = buyer_seller.dao.findFirstBy("buyer_id = ? and seller_id = ?",buyer_id,seller_id).<Integer>get("status");
                 //商品下架或者不可购买，都是属于下架状态
                 if (status.equals(ConstantsUtils.BUYER_SELLER_STATUS_BIDING_CANCEL) || goodsSku.<Integer>get("status") == ConstantsUtils.GOODS_SKU_PRICE_BUY_DISABLE || (goodsSkuPrice != null && goodsSkuPrice.<Integer>get("status") == ConstantsUtils.GOODS_SKU_PRICE_BUY_DISABLE)) {
-                    msg += goodsSkuId + "已下架或不可购买；";
+                    msg += goodsName + "已下架或不可购买；";
                     continue;
                 }
                 isValid = true;
@@ -357,7 +358,7 @@ public class OrderResource extends BuyerResource {
             hash.put("order_id", order_info_list==null?0l:order_info_list.get("id"));
             hash.put("order_num", num);
         }
-        hash.put("msg",msg);
+        hash.put("message",msg);
 
         return hash;
     }
