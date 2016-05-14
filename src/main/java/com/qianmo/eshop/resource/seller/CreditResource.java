@@ -200,9 +200,9 @@ public class CreditResource extends SellerResource {
         credit creditModel = new credit();
         //赊账实体
         String creditCountSql = YamlRead.getSQL("getCreditCount", "seller/credit");
-        //已销账金额
+        //已销账数量
         long alreadyPayCount = creditModel.getCountByUserIdAndStatus(creditCountSql, seller_id, ConstantsUtils.CREDIT_ALREADY_STATUS);
-        //未销账金额
+        //未销账数量
         long borrowPayCount = creditModel.getCountByUserIdAndStatus(creditCountSql, seller_id, ConstantsUtils.CREDIT_CANCEL_STATUS);
         resulttall_count.put("alreadyPayCount", alreadyPayCount);
         resulttall_count.put("borrowPayCount", borrowPayCount);
