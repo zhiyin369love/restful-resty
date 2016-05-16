@@ -150,12 +150,10 @@ public class GoodsResource extends BuyerResource {
                 }
             }
         }
-        List<GoodsInfo> goodsInfoList = goods_info.dao.goodsInfoList(goodsNum,ConstantsUtils.SORT_NEW,buyer_id);
+        List<GoodsInfo> goodsInfoList = goods_info.dao.goodsInfoList(goodsNum,null,buyer_id);
         HashMap resultMap = new HashMap();
         resultMap.put("goods_list",goodsInfoList);//商品信息
         resultMap.put("total_count", goodsNumList.getTotalRow());//商品总条数
         return resultMap;
     }
-
-
 }
